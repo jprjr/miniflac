@@ -14,6 +14,8 @@ functions, does not allocate any memory.
 
 * Metadata Support
 * Ogg support
+* Speed optimizations
+* Memory reduction
 
 ## Usage
 
@@ -60,6 +62,9 @@ In practice you often need less, most FLAC files are in the "streamable"
 subset, which limits the frame size to 16384 samples, or 4608 samples if the
 sample rate is <= 48kHz, and probably only 2 channels.
 
+Some parts of this library are pretty un-optimized - like the states
+for fixed decoding and lpc decoding each have their own residual
+decoder, that could be shared instead.
 
 ## LICENSE
 
