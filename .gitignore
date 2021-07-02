@@ -1,0 +1,9 @@
+*.so
+*.o
+*.dll
+*.exe
+*.a
+/examples/basic-decoder
+/examples/single-byte-decoder
+/examples/get-sizes
+/utils/strip-headers
