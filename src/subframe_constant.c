@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: 0BSD */
 #include "subframe_constant.h"
+#include <stddef.h>
 
 MINIFLAC_PRIVATE
 void
@@ -17,8 +18,10 @@ miniflac_subframe_constant_decode(miniflac_subframe_constant* c, miniflac_bitrea
     if(miniflac_bitreader_fill(br,bps)) return MINIFLAC_CONTINUE;
     sample = (int32_t) miniflac_bitreader_read_signed(br,bps);
 
-    for(i=0;i<block_size;i++) {
-        output[i] = sample;
+    if(output != NULL) {
+        for(i=0;i<block_size;i++) {
+            output[i] = sample;
+        }
     }
 
     return MINIFLAC_OK;

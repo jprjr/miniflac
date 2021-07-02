@@ -60,7 +60,7 @@ HEADERS = \
   src/frame.h \
   src/flac.h
 
-all: libminiflac.so miniflac.h examples/basic-decoder examples/single-byte-decoder utils/strip-headers examples/get-sizes
+all: libminiflac.so miniflac.h examples/basic-decoder examples/single-byte-decoder utils/strip-headers examples/get-sizes examples/null-decoder
 
 miniflac.h: $(SOURCES) $(HEADERS) utils/build.pl
 	./utils/build.pl > miniflac.h
@@ -74,10 +74,16 @@ examples/get-sizes: examples/get-sizes.o src/debug.o $(OBJS)
 examples/basic-decoder.o: examples/basic-decoder.c miniflac.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
+examples/null-decoder.o: examples/null-decoder.c miniflac.h
+	$(CC) $(CFLAGS) -c -o $@ $<
+
 examples/single-byte-decoder.o: examples/single-byte-decoder.c miniflac.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 examples/basic-decoder: examples/basic-decoder.o examples/wav.o examples/pack.o src/debug.o
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+examples/null-decoder: examples/null-decoder.o src/debug.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 examples/single-byte-decoder: examples/single-byte-decoder.o examples/wav.o examples/pack.o

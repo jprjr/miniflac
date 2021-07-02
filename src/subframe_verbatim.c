@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: 0BSD */
 #include "subframe_verbatim.h"
+#include <stddef.h>
 
 MINIFLAC_PRIVATE
 void
@@ -16,7 +17,10 @@ miniflac_subframe_verbatim_decode(miniflac_subframe_verbatim* c, miniflac_bitrea
     while(c->pos < block_size) {
         if(miniflac_bitreader_fill(br,bps)) return MINIFLAC_CONTINUE;
         sample = (int32_t) miniflac_bitreader_read_signed(br,bps);
-        output[c->pos++] = sample;
+        if(output != NULL) {
+            output[c->pos] = sample;
+        }
+        c->pos++;
     }
 
     c->pos = 0;

@@ -77,30 +77,32 @@ miniflac_frame_decode(miniflac_frame* frame, miniflac_bitreader* br, miniflac_st
                 miniflac_abort();
                 return MINIFLAC_FRAME_CRC16_INVALID;
             }
-            switch(frame->header.channel_assignment) {
-                case MINIFLAC_CHASSGN_LEFT_SIDE: {
-                    for(i=0;i<frame->header.block_size;i++) {
-                        output[1][i] = output[0][i] - output[1][i];
+            if(output != NULL) {
+                switch(frame->header.channel_assignment) {
+                    case MINIFLAC_CHASSGN_LEFT_SIDE: {
+                        for(i=0;i<frame->header.block_size;i++) {
+                            output[1][i] = output[0][i] - output[1][i];
+                        }
+                        break;
                     }
-                    break;
-                }
-                case MINIFLAC_CHASSGN_RIGHT_SIDE: {
-                    for(i=0;i<frame->header.block_size;i++) {
-                        output[0][i] = output[0][i] + output[1][i];
+                    case MINIFLAC_CHASSGN_RIGHT_SIDE: {
+                        for(i=0;i<frame->header.block_size;i++) {
+                            output[0][i] = output[0][i] + output[1][i];
+                        }
+                        break;
                     }
-                    break;
-                }
-                case MINIFLAC_CHASSGN_MID_SIDE: {
-                    for(i=0;i<frame->header.block_size;i++) {
-                        m = (uint64_t)output[0][i];
-                        s = (uint64_t)output[1][i];
-                        m = (m << 1) | (s & 0x01);
-                        output[0][i] = (int32_t)((m + s) >> 1 );
-                        output[1][i] = (int32_t)((m - s) >> 1 );
+                    case MINIFLAC_CHASSGN_MID_SIDE: {
+                        for(i=0;i<frame->header.block_size;i++) {
+                            m = (uint64_t)output[0][i];
+                            s = (uint64_t)output[1][i];
+                            m = (m << 1) | (s & 0x01);
+                            output[0][i] = (int32_t)((m + s) >> 1 );
+                            output[1][i] = (int32_t)((m - s) >> 1 );
+                        }
+                        break;
                     }
-                    break;
+                    default: break;
                 }
-                default: break;
             }
             break;
         }

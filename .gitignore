@@ -6,4 +6,5 @@
 /examples/basic-decoder
 /examples/single-byte-decoder
 /examples/get-sizes
+/examples/null-decoder
 /utils/strip-headers
