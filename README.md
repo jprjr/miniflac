@@ -6,7 +6,7 @@ functions, does not allocate any memory.
 `miniflac` offers a "push-style" interface. After initializing the decoder,
 you give it a chunk of data. It will consume some amount of data (not
 necessarily all) and decode audio. You'll need to keep track of how
-much data was consumed, any hold on to any un-consumed bytes for
+much data was consumed, and hold on to any un-consumed bytes for
 the next function call.
 
 There's no callbacks involved, and you can provide as little as one byte
