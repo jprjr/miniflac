@@ -8,6 +8,7 @@ functions, does not allocate any memory.
 * push-style API
 * does not allocate memory
 * handles native FLAC
+* single C file
 
 ## Future Improvements
 
