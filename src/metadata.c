@@ -16,7 +16,7 @@ MINIFLAC_RESULT
 miniflac_metadata_sync(miniflac_metadata* metadata, miniflac_bitreader* br) {
     MINIFLAC_RESULT r;
     assert(metadata->state == MINIFLAC_METADATA_HEADER);
-    r = miniflac_metadata_header_fill(&metadata->header,br);
+    r = miniflac_metadata_header_decode(&metadata->header,br);
     if(r != MINIFLAC_OK) return r;
 
     metadata->state = MINIFLAC_METADATA_DATA;

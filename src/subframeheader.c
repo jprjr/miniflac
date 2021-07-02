@@ -12,7 +12,7 @@ miniflac_subframe_header_init(miniflac_subframe_header* subframeheader) {
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_subframe_header_fill(miniflac_subframe_header* subframeheader, miniflac_bitreader* br) {
+miniflac_subframe_header_decode(miniflac_subframe_header* subframeheader, miniflac_bitreader* br) {
     uint64_t t = 0;
     switch(subframeheader->state) {
         case MINIFLAC_SUBFRAME_HEADER_RESERVEBIT1: {

@@ -21,7 +21,7 @@ miniflac_subframe_decode(miniflac_subframe* subframe, miniflac_bitreader* br, in
 
     switch(subframe->state) {
         case MINIFLAC_SUBFRAME_HEADER: {
-            r = miniflac_subframe_header_fill(&subframe->header,br);
+            r = miniflac_subframe_header_decode(&subframe->header,br);
             if(r != MINIFLAC_OK) return r;
 
             subframe->bps = bps - subframe->header.wasted_bits;

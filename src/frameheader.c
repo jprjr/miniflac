@@ -22,7 +22,7 @@ miniflac_frame_header_init(miniflac_frame_header* header) {
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_frame_header_fill(miniflac_frame_header* header, miniflac_bitreader* br) {
+miniflac_frame_header_decode(miniflac_frame_header* header, miniflac_bitreader* br) {
     uint64_t t;
 
     switch(header->state) {

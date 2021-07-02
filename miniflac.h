@@ -542,7 +542,7 @@ miniflac_metadata_header_init(miniflac_metadata_header* header);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_metadata_header_fill(miniflac_metadata_header* header, miniflac_bitreader *br);
+miniflac_metadata_header_decode(miniflac_metadata_header* header, miniflac_bitreader *br);
 
 MINIFLAC_PRIVATE
 void
@@ -609,7 +609,7 @@ miniflac_subframe_header_init(miniflac_subframe_header* subframeheader);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_subframe_header_fill(miniflac_subframe_header* subframeheader, miniflac_bitreader* br);
+miniflac_subframe_header_decode(miniflac_subframe_header* subframeheader, miniflac_bitreader* br);
 
 MINIFLAC_PRIVATE
 void
@@ -624,7 +624,7 @@ void
 miniflac_frame_header_init(miniflac_frame_header* frame_header);
 
 MINIFLAC_PRIVATE
-MINIFLAC_RESULT miniflac_frame_header_fill(miniflac_frame_header* frame_header, miniflac_bitreader* br);
+MINIFLAC_RESULT miniflac_frame_header_decode(miniflac_frame_header* frame_header, miniflac_bitreader* br);
 
 MINIFLAC_PRIVATE
 void miniflac_frame_init(miniflac_frame* frame);
@@ -1000,7 +1000,7 @@ MINIFLAC_RESULT
 miniflac_frame_sync(miniflac_frame* frame, miniflac_bitreader* br, miniflac_streaminfo* info) {
     MINIFLAC_RESULT r;
     assert(frame->state == MINIFLAC_FRAME_HEADER);
-    r = miniflac_frame_header_fill(&frame->header,br);
+    r = miniflac_frame_header_decode(&frame->header,br);
     if(r != MINIFLAC_OK) return r;
 
     if(frame->header.sample_rate == 0) {
@@ -1124,7 +1124,7 @@ miniflac_frame_header_init(miniflac_frame_header* header) {
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_frame_header_fill(miniflac_frame_header* header, miniflac_bitreader* br) {
+miniflac_frame_header_decode(miniflac_frame_header* header, miniflac_bitreader* br) {
     uint64_t t;
 
     switch(header->state) {
@@ -1517,7 +1517,7 @@ MINIFLAC_RESULT
 miniflac_metadata_sync(miniflac_metadata* metadata, miniflac_bitreader* br) {
     MINIFLAC_RESULT r;
     assert(metadata->state == MINIFLAC_METADATA_HEADER);
-    r = miniflac_metadata_header_fill(&metadata->header,br);
+    r = miniflac_metadata_header_decode(&metadata->header,br);
     if(r != MINIFLAC_OK) return r;
 
     metadata->state = MINIFLAC_METADATA_DATA;
@@ -1582,7 +1582,7 @@ miniflac_metadata_header_init(miniflac_metadata_header* header) {
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_metadata_header_fill(miniflac_metadata_header* header, miniflac_bitreader *br) {
+miniflac_metadata_header_decode(miniflac_metadata_header* header, miniflac_bitreader *br) {
     switch(header->state) {
         case MINIFLAC_METADATA_LAST_FLAG: {
             if(miniflac_bitreader_fill(br,1)) return MINIFLAC_CONTINUE;
@@ -1968,7 +1968,7 @@ miniflac_subframe_decode(miniflac_subframe* subframe, miniflac_bitreader* br, in
 
     switch(subframe->state) {
         case MINIFLAC_SUBFRAME_HEADER: {
-            r = miniflac_subframe_header_fill(&subframe->header,br);
+            r = miniflac_subframe_header_decode(&subframe->header,br);
             if(r != MINIFLAC_OK) return r;
 
             subframe->bps = bps - subframe->header.wasted_bits;
@@ -2170,7 +2170,7 @@ miniflac_subframe_header_init(miniflac_subframe_header* subframeheader) {
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_subframe_header_fill(miniflac_subframe_header* subframeheader, miniflac_bitreader* br) {
+miniflac_subframe_header_decode(miniflac_subframe_header* subframeheader, miniflac_bitreader* br) {
     uint64_t t = 0;
     switch(subframeheader->state) {
         case MINIFLAC_SUBFRAME_HEADER_RESERVEBIT1: {

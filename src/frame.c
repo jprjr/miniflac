@@ -17,7 +17,7 @@ MINIFLAC_RESULT
 miniflac_frame_sync(miniflac_frame* frame, miniflac_bitreader* br, miniflac_streaminfo* info) {
     MINIFLAC_RESULT r;
     assert(frame->state == MINIFLAC_FRAME_HEADER);
-    r = miniflac_frame_header_fill(&frame->header,br);
+    r = miniflac_frame_header_decode(&frame->header,br);
     if(r != MINIFLAC_OK) return r;
 
     if(frame->header.sample_rate == 0) {
