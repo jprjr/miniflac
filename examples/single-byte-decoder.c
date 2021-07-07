@@ -71,7 +71,7 @@ int main(int argc, const char *argv[]) {
         goto cleanup;
     }
 
-    miniflac_init(&decoder);
+    miniflac_init(&decoder,MINIFLAC_CONTAINER_UNKNOWN);
 
     while(fread(buffer,1,1,input)) {
         res = miniflac_decode(&decoder,buffer,length,&used,samples);
@@ -96,6 +96,9 @@ int main(int argc, const char *argv[]) {
                 pack(outSamples,samples,decoder.frame.header.channels,decoder.frame.header.block_size);
                 fwrite(outSamples,1,len,output);
                 frameTotal++;
+                if(frameTotal % 10 == 0) {
+                    fprintf(stderr,"decoded %u frames\n",frameTotal);
+                }
                 break;
             }
             case MINIFLAC_CONTINUE: break;

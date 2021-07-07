@@ -110,6 +110,8 @@ frame, or call miniflac_decode to continue on.
 #define MINIFLAC_FRAMEHEADER_H
 #define MINIFLAC_METADATA_H
 #define MINIFLAC_METADATA_HEADER_H
+#define MINIFLAC_OGG_H
+#define MINIFLAC_OGGHEADER_H
 #define MINIFLAC_RESIDUAL_H
 #define MINIFLAC_STREAMINFO_H
 #define MINIFLAC_STREAMMARKER_H
@@ -119,13 +121,16 @@ frame, or call miniflac_decode to continue on.
 #define MINIFLAC_SUBFRAME_HEADER_H
 #define MINIFLAC_SUBFRAME_LPC_H
 #define MINIFLAC_SUBFRAME_VERBATIM_H
+#define MINIFLAC_UNPACK_H
 
 #ifndef MINIFLAC_PURE
 #define MINIFLAC_PURE
 #endif
 
 typedef struct miniflac_bitreader_s miniflac_bitreader;
-typedef struct miniflac_streammarker_s miniflac_streammarker;
+typedef struct miniflac_oggheader_s miniflac_oggheader_t;
+typedef struct miniflac_ogg_s miniflac_ogg_t;
+typedef struct miniflac_streammarker_s miniflac_streammarker_t;
 typedef struct miniflac_metadata_header_s miniflac_metadata_header;
 typedef struct miniflac_streaminfo_s miniflac_streaminfo;
 typedef struct miniflac_metadata_s miniflac_metadata;
@@ -141,6 +146,8 @@ typedef struct miniflac_frame_s miniflac_frame;
 typedef struct miniflac_s miniflac_t;
 
 typedef enum MINIFLAC_RESULT MINIFLAC_RESULT;
+typedef enum MINIFLAC_OGGHEADER_STATE MINIFLAC_OGGHEADER_STATE;
+typedef enum MINIFLAC_OGG_STATE MINIFLAC_OGG_STATE;
 typedef enum MINIFLAC_STREAMMARKER_STATE MINIFLAC_STREAMMARKER_STATE;
 typedef enum MINIFLAC_METADATA_TYPE MINIFLAC_METADATA_TYPE;
 typedef enum MINIFLAC_METADATA_HEADER_STATE MINIFLAC_METADATA_HEADER_STATE;
@@ -158,6 +165,7 @@ typedef enum MINIFLAC_CHASSGN MINIFLAC_CHASSGN;
 typedef enum MINIFLAC_FRAME_HEADER_STATE MINIFLAC_FRAME_HEADER_STATE;
 typedef enum MINIFLAC_FRAME_STATE MINIFLAC_FRAME_STATE;
 typedef enum MINIFLAC_STATE MINIFLAC_STATE;
+typedef enum MINIFLAC_CONTAINER MINIFLAC_CONTAINER;
 
 enum MINIFLAC_RESULT {
     MINIFLAC_SUBFRAME_RESERVED_TYPE            = -17, /* subframe header specified a reserved type */
@@ -180,6 +188,33 @@ enum MINIFLAC_RESULT {
     MINIFLAC_CONTINUE                          =   0, /* needs more data, otherwise fine */
     MINIFLAC_OK                                =   1, /* generic "OK" */
     MINIFLAC_ITERATOR_END                      =   2, /* used by iterators to signify end-of-data */
+};
+
+enum MINIFLAC_OGGHEADER_STATE {
+    MINIFLAC_OGGHEADER_PACKETTYPE,
+    MINIFLAC_OGGHEADER_F,
+    MINIFLAC_OGGHEADER_L,
+    MINIFLAC_OGGHEADER_A,
+    MINIFLAC_OGGHEADER_C,
+    MINIFLAC_OGGHEADER_MAJOR,
+    MINIFLAC_OGGHEADER_MINOR,
+    MINIFLAC_OGGHEADER_HEADERPACKETS,
+};
+
+enum MINIFLAC_OGG_STATE {
+    MINIFLAC_OGG_CAPTUREPATTERN_O,
+    MINIFLAC_OGG_CAPTUREPATTERN_G1,
+    MINIFLAC_OGG_CAPTUREPATTERN_G2,
+    MINIFLAC_OGG_CAPTUREPATTERN_S,
+    MINIFLAC_OGG_VERSION,
+    MINIFLAC_OGG_HEADERTYPE,
+    MINIFLAC_OGG_GRANULEPOS,
+    MINIFLAC_OGG_SERIALNO,
+    MINIFLAC_OGG_PAGENO,
+    MINIFLAC_OGG_CHECKSUM,
+    MINIFLAC_OGG_PAGESEGMENTS,
+    MINIFLAC_OGG_SEGMENTTABLE,
+    MINIFLAC_OGG_DATA,
 };
 
 enum MINIFLAC_STREAMMARKER_STATE {
@@ -313,11 +348,19 @@ enum MINIFLAC_FRAME_STATE {
 };
 
 enum MINIFLAC_STATE {
-    MINIFLAC_UNKNOWN, /* will try to find a streammarker or frame sync code */
+    MINIFLAC_OGGHEADER, /* will try to find an ogg header */
+    MINIFLAC_STREAMMARKER_OR_FRAME, /* poke for a stream marker or audio frame
+    */
     MINIFLAC_STREAMMARKER, /* reading a stream marker */
     MINIFLAC_METADATA_OR_FRAME, /* will try to find a frame sync code or try to parse a metadata block */
     MINIFLAC_METADATA, /* currently reading a metadata block */
     MINIFLAC_FRAME,    /* currently reading an audio frame */
+};
+
+enum MINIFLAC_CONTAINER {
+    MINIFLAC_CONTAINER_UNKNOWN,
+    MINIFLAC_CONTAINER_NATIVE,
+    MINIFLAC_CONTAINER_OGG,
 };
 
 
@@ -329,6 +372,24 @@ struct miniflac_bitreader_s {
     uint32_t pos;
     uint32_t len;
     const uint8_t* buffer;
+};
+
+struct miniflac_oggheader_s {
+    MINIFLAC_OGGHEADER_STATE state;
+};
+
+struct miniflac_ogg_s {
+    MINIFLAC_OGG_STATE state;
+    miniflac_bitreader br; /* maintain our own bitreader */
+    uint8_t version;
+    uint8_t headertype;
+    int64_t granulepos;
+    int32_t serialno;
+    uint32_t pageno;
+    uint8_t segments;
+    uint8_t curseg; /* current position within the segment table */
+    uint16_t length; /* length of data within page */
+    uint16_t pos; /* where we are within page */
 };
 
 struct miniflac_streammarker_s {
@@ -451,8 +512,11 @@ struct miniflac_frame_s {
 
 struct miniflac_s {
     MINIFLAC_STATE state;
+    MINIFLAC_CONTAINER container;
     miniflac_bitreader br;
-    miniflac_streammarker streammarker;
+    miniflac_ogg_t ogg;
+    miniflac_oggheader_t oggheader;
+    miniflac_streammarker_t streammarker;
     miniflac_metadata metadata;
     miniflac_frame frame;
 };
@@ -468,9 +532,11 @@ MINIFLAC_PURE
 size_t
 miniflac_size(void);
 
+/* give the container type if you know the kind of container,
+ * otherwise 0 for unknown */
 MINIFLAC_API
 void
-miniflac_init(miniflac_t* pFlac);
+miniflac_init(miniflac_t* pFlac, MINIFLAC_CONTAINER container);
 
 MINIFLAC_API
 MINIFLAC_RESULT
@@ -497,12 +563,32 @@ miniflac_decode(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_
 #endif
 
 MINIFLAC_PRIVATE
+uint32_t
+miniflac_unpack_uint32le(uint8_t buffer[4]);
+
+MINIFLAC_PRIVATE
+int32_t
+miniflac_unpack_int32le(uint8_t buffer[4]);
+
+MINIFLAC_PRIVATE
+uint64_t
+miniflac_unpack_uint64le(uint8_t buffer[8]);
+
+MINIFLAC_PRIVATE
+int64_t
+miniflac_unpack_int64le(uint8_t buffer[8]);
+
+MINIFLAC_PRIVATE
 void
 miniflac_bitreader_init(miniflac_bitreader* br);
 
 MINIFLAC_PRIVATE
 int
 miniflac_bitreader_fill(miniflac_bitreader* br, uint8_t bits);
+
+MINIFLAC_PRIVATE
+int
+miniflac_bitreader_fill_nocrc(miniflac_bitreader* br, uint8_t bits);
 
 MINIFLAC_PRIVATE
 uint64_t
@@ -530,11 +616,27 @@ miniflac_bitreader_reset_crc(miniflac_bitreader* br);
 
 MINIFLAC_PRIVATE
 void
-miniflac_streammarker_init(miniflac_streammarker* streammarker);
+miniflac_oggheader_init(miniflac_oggheader_t* oggheader);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_streammarker_decode(miniflac_streammarker* streammarker, miniflac_bitreader* br);
+miniflac_oggheader_decode(miniflac_oggheader_t* oggheader, miniflac_bitreader* br);
+
+MINIFLAC_PRIVATE
+void
+miniflac_ogg_init(miniflac_ogg_t* ogg);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_ogg_sync(miniflac_ogg_t* ogg, miniflac_bitreader* br);
+
+MINIFLAC_PRIVATE
+void
+miniflac_streammarker_init(miniflac_streammarker_t* streammarker);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_streammarker_decode(miniflac_streammarker_t* streammarker, miniflac_bitreader* br);
 
 MINIFLAC_PRIVATE
 void
@@ -647,12 +749,28 @@ miniflac_size(void) {
 
 MINIFLAC_API
 void
-miniflac_init(miniflac_t* pFlac) {
-    pFlac->state = MINIFLAC_UNKNOWN;
+miniflac_init(miniflac_t* pFlac, MINIFLAC_CONTAINER container) {
     miniflac_bitreader_init(&pFlac->br);
+    miniflac_ogg_init(&pFlac->ogg);
+    miniflac_oggheader_init(&pFlac->oggheader);
     miniflac_streammarker_init(&pFlac->streammarker);
     miniflac_metadata_init(&pFlac->metadata);
     miniflac_frame_init(&pFlac->frame);
+    pFlac->container = container;
+
+    switch(pFlac->container) {
+        case MINIFLAC_CONTAINER_NATIVE: {
+            pFlac->state = MINIFLAC_STREAMMARKER_OR_FRAME;
+            break;
+        }
+        case MINIFLAC_CONTAINER_OGG: {
+            pFlac->state = MINIFLAC_OGGHEADER;
+            break;
+        }
+        default: break;
+    }
+
+    pFlac->state = MINIFLAC_STREAMMARKER;
 }
 
 static
@@ -663,32 +781,34 @@ miniflac_sync_internal(miniflac_t* pFlac, miniflac_bitreader* br) {
     uint16_t peek;
 
     switch(pFlac->state) {
-        case MINIFLAC_UNKNOWN: {
-            miniflac_unknown:
+        case MINIFLAC_OGGHEADER: {
+            r = miniflac_oggheader_decode(&pFlac->oggheader,br);
+            if (r != MINIFLAC_OK) return r;
+            pFlac->state = MINIFLAC_STREAMMARKER;
+            goto miniflac_sync_streammarker;
+        }
+        case MINIFLAC_STREAMMARKER_OR_FRAME: {
             if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
             c = (unsigned char)miniflac_bitreader_peek(br,8);
-            if((char)c == 'f') {
+            if( (char)c == 'f') {
                 pFlac->state = MINIFLAC_STREAMMARKER;
                 goto miniflac_sync_streammarker;
-            } else if(c != 0xFF) {
-                miniflac_bitreader_discard(br,8);
-                br->crc8 = 0;
-                br->crc16 = 0;
-                goto miniflac_unknown;
+            } else if(c == 0xFF) {
+                pFlac->state = MINIFLAC_FRAME;
+                goto miniflac_sync_frame;
             }
-
-            if(miniflac_bitreader_fill(br,16)) return MINIFLAC_CONTINUE;
-            peek = (uint16_t)miniflac_bitreader_peek(br,14);
-            if(peek != 0x3FFE) {
-                miniflac_bitreader_discard(br,8);
-                miniflac_bitreader_reset_crc(br);
-                goto miniflac_unknown;
-            }
-
-            pFlac->state = MINIFLAC_FRAME;
-            goto miniflac_sync_frame;
+            miniflac_abort();
+            return MINIFLAC_ERROR;
         }
 
+        case MINIFLAC_STREAMMARKER: {
+            miniflac_sync_streammarker:
+            r = miniflac_streammarker_decode(&pFlac->streammarker,br);
+            if(r != MINIFLAC_OK) return r;
+            pFlac->state = MINIFLAC_METADATA_OR_FRAME;
+        }
+
+        /* fall-through */
         case MINIFLAC_METADATA_OR_FRAME: {
             miniflac_sync_metadata_or_frame:
             if(miniflac_bitreader_fill(br,16)) return MINIFLAC_CONTINUE;
@@ -701,13 +821,6 @@ miniflac_sync_internal(miniflac_t* pFlac, miniflac_bitreader* br) {
             goto miniflac_sync_metadata;
         }
 
-        case MINIFLAC_STREAMMARKER: {
-            miniflac_sync_streammarker:
-            r = miniflac_streammarker_decode(&pFlac->streammarker,br);
-            if(r != MINIFLAC_OK) return r;
-            pFlac->state = MINIFLAC_METADATA_OR_FRAME;
-            goto miniflac_sync_metadata_or_frame;
-        }
         /* fall-through */
         case MINIFLAC_METADATA: {
             miniflac_sync_metadata:
@@ -728,12 +841,6 @@ miniflac_sync_internal(miniflac_t* pFlac, miniflac_bitreader* br) {
             while(pFlac->frame.state != MINIFLAC_FRAME_HEADER) {
                 r = miniflac_frame_decode(&pFlac->frame,br,&pFlac->metadata.streaminfo,NULL);
                 if(r != MINIFLAC_OK) return r;
-                /* if we're here, it means we started in the middle of
-                 * an audio frame and finished decoding, next next block
-                 * could be another audio frame, *or* a stream marker
-                 * if this was the last frame */
-                pFlac->state = MINIFLAC_UNKNOWN;
-                goto miniflac_unknown;
             }
 
             return miniflac_frame_sync(&pFlac->frame,br,&pFlac->metadata.streaminfo);
@@ -744,9 +851,9 @@ miniflac_sync_internal(miniflac_t* pFlac, miniflac_bitreader* br) {
     return MINIFLAC_ERROR;
 }
 
-MINIFLAC_API
+MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_sync(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length) {
+miniflac_sync_native(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length) {
     MINIFLAC_RESULT r;
     pFlac->br.buffer = data;
     pFlac->br.len    = length;
@@ -758,9 +865,9 @@ miniflac_sync(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t*
     return r;
 }
 
-MINIFLAC_API
+MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_decode(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, int32_t** samples) {
+miniflac_decode_native(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, int32_t** samples) {
     MINIFLAC_RESULT r;
     pFlac->br.buffer = data;
     pFlac->br.len    = length;
@@ -776,6 +883,193 @@ miniflac_decode(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_
     miniflac_decode_exit:
     *out_length = pFlac->br.pos;
     return r;
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_sync_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length) {
+    MINIFLAC_RESULT r = MINIFLAC_CONTINUE;
+
+    const uint8_t* packet = NULL;
+    uint32_t packet_length = 0;
+    uint32_t packet_used   = 0;
+
+    pFlac->ogg.br.buffer = data;
+    pFlac->ogg.br.len = length;
+    pFlac->ogg.br.pos = 0;
+
+    do {
+        if(pFlac->ogg.state != MINIFLAC_OGG_DATA) {
+            r = miniflac_ogg_sync(&pFlac->ogg,&pFlac->ogg.br);
+            if(r != MINIFLAC_OK) break;
+
+            if(pFlac->ogg.headertype & 0x02) {
+                miniflac_bitreader_init(&pFlac->br);
+                miniflac_oggheader_init(&pFlac->oggheader);
+                miniflac_streammarker_init(&pFlac->streammarker);
+                miniflac_metadata_init(&pFlac->metadata);
+                miniflac_frame_init(&pFlac->frame);
+                pFlac->state = MINIFLAC_OGGHEADER;
+            }
+        }
+
+        packet = &data[pFlac->ogg.br.pos];
+        packet_length = pFlac->ogg.br.len - pFlac->ogg.br.pos;
+        if(packet_length > (uint32_t)(pFlac->ogg.length - pFlac->ogg.pos)) {
+            packet_length = (uint32_t)pFlac->ogg.length - pFlac->ogg.pos;
+        }
+
+        r = miniflac_sync_native(pFlac,packet,packet_length,&packet_used);
+        pFlac->ogg.br.pos += packet_used;
+
+        pFlac->ogg.pos    += packet_used;
+        if(pFlac->ogg.pos == pFlac->ogg.length) {
+            pFlac->ogg.state = MINIFLAC_OGG_CAPTUREPATTERN_O;
+        }
+    } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
+
+    *out_length = pFlac->ogg.br.pos;
+    return r;
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_decode_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, int32_t** samples) {
+    MINIFLAC_RESULT r = MINIFLAC_CONTINUE;
+
+    const uint8_t* packet = NULL;
+    uint32_t packet_length = 0;
+    uint32_t packet_used   = 0;
+
+    pFlac->ogg.br.buffer = data;
+    pFlac->ogg.br.len = length;
+    pFlac->ogg.br.pos = 0;
+
+    do {
+        if(pFlac->ogg.state != MINIFLAC_OGG_DATA) {
+            r = miniflac_ogg_sync(&pFlac->ogg,&pFlac->ogg.br);
+            if(r != MINIFLAC_OK) break;
+            if(pFlac->ogg.headertype & 0x02) {
+                miniflac_bitreader_init(&pFlac->br);
+                miniflac_oggheader_init(&pFlac->oggheader);
+                miniflac_streammarker_init(&pFlac->streammarker);
+                miniflac_metadata_init(&pFlac->metadata);
+                miniflac_frame_init(&pFlac->frame);
+                pFlac->state = MINIFLAC_OGGHEADER;
+            }
+        }
+
+        packet = &data[pFlac->ogg.br.pos];
+        packet_length = pFlac->ogg.br.len - pFlac->ogg.br.pos;
+        if(packet_length > (uint32_t)(pFlac->ogg.length - pFlac->ogg.pos)) {
+            packet_length = (uint32_t)pFlac->ogg.length - pFlac->ogg.pos;
+        }
+
+        r = miniflac_decode_native(pFlac,packet,packet_length,&packet_used,samples);
+        pFlac->ogg.br.pos += packet_used;
+        pFlac->ogg.pos    += packet_used;
+
+        if(pFlac->ogg.pos == pFlac->ogg.length) {
+            pFlac->ogg.state = MINIFLAC_OGG_CAPTUREPATTERN_O;
+        }
+    } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
+
+    *out_length = pFlac->ogg.br.pos;
+    return r;
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_probe(miniflac_t* pFlac, const uint8_t* data, uint32_t length) {
+    if(length == 0) return MINIFLAC_CONTINUE;
+    switch(data[0]) {
+        case 'f': {
+            pFlac->container = MINIFLAC_CONTAINER_NATIVE;
+            pFlac->state = MINIFLAC_STREAMMARKER;
+            break;
+        }
+        case 'O': {
+            pFlac->container = MINIFLAC_CONTAINER_OGG;
+            pFlac->state = MINIFLAC_OGGHEADER;
+            break;
+        }
+        default: return MINIFLAC_ERROR;
+    }
+    return MINIFLAC_OK;
+}
+
+
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_decode(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, int32_t** samples) {
+    MINIFLAC_RESULT r;
+
+    if(pFlac->container == MINIFLAC_CONTAINER_UNKNOWN) {
+        r = miniflac_probe(pFlac,data,length);
+        if(r != MINIFLAC_OK) return r;
+    }
+
+    if(pFlac->container == MINIFLAC_CONTAINER_NATIVE) {
+        r = miniflac_decode_native(pFlac,data,length,out_length,samples);
+    } else {
+        r = miniflac_decode_ogg(pFlac,data,length,out_length,samples);
+    }
+
+    return r;
+}
+
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_sync(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length) {
+    MINIFLAC_RESULT r;
+
+    if(pFlac->container == MINIFLAC_CONTAINER_UNKNOWN) {
+        r = miniflac_probe(pFlac,data,length);
+        if(r != MINIFLAC_OK) return r;
+    }
+
+    if(pFlac->container == MINIFLAC_CONTAINER_NATIVE) {
+        r = miniflac_sync_native(pFlac,data,length,out_length);
+    } else {
+        r = miniflac_sync_ogg(pFlac,data,length,out_length);
+    }
+
+    return r;
+}
+MINIFLAC_PRIVATE
+uint32_t
+miniflac_unpack_uint32le(uint8_t buffer[4]) {
+    return (
+      (((uint32_t)buffer[0]) << 0 ) |
+      (((uint32_t)buffer[1]) << 8 ) |
+      (((uint32_t)buffer[2]) << 16) |
+      (((uint32_t)buffer[3]) << 24));
+}
+
+MINIFLAC_PRIVATE
+int32_t
+miniflac_unpack_int32le(uint8_t buffer[4]) {
+    return (int32_t)miniflac_unpack_uint32le(buffer);
+}
+
+MINIFLAC_PRIVATE
+uint64_t
+miniflac_unpack_uint64le(uint8_t buffer[8]) {
+    return (
+      (((uint64_t)buffer[0]) << 0 ) |
+      (((uint64_t)buffer[1]) << 8 ) |
+      (((uint64_t)buffer[2]) << 16) |
+      (((uint64_t)buffer[3]) << 24) |
+      (((uint64_t)buffer[4]) << 32) |
+      (((uint64_t)buffer[5]) << 40) |
+      (((uint64_t)buffer[6]) << 48) |
+      (((uint64_t)buffer[7]) << 56));
+}
+
+MINIFLAC_PRIVATE
+int64_t
+miniflac_unpack_int64le(uint8_t buffer[8]) {
+    return (int64_t)miniflac_unpack_uint64le(buffer);
 }
 
 static const uint8_t miniflac_crc8_table[256] = {
@@ -860,13 +1154,6 @@ miniflac_bitreader_init(miniflac_bitreader* br) {
     br->buffer = NULL;
 }
 
-static inline
-void
-miniflac_bitreader_crc(miniflac_bitreader* br, uint8_t byte) {
-    br->crc8 = miniflac_crc8_table[br->crc8 ^ byte];
-    br->crc16 = miniflac_crc16_table[ (br->crc16 >> 8) ^ byte ] ^ (( br->crc16 & 0x00FF ) << 8);
-}
-
 MINIFLAC_PRIVATE
 int
 miniflac_bitreader_fill(miniflac_bitreader* br, uint8_t bits) {
@@ -876,10 +1163,25 @@ miniflac_bitreader_fill(miniflac_bitreader* br, uint8_t bits) {
         byte = br->buffer[br->pos++];
         br->val = (br->val << 8) | byte;
         br->bits += 8;
-        miniflac_bitreader_crc(br,byte);
+        br->crc8 = miniflac_crc8_table[br->crc8 ^ byte];
+        br->crc16 = miniflac_crc16_table[ (br->crc16 >> 8) ^ byte ] ^ (( br->crc16 & 0x00FF ) << 8);
     }
     return br->bits < bits;
 }
+
+MINIFLAC_PRIVATE
+int
+miniflac_bitreader_fill_nocrc(miniflac_bitreader* br, uint8_t bits) {
+    uint8_t byte = 0;
+    if(bits == 0) return 0;
+    while(br->bits < bits && br->pos < br->len) {
+        byte = br->buffer[br->pos++];
+        br->val = (br->val << 8) | byte;
+        br->bits += 8;
+    }
+    return br->bits < bits;
+}
+
 
 MINIFLAC_PRIVATE
 uint64_t
@@ -982,13 +1284,249 @@ miniflac_bitreader_reset_crc(miniflac_bitreader* br) {
             imask >>= (64 - bits);
         }
         val &=  imask;
-        miniflac_bitreader_crc(br,byte);
+        br->crc8 = miniflac_crc8_table[br->crc8 ^ byte];
+        br->crc16 = miniflac_crc16_table[ (br->crc16 >> 8) ^ byte ] ^ (( br->crc16 & 0x00FF ) << 8);
     }
 }
 
 MINIFLAC_PRIVATE
 void
+miniflac_oggheader_init(miniflac_oggheader_t* oggheader) {
+    oggheader->state = MINIFLAC_OGGHEADER_PACKETTYPE;
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_oggheader_decode(miniflac_oggheader_t* oggheader, miniflac_bitreader* br) {
+    switch(oggheader->state) {
+        case MINIFLAC_OGGHEADER_PACKETTYPE: {
+            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if((uint8_t)miniflac_bitreader_read(br,8) != 0x7F) {
+                miniflac_abort();
+                return MINIFLAC_ERROR;
+            }
+            oggheader->state = MINIFLAC_OGGHEADER_F;
+        }
+        /* fall-through */
+        case MINIFLAC_OGGHEADER_F: {
+            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if((char)miniflac_bitreader_read(br,8) != 'F') {
+                miniflac_abort();
+                return MINIFLAC_ERROR;
+            }
+            oggheader->state = MINIFLAC_OGGHEADER_L;
+        }
+        /* fall-through */
+        case MINIFLAC_OGGHEADER_L: {
+            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if((char)miniflac_bitreader_read(br,8) != 'L') {
+                miniflac_abort();
+                return MINIFLAC_ERROR;
+            }
+            oggheader->state = MINIFLAC_OGGHEADER_A;
+        }
+        /* fall-through */
+        case MINIFLAC_OGGHEADER_A: {
+            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if((char)miniflac_bitreader_read(br,8) != 'A') {
+                miniflac_abort();
+                return MINIFLAC_ERROR;
+            }
+            oggheader->state = MINIFLAC_OGGHEADER_C;
+        }
+        /* fall-through */
+        case MINIFLAC_OGGHEADER_C: {
+            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if((char)miniflac_bitreader_read(br,8) != 'C') {
+                miniflac_abort();
+                return MINIFLAC_ERROR;
+            }
+            oggheader->state = MINIFLAC_OGGHEADER_MAJOR;
+        }
+        /* fall-through */
+        case MINIFLAC_OGGHEADER_MAJOR: {
+            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if((uint8_t)miniflac_bitreader_read(br,8) != 0x01) {
+                miniflac_abort();
+                return MINIFLAC_ERROR;
+            }
+            oggheader->state = MINIFLAC_OGGHEADER_MINOR;
+        }
+        /* fall-through */
+        case MINIFLAC_OGGHEADER_MINOR: {
+            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if((uint8_t)miniflac_bitreader_read(br,8) != 0x00) {
+                miniflac_abort();
+                return MINIFLAC_ERROR;
+            }
+            oggheader->state = MINIFLAC_OGGHEADER_HEADERPACKETS;
+        }
+        /* fall-through */
+        case MINIFLAC_OGGHEADER_HEADERPACKETS: {
+            if(miniflac_bitreader_fill(br,16)) return MINIFLAC_CONTINUE;
+            miniflac_bitreader_discard(br,16);
+            oggheader->state = MINIFLAC_OGGHEADER_PACKETTYPE;
+        }
+        /* fall-through */
+        default: break;
+    }
+    return MINIFLAC_OK;
+}
+
+MINIFLAC_PRIVATE
+void
+miniflac_ogg_init(miniflac_ogg_t* ogg) {
+    ogg->state = MINIFLAC_OGG_CAPTUREPATTERN_O;
+    ogg->version = 0;
+    ogg->headertype = 0;
+    ogg->granulepos = 0;
+    ogg->serialno = 0;
+    ogg->pageno = 0;
+    ogg->segments = 0;
+    ogg->curseg = 0;
+    ogg->length = 0;
+    ogg->pos = 0;
+    miniflac_bitreader_init(&ogg->br);
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_ogg_sync(miniflac_ogg_t* ogg,miniflac_bitreader* br) {
+    unsigned char c;
+    uint8_t buffer[8];
+
+    switch(ogg->state) {
+        case MINIFLAC_OGG_DATA: {
+            while(ogg->pos < ogg->length) {
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
+                miniflac_bitreader_discard(br,8);
+                ogg->pos++;
+            }
+            ogg->state = MINIFLAC_OGG_CAPTUREPATTERN_O;
+        }
+        /* fall-through */
+        case MINIFLAC_OGG_CAPTUREPATTERN_O: {
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
+            c = (unsigned char)miniflac_bitreader_read(br,8);
+            if(c != 'O') {
+                miniflac_abort();
+                return MINIFLAC_ERROR;
+            }
+            ogg->state = MINIFLAC_OGG_CAPTUREPATTERN_G1;
+        }
+        /* fall-through */
+        case MINIFLAC_OGG_CAPTUREPATTERN_G1: {
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
+            c = (unsigned char)miniflac_bitreader_read(br,8);
+            if(c != 'g') {
+                miniflac_abort();
+                return MINIFLAC_ERROR;
+            }
+            ogg->state = MINIFLAC_OGG_CAPTUREPATTERN_G2;
+        }
+        /* fall-through */
+        case MINIFLAC_OGG_CAPTUREPATTERN_G2: {
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
+            c = (unsigned char)miniflac_bitreader_read(br,8);
+            if(c != 'g') {
+                miniflac_abort();
+                return MINIFLAC_ERROR;
+            }
+            ogg->state = MINIFLAC_OGG_CAPTUREPATTERN_S;
+        }
+        /* fall-through */
+        case MINIFLAC_OGG_CAPTUREPATTERN_S: {
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
+            c = (unsigned char)miniflac_bitreader_read(br,8);
+            if(c != 'S') {
+                miniflac_abort();
+                return MINIFLAC_ERROR;
+            }
+            ogg->state = MINIFLAC_OGG_VERSION;
+        }
+        /* fall-through */
+        case MINIFLAC_OGG_VERSION: {
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
+            ogg->version = (uint8_t)miniflac_bitreader_read(br,8);
+            if(ogg->version != 0) {
+                miniflac_abort();
+                return MINIFLAC_ERROR;
+            }
+            ogg->state = MINIFLAC_OGG_HEADERTYPE;
+        }
+        /* fall-through */
+        case MINIFLAC_OGG_HEADERTYPE: {
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
+            ogg->headertype = (uint8_t)miniflac_bitreader_read(br,8);
+            ogg->state = MINIFLAC_OGG_GRANULEPOS;
+        }
+        /* fall-through */
+        case MINIFLAC_OGG_GRANULEPOS: {
+            if(miniflac_bitreader_fill_nocrc(br,64)) return MINIFLAC_CONTINUE;
+            buffer[0] = miniflac_bitreader_read(br,8);
+            buffer[1] = miniflac_bitreader_read(br,8);
+            buffer[2] = miniflac_bitreader_read(br,8);
+            buffer[3] = miniflac_bitreader_read(br,8);
+            buffer[4] = miniflac_bitreader_read(br,8);
+            buffer[5] = miniflac_bitreader_read(br,8);
+            buffer[6] = miniflac_bitreader_read(br,8);
+            buffer[7] = miniflac_bitreader_read(br,8);
+            ogg->granulepos = miniflac_unpack_int64le(buffer);
+            ogg->state = MINIFLAC_OGG_SERIALNO;
+        }
+        /* fall-through */
+        case MINIFLAC_OGG_SERIALNO: {
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
+            buffer[0] = miniflac_bitreader_read(br,8);
+            buffer[1] = miniflac_bitreader_read(br,8);
+            buffer[2] = miniflac_bitreader_read(br,8);
+            buffer[3] = miniflac_bitreader_read(br,8);
+            ogg->serialno = miniflac_unpack_int32le(buffer);
+            ogg->state = MINIFLAC_OGG_PAGENO;
+        }
+        /* fall-through */
+        case MINIFLAC_OGG_PAGENO: {
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
+            buffer[0] = miniflac_bitreader_read(br,8);
+            buffer[1] = miniflac_bitreader_read(br,8);
+            buffer[2] = miniflac_bitreader_read(br,8);
+            buffer[3] = miniflac_bitreader_read(br,8);
+            ogg->pageno = miniflac_unpack_uint32le(buffer);
+            ogg->state = MINIFLAC_OGG_CHECKSUM;
+        }
+        /* fall-through */
+        case MINIFLAC_OGG_CHECKSUM: {
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
+            miniflac_bitreader_discard(br,32);
+            ogg->state = MINIFLAC_OGG_PAGESEGMENTS;
+        }
+        /* fall-through */
+        case MINIFLAC_OGG_PAGESEGMENTS: {
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
+            ogg->segments = (uint8_t) miniflac_bitreader_read(br,8);
+            ogg->curseg = 0;
+            ogg->length = 0;
+            ogg->state = MINIFLAC_OGG_SEGMENTTABLE;
+        }
+        /* fall-through */
+        case MINIFLAC_OGG_SEGMENTTABLE: {
+            while(ogg->curseg < ogg->segments) {
+              if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
+              ogg->length += miniflac_bitreader_read(br,8);
+              ogg->curseg++;
+            }
+            ogg->pos = 0;
+            ogg->state = MINIFLAC_OGG_DATA;
+            return MINIFLAC_OK;
+        }
+    }
+    return MINIFLAC_ERROR;
+}
+
+MINIFLAC_PRIVATE
+void
 miniflac_frame_init(miniflac_frame* frame) {
+    frame->crc16 = 0;
     frame->cur_subframe = 0;
     frame->state = MINIFLAC_FRAME_HEADER;
     miniflac_frame_header_init(&frame->header);
@@ -1891,13 +2429,13 @@ miniflac_streaminfo_decode(miniflac_streaminfo* streaminfo, miniflac_bitreader* 
 
 MINIFLAC_PRIVATE
 void
-miniflac_streammarker_init(miniflac_streammarker* streammarker) {
+miniflac_streammarker_init(miniflac_streammarker_t* streammarker) {
     streammarker->state = MINIFLAC_STREAMMARKER_F;
 }
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_streammarker_decode(miniflac_streammarker* streammarker, miniflac_bitreader* br) {
+miniflac_streammarker_decode(miniflac_streammarker_t* streammarker, miniflac_bitreader* br) {
     char t;
     switch(streammarker->state) {
         case MINIFLAC_STREAMMARKER_F: {
@@ -2166,10 +2704,11 @@ miniflac_subframe_fixed_decode(miniflac_subframe_fixed* f, miniflac_bitreader* b
 MINIFLAC_PRIVATE
 void
 miniflac_subframe_header_init(miniflac_subframe_header* subframeheader) {
-    subframeheader->state      = MINIFLAC_SUBFRAME_HEADER_RESERVEBIT1;
-    subframeheader->type       = MINIFLAC_SUBFRAME_TYPE_UNKNOWN;
-    subframeheader->order      = 0;
+    subframeheader->state       = MINIFLAC_SUBFRAME_HEADER_RESERVEBIT1;
+    subframeheader->type        = MINIFLAC_SUBFRAME_TYPE_UNKNOWN;
+    subframeheader->order       = 0;
     subframeheader->wasted_bits = 0;
+    subframeheader->type_raw    = 0;
 }
 
 MINIFLAC_PRIVATE

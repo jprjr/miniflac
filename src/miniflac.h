@@ -110,6 +110,8 @@ frame, or call miniflac_decode to continue on.
 #define MINIFLAC_FRAMEHEADER_H
 #define MINIFLAC_METADATA_H
 #define MINIFLAC_METADATA_HEADER_H
+#define MINIFLAC_OGG_H
+#define MINIFLAC_OGGHEADER_H
 #define MINIFLAC_RESIDUAL_H
 #define MINIFLAC_STREAMINFO_H
 #define MINIFLAC_STREAMMARKER_H
@@ -119,6 +121,7 @@ frame, or call miniflac_decode to continue on.
 #define MINIFLAC_SUBFRAME_HEADER_H
 #define MINIFLAC_SUBFRAME_LPC_H
 #define MINIFLAC_SUBFRAME_VERBATIM_H
+#define MINIFLAC_UNPACK_H
 
 #ifndef MINIFLAC_PURE
 #define MINIFLAC_PURE

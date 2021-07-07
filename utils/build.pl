@@ -18,7 +18,10 @@ my @code;
 
 my @sources = qw[
 src/flac.c
+src/unpack.c
 src/bitreader.c
+src/oggheader.c
+src/ogg.c
 src/frame.c
 src/frameheader.c
 src/metadata.c
@@ -36,7 +39,10 @@ src/subframe_verbatim.c
 
 my @headers = qw[
 src/common.h
+src/unpack.h
 src/bitreader.h
+src/oggheader.h
+src/ogg.h
 src/streammarker.h
 src/metadataheader.h
 src/streaminfo.h

@@ -6,7 +6,7 @@
 
 int main(void) {
     miniflac_t decoder;
-    miniflac_init(&decoder);
+    miniflac_init(&decoder,MINIFLAC_CONTAINER_UNKNOWN);
     miniflac_dump_flac(&decoder,0);
     return 0;
 }

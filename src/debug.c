@@ -19,6 +19,40 @@ static const char* const miniflac_frame_state_str[] = {
     "MINIFLAC_FRAME_FOOTER",
 };
 
+static const char* const miniflac_ogg_state_str[] = {
+    "MINIFLAC_OGG_CAPTUREPATTERN_O",
+    "MINIFLAC_OGG_CAPTUREPATTERN_G1",
+    "MINIFLAC_OGG_CAPTUREPATTERN_G2",
+    "MINIFLAC_OGG_CAPTUREPATTERN_S",
+    "MINIFLAC_OGG_VERSION",
+    "MINIFLAC_OGG_HEADERTYPE",
+    "MINIFLAC_OGG_GRANULEPOS",
+    "MINIFLAC_OGG_SERIALNO",
+    "MINIFLAC_OGG_PAGENO",
+    "MINIFLAC_OGG_CHECKSUM",
+    "MINIFLAC_OGG_PAGESEGMENTS",
+    "MINIFLAC_OGG_SEGMENTTABLE",
+    "MINIFLAC_OGG_DATA",
+};
+
+static const char* const miniflac_streammarker_state_str[] = {
+    "MINIFLAC_STREAMMARKER_F",
+    "MINIFLAC_STREAMMARKER_L",
+    "MINIFLAC_STREAMMARKER_A",
+    "MINIFLAC_STREAMMARKER_C",
+};
+
+static const char* const miniflac_oggheader_state_str[] = {
+    "MINIFLAC_OGGHEADER_PACKETTYPE",
+    "MINIFLAC_OGGHEADER_F",
+    "MINIFLAC_OGGHEADER_L",
+    "MINIFLAC_OGGHEADER_A",
+    "MINIFLAC_OGGHEADER_C",
+    "MINIFLAC_OGGHEADER_MAJOR",
+    "MINIFLAC_OGGHEADER_MINOR",
+    "MINIFLAC_OGGHEADER_HEADERPACKETS",
+};
+
 static const char* const miniflac_frame_header_state_str[] = {
     "MINIFLAC_FRAME_HEADER_SYNC",
     "MINIFLAC_FRAME_HEADER_RESERVEBIT_1",
@@ -293,11 +327,47 @@ void miniflac_dump_metadata(miniflac_metadata* metadata, uint8_t indent) {
 }
 
 void
+miniflac_dump_streammarker(miniflac_streammarker_t* streammarker, uint8_t indent) {
+    dumpf(indent,"streammarker (%lu bytes):\n",sizeof(miniflac_streammarker_t));
+    indent += 2;
+    dumpf(indent,"state: %s\n",miniflac_streammarker_state_str[streammarker->state]);
+}
+
+void
+miniflac_dump_oggheader(miniflac_oggheader_t* oggheader, uint8_t indent) {
+    dumpf(indent,"header (%lu bytes):\n",sizeof(miniflac_oggheader_t));
+    indent += 2;
+    dumpf(indent,"state: %s\n",miniflac_oggheader_state_str[oggheader->state]);
+}
+
+void
+miniflac_dump_ogg(miniflac_ogg_t* ogg, uint8_t indent) {
+    dumpf(indent,"ogg (%lu bytes):\n",sizeof(miniflac_ogg_t));
+    indent += 2;
+    dumpf(indent,"state: %s\n",miniflac_ogg_state_str[ogg->state]);
+    dumpf(indent,"version: %u\n", ogg->version);
+    dumpf(indent,"headertype: %u\n", ogg->headertype);
+    dumpf(indent+2,"continuation: %d\n",(ogg->headertype & 0x01) == 0x01);
+    dumpf(indent+2,"b_o_s: %d\n",(ogg->headertype & 0x02) == 0x02);
+    dumpf(indent+2,"e_o_s: %d\n",(ogg->headertype & 0x04) == 0x04);
+    dumpf(indent,"granulepos: %ld\n", ogg->granulepos);
+    dumpf(indent,"serialno: %d\n", ogg->serialno);
+    dumpf(indent,"pageno: %u\n", ogg->pageno);
+    dumpf(indent,"segments: %u\n", ogg->segments);
+    dumpf(indent,"curseg: %u\n", ogg->curseg);
+    dumpf(indent,"length: %u\n", ogg->length);
+    dumpf(indent,"pos: %u\n", ogg->pos);
+}
+
+void
 miniflac_dump_flac(miniflac_t* pFlac,uint8_t indent) {
     dumpf(indent,"miniflac (%lu bytes):\n",sizeof(miniflac_t));
     indent += 2;
     dumpf(indent,"state: %s\n",miniflac_state_str[pFlac->state]);
     miniflac_dump_bitreader(&pFlac->br,indent);
+    miniflac_dump_ogg(&pFlac->ogg,indent);
+    miniflac_dump_oggheader(&pFlac->oggheader,indent);
+    miniflac_dump_streammarker(&pFlac->streammarker,indent);
     miniflac_dump_metadata(&pFlac->metadata,indent);
     miniflac_dump_frame(&pFlac->frame,indent);
 }

@@ -6,6 +6,7 @@
 MINIFLAC_PRIVATE
 void
 miniflac_frame_init(miniflac_frame* frame) {
+    frame->crc16 = 0;
     frame->cur_subframe = 0;
     frame->state = MINIFLAC_FRAME_HEADER;
     miniflac_frame_header_init(&frame->header);

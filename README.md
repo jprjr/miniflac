@@ -7,13 +7,12 @@ functions, does not allocate any memory.
 
 * push-style API
 * does not allocate memory
-* handles native FLAC
+* handles native FLAC as well as Ogg FLAC
 * single C file
 
 ## Future Improvements
 
 * Metadata Support
-* Ogg support
 * Speed optimizations
 * Memory reduction
 

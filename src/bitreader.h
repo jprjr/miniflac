@@ -31,6 +31,10 @@ int
 miniflac_bitreader_fill(miniflac_bitreader* br, uint8_t bits);
 
 MINIFLAC_PRIVATE
+int
+miniflac_bitreader_fill_nocrc(miniflac_bitreader* br, uint8_t bits);
+
+MINIFLAC_PRIVATE
 uint64_t
 miniflac_bitreader_read(miniflac_bitreader* br, uint8_t bits);
 

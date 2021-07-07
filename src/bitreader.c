@@ -84,13 +84,6 @@ miniflac_bitreader_init(miniflac_bitreader* br) {
     br->buffer = NULL;
 }
 
-static inline
-void
-miniflac_bitreader_crc(miniflac_bitreader* br, uint8_t byte) {
-    br->crc8 = miniflac_crc8_table[br->crc8 ^ byte];
-    br->crc16 = miniflac_crc16_table[ (br->crc16 >> 8) ^ byte ] ^ (( br->crc16 & 0x00FF ) << 8);
-}
-
 MINIFLAC_PRIVATE
 int
 miniflac_bitreader_fill(miniflac_bitreader* br, uint8_t bits) {
@@ -100,10 +93,25 @@ miniflac_bitreader_fill(miniflac_bitreader* br, uint8_t bits) {
         byte = br->buffer[br->pos++];
         br->val = (br->val << 8) | byte;
         br->bits += 8;
-        miniflac_bitreader_crc(br,byte);
+        br->crc8 = miniflac_crc8_table[br->crc8 ^ byte];
+        br->crc16 = miniflac_crc16_table[ (br->crc16 >> 8) ^ byte ] ^ (( br->crc16 & 0x00FF ) << 8);
     }
     return br->bits < bits;
 }
+
+MINIFLAC_PRIVATE
+int
+miniflac_bitreader_fill_nocrc(miniflac_bitreader* br, uint8_t bits) {
+    uint8_t byte = 0;
+    if(bits == 0) return 0;
+    while(br->bits < bits && br->pos < br->len) {
+        byte = br->buffer[br->pos++];
+        br->val = (br->val << 8) | byte;
+        br->bits += 8;
+    }
+    return br->bits < bits;
+}
+
 
 MINIFLAC_PRIVATE
 uint64_t
@@ -206,6 +214,7 @@ miniflac_bitreader_reset_crc(miniflac_bitreader* br) {
             imask >>= (64 - bits);
         }
         val &=  imask;
-        miniflac_bitreader_crc(br,byte);
+        br->crc8 = miniflac_crc8_table[br->crc8 ^ byte];
+        br->crc16 = miniflac_crc16_table[ (br->crc16 >> 8) ^ byte ] ^ (( br->crc16 & 0x00FF ) << 8);
     }
 }

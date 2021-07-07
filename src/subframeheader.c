@@ -4,10 +4,11 @@
 MINIFLAC_PRIVATE
 void
 miniflac_subframe_header_init(miniflac_subframe_header* subframeheader) {
-    subframeheader->state      = MINIFLAC_SUBFRAME_HEADER_RESERVEBIT1;
-    subframeheader->type       = MINIFLAC_SUBFRAME_TYPE_UNKNOWN;
-    subframeheader->order      = 0;
+    subframeheader->state       = MINIFLAC_SUBFRAME_HEADER_RESERVEBIT1;
+    subframeheader->type        = MINIFLAC_SUBFRAME_TYPE_UNKNOWN;
+    subframeheader->order       = 0;
     subframeheader->wasted_bits = 0;
+    subframeheader->type_raw    = 0;
 }
 
 MINIFLAC_PRIVATE

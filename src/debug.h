@@ -3,6 +3,8 @@
 #define MINIFLAC_DEBUG_H
 
 #include "bitreader.h"
+#include "ogg.h"
+#include "oggheader.h"
 #include "flac.h"
 #include "frame.h"
 #include "frameheader.h"
@@ -14,6 +16,7 @@
 #include "subframe_lpc.h"
 #include "residual.h"
 #include "streaminfo.h"
+#include "streammarker.h"
 #include "metadata.h"
 #include "metadataheader.h"
 
@@ -58,7 +61,16 @@ void
 miniflac_dump_metadata_header(miniflac_metadata_header* header, uint8_t indent);
 
 void
+miniflac_dump_ogg(miniflac_ogg_t* ogg, uint8_t indent);
+
+void
+miniflac_dump_oggheader(miniflac_oggheader_t* oggheader, uint8_t indent);
+
+void
 miniflac_dump_streaminfo(miniflac_streaminfo* streaminfo, uint8_t indent);
+
+void
+miniflac_dump_streammarker(miniflac_streammarker_t* streammarker, uint8_t indent);
 
 void
 miniflac_dump_flac(miniflac_t* pFlac, uint8_t indent);

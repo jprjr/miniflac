@@ -72,7 +72,7 @@ int main(int argc, const char *argv[]) {
         goto cleanup;
     }
 
-    miniflac_init(decoder);
+    miniflac_init(decoder,MINIFLAC_CONTAINER_UNKNOWN);
 
     /* work our way through the metadata frames */
     while( (res = miniflac_decode(decoder,&buffer[pos],length,&used,NULL)) == MINIFLAC_OK ) {

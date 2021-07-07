@@ -7,7 +7,7 @@
 #include "common.h"
 #include "bitreader.h"
 
-typedef struct miniflac_streammarker_s miniflac_streammarker;
+typedef struct miniflac_streammarker_s miniflac_streammarker_t;
 typedef enum MINIFLAC_STREAMMARKER_STATE MINIFLAC_STREAMMARKER_STATE;
 
 enum MINIFLAC_STREAMMARKER_STATE {
@@ -27,11 +27,11 @@ extern "C" {
 
 MINIFLAC_PRIVATE
 void
-miniflac_streammarker_init(miniflac_streammarker* streammarker);
+miniflac_streammarker_init(miniflac_streammarker_t* streammarker);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_streammarker_decode(miniflac_streammarker* streammarker, miniflac_bitreader* br);
+miniflac_streammarker_decode(miniflac_streammarker_t* streammarker, miniflac_bitreader* br);
 
 #ifdef __cplusplus
 }
