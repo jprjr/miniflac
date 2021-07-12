@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: 0BSD */
 #include "metadata.h"
 #include <assert.h>
+#include <stddef.h>
 
 MINIFLAC_PRIVATE
 void
@@ -9,6 +10,7 @@ miniflac_metadata_init(miniflac_metadata* metadata) {
     metadata->pos = 0;
     miniflac_metadata_header_init(&metadata->header);
     miniflac_streaminfo_init(&metadata->streaminfo);
+    miniflac_vorbiscomment_init(&metadata->vorbiscomment);
 }
 
 MINIFLAC_PRIVATE
@@ -49,6 +51,15 @@ miniflac_metadata_decode(miniflac_metadata* metadata, miniflac_bitreader *br) {
             switch(metadata->header.type) {
                 case MINIFLAC_METADATA_STREAMINFO: {
                     r = miniflac_streaminfo_decode(&metadata->streaminfo,br);
+                    break;
+                }
+                case MINIFLAC_METADATA_VORBIS_COMMENT: {
+                    do {
+                        r = miniflac_vorbiscomment_comment_length(&metadata->vorbiscomment,br,NULL);
+                    } while(r == MINIFLAC_OK);
+                    if(r == MINIFLAC_ITERATOR_END) {
+                        r = MINIFLAC_OK;
+                    }
                     break;
                 }
                 default: {

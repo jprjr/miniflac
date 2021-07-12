@@ -8,6 +8,7 @@
 #include "bitreader.h"
 #include "metadataheader.h"
 #include "streaminfo.h"
+#include "vorbiscomment.h"
 
 typedef struct miniflac_metadata_s miniflac_metadata;
 typedef enum MINIFLAC_METADATA_STATE MINIFLAC_METADATA_STATE;
@@ -18,10 +19,11 @@ enum MINIFLAC_METADATA_STATE {
 };
 
 struct miniflac_metadata_s {
-    MINIFLAC_METADATA_STATE    state;
-    uint32_t                    pos;
-    miniflac_metadata_header  header;
-    miniflac_streaminfo   streaminfo;
+    MINIFLAC_METADATA_STATE          state;
+    uint32_t                           pos;
+    miniflac_metadata_header        header;
+    miniflac_streaminfo         streaminfo;
+    miniflac_vorbiscomment_t vorbiscomment;
 };
 
 #ifdef __cplusplus

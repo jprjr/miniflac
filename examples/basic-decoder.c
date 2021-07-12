@@ -27,6 +27,10 @@ int main(int argc, const char *argv[]) {
     int32_t** samples = NULL;
     uint8_t* outSamples = NULL;
 
+    uint32_t incoming_string_length = 0;
+    char* string_buffer = NULL;
+    uint32_t string_buffer_length = 0;
+
     if(argc < 3) {
         fprintf(stderr,"Usage: %s /path/to/flac /path/to/pcm\n",argv[0]);
         goto cleanup;
@@ -74,17 +78,56 @@ int main(int argc, const char *argv[]) {
 
     miniflac_init(decoder,MINIFLAC_CONTAINER_UNKNOWN);
 
+    if(miniflac_sync(decoder,&buffer[pos],length,&used) != MINIFLAC_OK) abort();
+    length -= used;
+    pos += used;
+
     /* work our way through the metadata frames */
-    while(decoder->state != MINIFLAC_FRAME) {
-        res = miniflac_sync(decoder,&buffer[pos],length,&used);
+    while(decoder->state == MINIFLAC_METADATA) {
+        if(decoder->metadata.header.type == MINIFLAC_METADATA_VORBIS_COMMENT) {
+            uint32_t i = 0;
+            if(miniflac_vendor_length(decoder,&buffer[pos],length,&used,&incoming_string_length) != MINIFLAC_OK) abort();
+            length -= used;
+            pos += used;
+            if(incoming_string_length > string_buffer_length) {
+                string_buffer = realloc(string_buffer,incoming_string_length+1);
+                if(string_buffer == NULL) abort();
+                string_buffer_length = incoming_string_length;
+            }
+            fprintf(stdout,"[vendor string][%u]: ",incoming_string_length);
+            if(miniflac_vendor_string(decoder,&buffer[pos],length,&used,string_buffer,string_buffer_length+1,&incoming_string_length) != MINIFLAC_OK)
+                abort();
+            length -= used;
+            pos += used;
+            string_buffer[incoming_string_length] = '\0';
+            fprintf(stdout,"%s\n",string_buffer);
+
+            while( (res =miniflac_comment_length(decoder,&buffer[pos],length,&used,&incoming_string_length)) == MINIFLAC_OK) {
+                length -= used;
+                pos += used;
+                fprintf(stdout,"[comment %u][%u]:\n",i++,incoming_string_length);
+                if(incoming_string_length > string_buffer_length) {
+                    string_buffer = realloc(string_buffer,incoming_string_length+1);
+                    if(string_buffer == NULL) abort();
+                    string_buffer_length = incoming_string_length;
+                }
+                if(miniflac_comment_string(decoder,&buffer[pos],length,&used,string_buffer,string_buffer_length+1,&incoming_string_length) != MINIFLAC_OK)
+                    abort();
+                length -= used;
+                pos += used;
+                string_buffer[incoming_string_length] = '\0';
+                fprintf(stdout,"%s\n",string_buffer);
+            }
+
+            length -= used;
+            pos += used;
+
+            if(res != MINIFLAC_ITERATOR_END) abort();
+        }
+
+        if(miniflac_sync(decoder,&buffer[pos],length,&used) != MINIFLAC_OK) abort();
         length -= used;
         pos += used;
-
-        switch(res) {
-            case MINIFLAC_OK: break;
-            case MINIFLAC_CONTINUE: break;
-            default: abort();
-        }
     }
 
     wav_header_create(output,decoder->frame.header.sample_rate,decoder->frame.header.channels,decoder->frame.header.bps);
@@ -142,6 +185,7 @@ int main(int argc, const char *argv[]) {
     if(outSamples != NULL) free(outSamples);
     if(buffer != NULL) free(buffer);
     if(decoder != NULL) free(decoder);
+    if(string_buffer != NULL) free(string_buffer);
 
     return r;
 }

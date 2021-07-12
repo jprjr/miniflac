@@ -133,6 +133,7 @@ typedef struct miniflac_ogg_s miniflac_ogg_t;
 typedef struct miniflac_streammarker_s miniflac_streammarker_t;
 typedef struct miniflac_metadata_header_s miniflac_metadata_header;
 typedef struct miniflac_streaminfo_s miniflac_streaminfo;
+typedef struct miniflac_vorbiscomment_s miniflac_vorbiscomment_t;
 typedef struct miniflac_metadata_s miniflac_metadata;
 typedef struct miniflac_residual_s miniflac_residual;
 typedef struct miniflac_subframe_fixed_s miniflac_subframe_fixed;
@@ -152,6 +153,7 @@ typedef enum MINIFLAC_STREAMMARKER_STATE MINIFLAC_STREAMMARKER_STATE;
 typedef enum MINIFLAC_METADATA_TYPE MINIFLAC_METADATA_TYPE;
 typedef enum MINIFLAC_METADATA_HEADER_STATE MINIFLAC_METADATA_HEADER_STATE;
 typedef enum MINIFLAC_STREAMINFO_STATE MINIFLAC_STREAMINFO_STATE;
+typedef enum MINIFLAC_VORBISCOMMENT_STATE MINIFLAC_VORBISCOMMENT_STATE;
 typedef enum MINIFLAC_METADATA_STATE MINIFLAC_METADATA_STATE;
 typedef enum MINIFLAC_RESIDUAL_STATE MINIFLAC_RESIDUAL_STATE;
 typedef enum MINIFLAC_SUBFRAME_FIXED_STATE MINIFLAC_SUBFRAME_FIXED_STATE;
@@ -255,6 +257,14 @@ enum MINIFLAC_STREAMINFO_STATE {
     MINIFLAC_STREAMINFO_MD5_2,
     MINIFLAC_STREAMINFO_MD5_3,
     MINIFLAC_STREAMINFO_MD5_4,
+};
+
+enum MINIFLAC_VORBISCOMMENT_STATE {
+    MINIFLAC_VORBISCOMMENT_VENDOR_LENGTH,
+    MINIFLAC_VORBISCOMMENT_VENDOR_STRING,
+    MINIFLAC_VORBISCOMMENT_TOTAL_COMMENTS,
+    MINIFLAC_VORBISCOMMENT_COMMENT_LENGTH,
+    MINIFLAC_VORBISCOMMENT_COMMENT_STRING,
 };
 
 enum MINIFLAC_METADATA_STATE {
@@ -417,11 +427,20 @@ struct miniflac_streaminfo_s {
     uint8_t                md5[16];
 };
 
+struct miniflac_vorbiscomment_s {
+    MINIFLAC_VORBISCOMMENT_STATE    state;
+    uint32_t len; /* length of the current string we're decoding */
+    uint32_t pos; /* position within current string */
+    uint32_t tot; /* total comments */
+    uint32_t cur; /* current comment being decoded */
+};
+
 struct miniflac_metadata_s {
-    MINIFLAC_METADATA_STATE    state;
-    uint32_t                    pos;
-    miniflac_metadata_header  header;
-    miniflac_streaminfo   streaminfo;
+    MINIFLAC_METADATA_STATE          state;
+    uint32_t                           pos;
+    miniflac_metadata_header        header;
+    miniflac_streaminfo         streaminfo;
+    miniflac_vorbiscomment_t vorbiscomment;
 };
 
 struct miniflac_residual_s {
@@ -538,13 +557,44 @@ MINIFLAC_API
 void
 miniflac_init(miniflac_t* pFlac, MINIFLAC_CONTAINER container);
 
+/* sync to the next metadata block or frame, parses the metadata header or frame header */
 MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_sync(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length);
 
+/* decode a frame of audio, automatically skips metadata if needed */
 MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_decode(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, int32_t** samples);
+
+/* get the length of the vendor string, automatically skips metadata blocks, throws an error on audio frames */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_vendor_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* vendor_length);
+
+/* get the vendor string, automatically skips metadata blocks, throws an error on audio frames */
+/* will NOT be NULL-terminated! */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_vendor_string(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* buffer_used);
+
+/* get the total number of comments, automatically skips metadata blocks, throws an error on audio frames */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_comments_total(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* total_comments);
+
+/* get the next comment length, automatically skips metadata blocks, throws an error on audio frames */
+/* returns MINIFLAC_ITERATOR_END when out of comments */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_comment_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* comment_length);
+
+/* get the next comment string, automatically skips metadata blocks, throws an error on audio frames */
+/* will NOT be NULL-terminated! */
+/* returns MINIFLAC_ITERATOR_END when out of comments */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_comment_string(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* buffer_used);
 
 
 #ifdef __cplusplus
@@ -656,6 +706,30 @@ miniflac_streaminfo_decode(miniflac_streaminfo* streaminfo, miniflac_bitreader* 
 
 MINIFLAC_PRIVATE
 void
+miniflac_vorbiscomment_init(miniflac_vorbiscomment_t* vorbiscomment);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_vorbiscomment_vendor_length(miniflac_vorbiscomment_t* vorbiscomment, miniflac_bitreader *br, uint32_t* length);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_vorbiscomment_vendor_string(miniflac_vorbiscomment_t* vorbiscomment, miniflac_bitreader *br, char* output, uint32_t length, uint32_t* outlen);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_vorbiscomment_total_comments(miniflac_vorbiscomment_t* vorbiscomment, miniflac_bitreader *br, uint32_t* total);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_vorbiscomment_comment_length(miniflac_vorbiscomment_t* vorbiscomment, miniflac_bitreader *br, uint32_t* length);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_vorbiscomment_comment_string(miniflac_vorbiscomment_t* vorbiscomment, miniflac_bitreader *br, char* output, uint32_t length, uint32_t* outlen);
+
+MINIFLAC_PRIVATE
+void
 miniflac_metadata_init(miniflac_metadata* metadata);
 
 MINIFLAC_PRIVATE
@@ -739,6 +813,48 @@ MINIFLAC_PRIVATE
 MINIFLAC_RESULT miniflac_frame_decode(miniflac_frame* frame, miniflac_bitreader* br, miniflac_streaminfo* info, int32_t** output);
 
 
+
+static
+void
+miniflac_oggreset(miniflac_t* pFlac) {
+    miniflac_bitreader_init(&pFlac->br);
+    miniflac_oggheader_init(&pFlac->oggheader);
+    miniflac_streammarker_init(&pFlac->streammarker);
+    miniflac_metadata_init(&pFlac->metadata);
+    miniflac_frame_init(&pFlac->frame);
+    pFlac->state = MINIFLAC_OGGHEADER;
+}
+
+static
+MINIFLAC_RESULT
+miniflac_oggfunction_start(miniflac_t* pFlac, const uint8_t* data, const uint8_t** packet, uint32_t* packet_length) {
+    MINIFLAC_RESULT r;
+    if(pFlac->ogg.state != MINIFLAC_OGG_DATA) {
+        r = miniflac_ogg_sync(&pFlac->ogg,&pFlac->ogg.br);
+        if(r != MINIFLAC_OK) return r;
+
+        if(pFlac->ogg.headertype & 0x02) {
+            miniflac_oggreset(pFlac);
+        }
+    }
+    *packet = &data[pFlac->ogg.br.pos];
+    *packet_length = pFlac->ogg.br.len - pFlac->ogg.br.pos;
+    if(*packet_length > (uint32_t)(pFlac->ogg.length - pFlac->ogg.pos)) {
+        *packet_length = (uint32_t)pFlac->ogg.length - pFlac->ogg.pos;
+    }
+    return MINIFLAC_OK;
+}
+
+static
+void
+miniflac_oggfunction_end(miniflac_t* pFlac, uint32_t packet_used) {
+    pFlac->ogg.br.pos += packet_used;
+    pFlac->ogg.pos    += packet_used;
+
+    if(pFlac->ogg.pos == pFlac->ogg.length) {
+        pFlac->ogg.state = MINIFLAC_OGG_CAPTUREPATTERN_O;
+    }
+}
 
 MINIFLAC_API
 MINIFLAC_PURE
@@ -851,7 +967,7 @@ miniflac_sync_internal(miniflac_t* pFlac, miniflac_bitreader* br) {
     return MINIFLAC_ERROR;
 }
 
-MINIFLAC_PRIVATE
+static
 MINIFLAC_RESULT
 miniflac_sync_native(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length) {
     MINIFLAC_RESULT r;
@@ -865,7 +981,7 @@ miniflac_sync_native(miniflac_t* pFlac, const uint8_t* data, uint32_t length, ui
     return r;
 }
 
-MINIFLAC_PRIVATE
+static
 MINIFLAC_RESULT
 miniflac_decode_native(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, int32_t** samples) {
     MINIFLAC_RESULT r;
@@ -885,7 +1001,157 @@ miniflac_decode_native(miniflac_t* pFlac, const uint8_t* data, uint32_t length, 
     return r;
 }
 
-MINIFLAC_PRIVATE
+static
+MINIFLAC_RESULT
+miniflac_vendor_length_native(miniflac_t *pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* vendor_length) {
+    MINIFLAC_RESULT r;
+    pFlac->br.buffer = data;
+    pFlac->br.len    = length;
+    pFlac->br.pos    = 0;
+
+    while(pFlac->state != MINIFLAC_METADATA) {
+        r = miniflac_sync_internal(pFlac,&pFlac->br);
+        if(r != MINIFLAC_OK) goto miniflac_vendor_length_exit;
+    }
+
+    while(pFlac->metadata.header.type != MINIFLAC_METADATA_VORBIS_COMMENT) {
+        /* sync to the next block */
+        r = miniflac_sync_internal(pFlac,&pFlac->br);
+        if(r != MINIFLAC_OK) goto miniflac_vendor_length_exit;
+        if(pFlac->state != MINIFLAC_METADATA) {
+            r = MINIFLAC_ERROR;
+            goto miniflac_vendor_length_exit;
+        }
+    }
+
+    r = miniflac_vorbiscomment_vendor_length(&pFlac->metadata.vorbiscomment,&pFlac->br,vendor_length);
+
+    miniflac_vendor_length_exit:
+    *out_length = pFlac->br.pos;
+    return r;
+}
+
+static
+MINIFLAC_RESULT
+miniflac_vendor_string_native(miniflac_t *pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* buffer_used) {
+    MINIFLAC_RESULT r;
+    pFlac->br.buffer = data;
+    pFlac->br.len    = length;
+    pFlac->br.pos    = 0;
+
+    while(pFlac->state != MINIFLAC_METADATA) {
+        r = miniflac_sync_internal(pFlac,&pFlac->br);
+        if(r != MINIFLAC_OK) goto miniflac_vendor_string_exit;
+    }
+
+    while(pFlac->metadata.header.type != MINIFLAC_METADATA_VORBIS_COMMENT) {
+        /* sync to the next block */
+        r = miniflac_sync_internal(pFlac,&pFlac->br);
+        if(r != MINIFLAC_OK) goto miniflac_vendor_string_exit;
+        if(pFlac->state != MINIFLAC_METADATA) {
+            r = MINIFLAC_ERROR;
+            goto miniflac_vendor_string_exit;
+        }
+    }
+
+    r = miniflac_vorbiscomment_vendor_string(&pFlac->metadata.vorbiscomment,&pFlac->br,buffer, buffer_length, buffer_used);
+
+    miniflac_vendor_string_exit:
+    *out_length = pFlac->br.pos;
+    return r;
+}
+
+static
+MINIFLAC_RESULT
+miniflac_comments_total_native(miniflac_t *pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* total_comments) {
+    MINIFLAC_RESULT r;
+    pFlac->br.buffer = data;
+    pFlac->br.len    = length;
+    pFlac->br.pos    = 0;
+
+    while(pFlac->state != MINIFLAC_METADATA) {
+        r = miniflac_sync_internal(pFlac,&pFlac->br);
+        if(r != MINIFLAC_OK) goto miniflac_comments_total_exit;
+    }
+
+    while(pFlac->metadata.header.type != MINIFLAC_METADATA_VORBIS_COMMENT) {
+        /* sync to the next block */
+        r = miniflac_sync_internal(pFlac,&pFlac->br);
+        if(r != MINIFLAC_OK) goto miniflac_comments_total_exit;
+        if(pFlac->state != MINIFLAC_METADATA) {
+            r = MINIFLAC_ERROR;
+            goto miniflac_comments_total_exit;
+        }
+    }
+
+    r = miniflac_vorbiscomment_total_comments(&pFlac->metadata.vorbiscomment,&pFlac->br,total_comments);
+
+    miniflac_comments_total_exit:
+    *out_length = pFlac->br.pos;
+    return r;
+}
+
+static
+MINIFLAC_RESULT
+miniflac_comment_length_native(miniflac_t *pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* comment_length) {
+    MINIFLAC_RESULT r;
+    pFlac->br.buffer = data;
+    pFlac->br.len    = length;
+    pFlac->br.pos    = 0;
+
+    while(pFlac->state != MINIFLAC_METADATA) {
+        r = miniflac_sync_internal(pFlac,&pFlac->br);
+        if(r != MINIFLAC_OK) goto miniflac_comment_length_exit;
+    }
+
+    while(pFlac->metadata.header.type != MINIFLAC_METADATA_VORBIS_COMMENT) {
+        /* sync to the next block */
+        r = miniflac_sync_internal(pFlac,&pFlac->br);
+        if(r != MINIFLAC_OK) goto miniflac_comment_length_exit;
+        if(pFlac->state != MINIFLAC_METADATA) {
+            r = MINIFLAC_ERROR;
+            goto miniflac_comment_length_exit;
+        }
+    }
+
+    r = miniflac_vorbiscomment_comment_length(&pFlac->metadata.vorbiscomment,&pFlac->br,comment_length);
+
+    miniflac_comment_length_exit:
+    *out_length = pFlac->br.pos;
+    return r;
+}
+
+static
+MINIFLAC_RESULT
+miniflac_comment_string_native(miniflac_t *pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* buffer_used) {
+    MINIFLAC_RESULT r;
+    pFlac->br.buffer = data;
+    pFlac->br.len    = length;
+    pFlac->br.pos    = 0;
+
+    while(pFlac->state != MINIFLAC_METADATA) {
+        r = miniflac_sync_internal(pFlac,&pFlac->br);
+        if(r != MINIFLAC_OK) goto miniflac_comment_string_exit;
+    }
+
+    while(pFlac->metadata.header.type != MINIFLAC_METADATA_VORBIS_COMMENT) {
+        /* sync to the next block */
+        r = miniflac_sync_internal(pFlac,&pFlac->br);
+        if(r != MINIFLAC_OK) goto miniflac_comment_string_exit;
+        if(pFlac->state != MINIFLAC_METADATA) {
+            r = MINIFLAC_ERROR;
+            goto miniflac_comment_string_exit;
+        }
+    }
+
+    r = miniflac_vorbiscomment_comment_string(&pFlac->metadata.vorbiscomment,&pFlac->br,buffer, buffer_length, buffer_used);
+
+    miniflac_comment_string_exit:
+    *out_length = pFlac->br.pos;
+    return r;
+}
+
+static
 MINIFLAC_RESULT
 miniflac_sync_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length) {
     MINIFLAC_RESULT r = MINIFLAC_CONTINUE;
@@ -899,40 +1165,18 @@ miniflac_sync_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint3
     pFlac->ogg.br.pos = 0;
 
     do {
-        if(pFlac->ogg.state != MINIFLAC_OGG_DATA) {
-            r = miniflac_ogg_sync(&pFlac->ogg,&pFlac->ogg.br);
-            if(r != MINIFLAC_OK) break;
-
-            if(pFlac->ogg.headertype & 0x02) {
-                miniflac_bitreader_init(&pFlac->br);
-                miniflac_oggheader_init(&pFlac->oggheader);
-                miniflac_streammarker_init(&pFlac->streammarker);
-                miniflac_metadata_init(&pFlac->metadata);
-                miniflac_frame_init(&pFlac->frame);
-                pFlac->state = MINIFLAC_OGGHEADER;
-            }
-        }
-
-        packet = &data[pFlac->ogg.br.pos];
-        packet_length = pFlac->ogg.br.len - pFlac->ogg.br.pos;
-        if(packet_length > (uint32_t)(pFlac->ogg.length - pFlac->ogg.pos)) {
-            packet_length = (uint32_t)pFlac->ogg.length - pFlac->ogg.pos;
-        }
+        r = miniflac_oggfunction_start(pFlac,data,&packet,&packet_length);
+        if(r  != MINIFLAC_OK) break;
 
         r = miniflac_sync_native(pFlac,packet,packet_length,&packet_used);
-        pFlac->ogg.br.pos += packet_used;
-
-        pFlac->ogg.pos    += packet_used;
-        if(pFlac->ogg.pos == pFlac->ogg.length) {
-            pFlac->ogg.state = MINIFLAC_OGG_CAPTUREPATTERN_O;
-        }
+        miniflac_oggfunction_end(pFlac,packet_used);
     } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
 
     *out_length = pFlac->ogg.br.pos;
     return r;
 }
 
-MINIFLAC_PRIVATE
+static
 MINIFLAC_RESULT
 miniflac_decode_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, int32_t** samples) {
     MINIFLAC_RESULT r = MINIFLAC_CONTINUE;
@@ -946,39 +1190,143 @@ miniflac_decode_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uin
     pFlac->ogg.br.pos = 0;
 
     do {
-        if(pFlac->ogg.state != MINIFLAC_OGG_DATA) {
-            r = miniflac_ogg_sync(&pFlac->ogg,&pFlac->ogg.br);
-            if(r != MINIFLAC_OK) break;
-            if(pFlac->ogg.headertype & 0x02) {
-                miniflac_bitreader_init(&pFlac->br);
-                miniflac_oggheader_init(&pFlac->oggheader);
-                miniflac_streammarker_init(&pFlac->streammarker);
-                miniflac_metadata_init(&pFlac->metadata);
-                miniflac_frame_init(&pFlac->frame);
-                pFlac->state = MINIFLAC_OGGHEADER;
-            }
-        }
-
-        packet = &data[pFlac->ogg.br.pos];
-        packet_length = pFlac->ogg.br.len - pFlac->ogg.br.pos;
-        if(packet_length > (uint32_t)(pFlac->ogg.length - pFlac->ogg.pos)) {
-            packet_length = (uint32_t)pFlac->ogg.length - pFlac->ogg.pos;
-        }
+        r = miniflac_oggfunction_start(pFlac,data,&packet,&packet_length);
+        if(r  != MINIFLAC_OK) break;
 
         r = miniflac_decode_native(pFlac,packet,packet_length,&packet_used,samples);
-        pFlac->ogg.br.pos += packet_used;
-        pFlac->ogg.pos    += packet_used;
-
-        if(pFlac->ogg.pos == pFlac->ogg.length) {
-            pFlac->ogg.state = MINIFLAC_OGG_CAPTUREPATTERN_O;
-        }
+        miniflac_oggfunction_end(pFlac,packet_used);
     } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
 
     *out_length = pFlac->ogg.br.pos;
     return r;
 }
 
-MINIFLAC_PRIVATE
+static
+MINIFLAC_RESULT
+miniflac_vendor_length_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t *outlen) {
+    MINIFLAC_RESULT r = MINIFLAC_CONTINUE;
+
+    const uint8_t* packet = NULL;
+    uint32_t packet_length = 0;
+    uint32_t packet_used   = 0;
+
+    pFlac->ogg.br.buffer = data;
+    pFlac->ogg.br.len = length;
+    pFlac->ogg.br.pos = 0;
+
+    do {
+        r = miniflac_oggfunction_start(pFlac,data,&packet,&packet_length);
+        if(r  != MINIFLAC_OK) break;
+
+        r = miniflac_vendor_length_native(pFlac,packet,packet_length,&packet_used,outlen);
+        miniflac_oggfunction_end(pFlac,packet_used);
+    } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
+
+    *out_length = pFlac->ogg.br.pos;
+    return r;
+}
+
+static
+MINIFLAC_RESULT
+miniflac_vendor_string_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* buffer_used) {
+    MINIFLAC_RESULT r = MINIFLAC_CONTINUE;
+
+    const uint8_t* packet = NULL;
+    uint32_t packet_length = 0;
+    uint32_t packet_used   = 0;
+
+    pFlac->ogg.br.buffer = data;
+    pFlac->ogg.br.len = length;
+    pFlac->ogg.br.pos = 0;
+
+    do {
+        r = miniflac_oggfunction_start(pFlac,data,&packet,&packet_length);
+        if(r  != MINIFLAC_OK) break;
+
+        r = miniflac_vendor_string_native(pFlac,packet,packet_length,&packet_used,buffer,buffer_length,buffer_used);
+        miniflac_oggfunction_end(pFlac,packet_used);
+    } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
+
+    *out_length = pFlac->ogg.br.pos;
+    return r;
+}
+
+static
+MINIFLAC_RESULT
+miniflac_comments_total_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* total_comments) {
+    MINIFLAC_RESULT r = MINIFLAC_CONTINUE;
+
+    const uint8_t* packet = NULL;
+    uint32_t packet_length = 0;
+    uint32_t packet_used   = 0;
+
+    pFlac->ogg.br.buffer = data;
+    pFlac->ogg.br.len = length;
+    pFlac->ogg.br.pos = 0;
+
+    do {
+        r = miniflac_oggfunction_start(pFlac,data,&packet,&packet_length);
+        if(r  != MINIFLAC_OK) break;
+
+        r = miniflac_comments_total_native(pFlac,packet,packet_length,&packet_used,total_comments);
+        miniflac_oggfunction_end(pFlac,packet_used);
+    } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
+
+    *out_length = pFlac->ogg.br.pos;
+    return r;
+}
+
+static
+MINIFLAC_RESULT
+miniflac_comment_length_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* comment_length) {
+    MINIFLAC_RESULT r = MINIFLAC_CONTINUE;
+
+    const uint8_t* packet = NULL;
+    uint32_t packet_length = 0;
+    uint32_t packet_used   = 0;
+
+    pFlac->ogg.br.buffer = data;
+    pFlac->ogg.br.len = length;
+    pFlac->ogg.br.pos = 0;
+
+    do {
+        r = miniflac_oggfunction_start(pFlac,data,&packet,&packet_length);
+        if(r  != MINIFLAC_OK) break;
+
+        r = miniflac_comment_length_native(pFlac,packet,packet_length,&packet_used,comment_length);
+        miniflac_oggfunction_end(pFlac,packet_used);
+    } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
+
+    *out_length = pFlac->ogg.br.pos;
+    return r;
+}
+
+static
+MINIFLAC_RESULT
+miniflac_comment_string_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* buffer_used) {
+    MINIFLAC_RESULT r = MINIFLAC_CONTINUE;
+
+    const uint8_t* packet = NULL;
+    uint32_t packet_length = 0;
+    uint32_t packet_used   = 0;
+
+    pFlac->ogg.br.buffer = data;
+    pFlac->ogg.br.len = length;
+    pFlac->ogg.br.pos = 0;
+
+    do {
+        r = miniflac_oggfunction_start(pFlac,data,&packet,&packet_length);
+        if(r  != MINIFLAC_OK) break;
+
+        r = miniflac_comment_string_native(pFlac,packet,packet_length,&packet_used,buffer,buffer_length,buffer_used);
+        miniflac_oggfunction_end(pFlac,packet_used);
+    } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
+
+    *out_length = pFlac->ogg.br.pos;
+    return r;
+}
+
+static
 MINIFLAC_RESULT
 miniflac_probe(miniflac_t* pFlac, const uint8_t* data, uint32_t length) {
     if(length == 0) return MINIFLAC_CONTINUE;
@@ -1032,6 +1380,96 @@ miniflac_sync(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t*
         r = miniflac_sync_native(pFlac,data,length,out_length);
     } else {
         r = miniflac_sync_ogg(pFlac,data,length,out_length);
+    }
+
+    return r;
+}
+
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_vendor_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* vendor_length) {
+    MINIFLAC_RESULT r;
+    if(pFlac->container == MINIFLAC_CONTAINER_UNKNOWN) {
+        r = miniflac_probe(pFlac,data,length);
+        if(r != MINIFLAC_OK) return r;
+    }
+
+    if(pFlac->container == MINIFLAC_CONTAINER_NATIVE) {
+        r = miniflac_vendor_length_native(pFlac,data,length,out_length,vendor_length);
+    } else {
+        r = miniflac_vendor_length_ogg(pFlac,data,length,out_length,vendor_length);
+    }
+
+    return r;
+}
+
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_vendor_string(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* buffer_used) {
+    MINIFLAC_RESULT r;
+    if(pFlac->container == MINIFLAC_CONTAINER_UNKNOWN) {
+        r = miniflac_probe(pFlac,data,length);
+        if(r != MINIFLAC_OK) return r;
+    }
+
+    if(pFlac->container == MINIFLAC_CONTAINER_NATIVE) {
+        r = miniflac_vendor_string_native(pFlac,data,length,out_length,buffer, buffer_length, buffer_used);
+    } else {
+        r = miniflac_vendor_string_ogg(pFlac,data,length,out_length,buffer, buffer_length, buffer_used);
+    }
+
+    return r;
+}
+
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_comments_total(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* comments_total) {
+    MINIFLAC_RESULT r;
+    if(pFlac->container == MINIFLAC_CONTAINER_UNKNOWN) {
+        r = miniflac_probe(pFlac,data,length);
+        if(r != MINIFLAC_OK) return r;
+    }
+
+    if(pFlac->container == MINIFLAC_CONTAINER_NATIVE) {
+        r = miniflac_comments_total_native(pFlac,data,length,out_length,comments_total);
+    } else {
+        r = miniflac_comments_total_ogg(pFlac,data,length,out_length,comments_total);
+    }
+
+    return r;
+}
+
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_comment_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* comment_length) {
+    MINIFLAC_RESULT r;
+    if(pFlac->container == MINIFLAC_CONTAINER_UNKNOWN) {
+        r = miniflac_probe(pFlac,data,length);
+        if(r != MINIFLAC_OK) return r;
+    }
+
+    if(pFlac->container == MINIFLAC_CONTAINER_NATIVE) {
+        r = miniflac_comment_length_native(pFlac,data,length,out_length,comment_length);
+    } else {
+        r = miniflac_comment_length_ogg(pFlac,data,length,out_length,comment_length);
+    }
+
+    return r;
+}
+
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_comment_string(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* buffer_used) {
+    MINIFLAC_RESULT r;
+    if(pFlac->container == MINIFLAC_CONTAINER_UNKNOWN) {
+        r = miniflac_probe(pFlac,data,length);
+        if(r != MINIFLAC_OK) return r;
+    }
+
+    if(pFlac->container == MINIFLAC_CONTAINER_NATIVE) {
+        r = miniflac_comment_string_native(pFlac,data,length,out_length,buffer, buffer_length, buffer_used);
+    } else {
+        r = miniflac_comment_string_ogg(pFlac,data,length,out_length,buffer, buffer_length, buffer_used);
     }
 
     return r;
@@ -2043,6 +2481,182 @@ miniflac_frame_header_decode(miniflac_frame_header* header, miniflac_bitreader* 
     return MINIFLAC_OK;
 }
 
+
+MINIFLAC_PRIVATE
+void
+miniflac_vorbiscomment_init(miniflac_vorbiscomment_t* vorbiscomment) {
+    vorbiscomment->state = MINIFLAC_VORBISCOMMENT_VENDOR_LENGTH;
+    vorbiscomment->len = 0;
+    vorbiscomment->pos = 0;
+    vorbiscomment->tot = 0;
+    vorbiscomment->cur = 0;
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_vorbiscomment_vendor_length(miniflac_vorbiscomment_t* vorbiscomment, miniflac_bitreader *br, uint32_t* length) {
+    uint8_t buffer[4];
+    switch(vorbiscomment->state) {
+        case MINIFLAC_VORBISCOMMENT_VENDOR_LENGTH: {
+            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            buffer[0] = miniflac_bitreader_read(br,8);
+            buffer[1] = miniflac_bitreader_read(br,8);
+            buffer[2] = miniflac_bitreader_read(br,8);
+            buffer[3] = miniflac_bitreader_read(br,8);
+            vorbiscomment->len = miniflac_unpack_uint32le(buffer);
+            if(length != NULL) *length = vorbiscomment->len;
+            vorbiscomment->state = MINIFLAC_VORBISCOMMENT_VENDOR_STRING;
+            return MINIFLAC_OK;
+        } default: break;
+    }
+    miniflac_abort();
+    return MINIFLAC_ERROR;
+}
+
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_vorbiscomment_vendor_string(miniflac_vorbiscomment_t* vorbiscomment, miniflac_bitreader *br, char* output, uint32_t length, uint32_t* outlen) {
+    MINIFLAC_RESULT r = MINIFLAC_ERROR;
+    char c;
+
+    switch(vorbiscomment->state) {
+        case MINIFLAC_VORBISCOMMENT_VENDOR_LENGTH: {
+            r = miniflac_vorbiscomment_vendor_length(vorbiscomment,br,NULL);
+            if(r != MINIFLAC_OK) return r;
+        }
+        /* fall-through */
+        case MINIFLAC_VORBISCOMMENT_VENDOR_STRING: {
+            while(vorbiscomment->pos < vorbiscomment->len) {
+                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                c = (char)miniflac_bitreader_read(br,8);
+                if(output != NULL && vorbiscomment->pos < length) {
+                    output[vorbiscomment->pos] = c;
+                }
+                vorbiscomment->pos++;
+            }
+            if(outlen != NULL) {
+                *outlen = vorbiscomment->len <= length ? vorbiscomment->len : length;
+            }
+            vorbiscomment->state = MINIFLAC_VORBISCOMMENT_TOTAL_COMMENTS;
+            return MINIFLAC_OK;
+        }
+        default: break;
+    }
+    miniflac_abort();
+    return MINIFLAC_ERROR;
+}
+
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_vorbiscomment_total_comments(miniflac_vorbiscomment_t* vorbiscomment, miniflac_bitreader *br, uint32_t* total) {
+    uint8_t buffer[4];
+    MINIFLAC_RESULT r = MINIFLAC_ERROR;
+
+    switch(vorbiscomment->state) {
+        case MINIFLAC_VORBISCOMMENT_VENDOR_LENGTH: /* fall-through */
+        case MINIFLAC_VORBISCOMMENT_VENDOR_STRING: {
+            r = miniflac_vorbiscomment_vendor_string(vorbiscomment,br,NULL,0,NULL);
+            if(r != MINIFLAC_OK) return r;
+        }
+        /* fall-through */
+        case MINIFLAC_VORBISCOMMENT_TOTAL_COMMENTS: {
+            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            buffer[0] = miniflac_bitreader_read(br,8);
+            buffer[1] = miniflac_bitreader_read(br,8);
+            buffer[2] = miniflac_bitreader_read(br,8);
+            buffer[3] = miniflac_bitreader_read(br,8);
+            vorbiscomment->tot = miniflac_unpack_uint32le(buffer);
+            if(total != NULL) *total = vorbiscomment->tot;
+            vorbiscomment->state = MINIFLAC_VORBISCOMMENT_COMMENT_LENGTH;
+            return MINIFLAC_OK;
+        }
+        default: break;
+    }
+    miniflac_abort();
+    return MINIFLAC_ERROR;
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_vorbiscomment_comment_length(miniflac_vorbiscomment_t* vorbiscomment, miniflac_bitreader *br, uint32_t* length) {
+    uint8_t buffer[4];
+    MINIFLAC_RESULT r = MINIFLAC_ERROR;
+
+    switch(vorbiscomment->state) {
+        case MINIFLAC_VORBISCOMMENT_VENDOR_LENGTH: /* fall-through */
+        case MINIFLAC_VORBISCOMMENT_VENDOR_STRING: /* fall-through */
+        case MINIFLAC_VORBISCOMMENT_TOTAL_COMMENTS: {
+            r = miniflac_vorbiscomment_total_comments(vorbiscomment,br,NULL);
+            if(r != MINIFLAC_OK) return r;
+        }
+        /* fall-through */
+        case MINIFLAC_VORBISCOMMENT_COMMENT_LENGTH: {
+            case_miniflac_vorbiscomment_comment_length:
+            if(vorbiscomment->cur == vorbiscomment->tot) {
+                return MINIFLAC_ITERATOR_END;
+            }
+
+            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            buffer[0] = miniflac_bitreader_read(br,8);
+            buffer[1] = miniflac_bitreader_read(br,8);
+            buffer[2] = miniflac_bitreader_read(br,8);
+            buffer[3] = miniflac_bitreader_read(br,8);
+            vorbiscomment->len = miniflac_unpack_uint32le(buffer);
+            vorbiscomment->pos = 0;
+            if(length != NULL) *length = vorbiscomment->len;
+            vorbiscomment->state = MINIFLAC_VORBISCOMMENT_COMMENT_STRING;
+            return MINIFLAC_OK;
+        }
+        case MINIFLAC_VORBISCOMMENT_COMMENT_STRING: {
+            r = miniflac_vorbiscomment_comment_string(vorbiscomment,br,NULL,0,NULL);
+            if(r != MINIFLAC_OK) return r;
+            goto case_miniflac_vorbiscomment_comment_length;
+        }
+        default: break;
+    }
+    miniflac_abort();
+    return MINIFLAC_ERROR;
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_vorbiscomment_comment_string(miniflac_vorbiscomment_t* vorbiscomment, miniflac_bitreader *br, char* output, uint32_t length, uint32_t* outlen) {
+    MINIFLAC_RESULT r = MINIFLAC_ERROR;
+    char c;
+
+    switch(vorbiscomment->state) {
+        case MINIFLAC_VORBISCOMMENT_VENDOR_LENGTH:
+        case MINIFLAC_VORBISCOMMENT_VENDOR_STRING:
+        case MINIFLAC_VORBISCOMMENT_TOTAL_COMMENTS:
+        case MINIFLAC_VORBISCOMMENT_COMMENT_LENGTH: {
+            r = miniflac_vorbiscomment_comment_length(vorbiscomment,br,NULL);
+            if(r != MINIFLAC_OK) return r;
+        }
+        /* fall-through */
+        case MINIFLAC_VORBISCOMMENT_COMMENT_STRING: {
+            while(vorbiscomment->pos < vorbiscomment->len) {
+                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                c = (char)miniflac_bitreader_read(br,8);
+                if(output != NULL && vorbiscomment->pos < length) {
+                    output[vorbiscomment->pos] = c;
+                }
+                vorbiscomment->pos++;
+            }
+            if(outlen != NULL) {
+                *outlen = vorbiscomment->len <= length ? vorbiscomment->len : length;
+            }
+            vorbiscomment->cur++;
+            vorbiscomment->state = MINIFLAC_VORBISCOMMENT_COMMENT_LENGTH;
+            return MINIFLAC_OK;
+        }
+        default: break;
+    }
+    miniflac_abort();
+    return MINIFLAC_ERROR;
+}
+
 MINIFLAC_PRIVATE
 void
 miniflac_metadata_init(miniflac_metadata* metadata) {
@@ -2050,6 +2664,7 @@ miniflac_metadata_init(miniflac_metadata* metadata) {
     metadata->pos = 0;
     miniflac_metadata_header_init(&metadata->header);
     miniflac_streaminfo_init(&metadata->streaminfo);
+    miniflac_vorbiscomment_init(&metadata->vorbiscomment);
 }
 
 MINIFLAC_PRIVATE
@@ -2090,6 +2705,15 @@ miniflac_metadata_decode(miniflac_metadata* metadata, miniflac_bitreader *br) {
             switch(metadata->header.type) {
                 case MINIFLAC_METADATA_STREAMINFO: {
                     r = miniflac_streaminfo_decode(&metadata->streaminfo,br);
+                    break;
+                }
+                case MINIFLAC_METADATA_VORBIS_COMMENT: {
+                    do {
+                        r = miniflac_vorbiscomment_comment_length(&metadata->vorbiscomment,br,NULL);
+                    } while(r == MINIFLAC_OK);
+                    if(r == MINIFLAC_ITERATOR_END) {
+                        r = MINIFLAC_OK;
+                    }
                     break;
                 }
                 default: {

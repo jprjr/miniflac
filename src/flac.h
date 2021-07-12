@@ -61,13 +61,45 @@ MINIFLAC_API
 void
 miniflac_init(miniflac_t* pFlac, MINIFLAC_CONTAINER container);
 
+/* sync to the next metadata block or frame, parses the metadata header or frame header */
 MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_sync(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length);
 
+/* decode a frame of audio, automatically skips metadata if needed */
 MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_decode(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, int32_t** samples);
+
+/* get the length of the vendor string, automatically skips metadata blocks, throws an error on audio frames */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_vendor_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* vendor_length);
+
+/* get the vendor string, automatically skips metadata blocks, throws an error on audio frames */
+/* will NOT be NULL-terminated! */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_vendor_string(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* buffer_used);
+
+/* get the total number of comments, automatically skips metadata blocks, throws an error on audio frames */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_comments_total(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* total_comments);
+
+/* get the next comment length, automatically skips metadata blocks, throws an error on audio frames */
+/* returns MINIFLAC_ITERATOR_END when out of comments */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_comment_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* comment_length);
+
+/* get the next comment string, automatically skips metadata blocks, throws an error on audio frames */
+/* will NOT be NULL-terminated! */
+/* returns MINIFLAC_ITERATOR_END when out of comments */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_comment_string(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* buffer_used);
+
 
 #ifdef __cplusplus
 }

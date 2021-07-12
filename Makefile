@@ -28,6 +28,7 @@ OBJS = \
   src/subframeheader.o \
   src/streaminfo.o \
   src/streammarker.o \
+  src/vorbiscomment.o \
   src/unpack.o
 
 SOURCES = \

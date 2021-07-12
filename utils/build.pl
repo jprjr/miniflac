@@ -24,6 +24,7 @@ src/oggheader.c
 src/ogg.c
 src/frame.c
 src/frameheader.c
+src/vorbiscomment.c
 src/metadata.c
 src/metadataheader.c
 src/residual.c
@@ -46,6 +47,7 @@ src/ogg.h
 src/streammarker.h
 src/metadataheader.h
 src/streaminfo.h
+src/vorbiscomment.h
 src/metadata.h
 src/residual.h
 src/subframe_fixed.h
@@ -66,7 +68,7 @@ sub trim_end {
 }
 
 foreach my $source (@sources) {
-    open(my $fh, '<', $source) or die $!;
+    open(my $fh, '<', $source) or die "error opening $source: $!";
     my @lines = map { trim_end($_) } <$fh>;
     close($fh);
 

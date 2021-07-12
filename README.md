@@ -9,12 +9,19 @@ functions, does not allocate any memory.
 * does not allocate memory
 * handles native FLAC as well as Ogg FLAC
 * single C file
+* metadata decoding for:
+  * [`STREAMINFO`](https://xiph.org/flac/format.html#metadata_block_streaminfo)
+  * [`VORBIS_COMMENT`](https://xiph.org/flac/format.html#metadata_block_vorbis_comment)
 
 ## Future Improvements
 
-* Metadata Support
 * Speed optimizations
 * Memory reduction
+* Metadata Support for (in priority order):
+  * [`PICTURE`](https://xiph.org/flac/format.html#metadata_block_picture)
+  * [`CUESHEET`](https://xiph.org/flac/format.html#metadata_block_cuesheet)
+  * [`SEEKTABLE`](https://xiph.org/flac/format.html#metadata_block_seektable)
+  * [`APPLICATION`](https://xiph.org/flac/format.html#metadata_block_application)
 
 ## Usage
 
