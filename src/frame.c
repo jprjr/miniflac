@@ -15,7 +15,7 @@ miniflac_frame_init(miniflac_frame* frame) {
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_frame_sync(miniflac_frame* frame, miniflac_bitreader* br, miniflac_streaminfo* info) {
+miniflac_frame_sync(miniflac_frame* frame, miniflac_bitreader* br, miniflac_streaminfo_t* info) {
     MINIFLAC_RESULT r;
     assert(frame->state == MINIFLAC_FRAME_HEADER);
     r = miniflac_frame_header_decode(&frame->header,br);
@@ -39,7 +39,7 @@ miniflac_frame_sync(miniflac_frame* frame, miniflac_bitreader* br, miniflac_stre
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_frame_decode(miniflac_frame* frame, miniflac_bitreader* br, miniflac_streaminfo* info, int32_t** output) {
+miniflac_frame_decode(miniflac_frame* frame, miniflac_bitreader* br, miniflac_streaminfo_t* info, int32_t** output) {
     MINIFLAC_RESULT r;
     uint32_t bps;
     uint32_t i;

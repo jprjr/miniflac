@@ -38,10 +38,10 @@ void miniflac_frame_init(miniflac_frame* frame);
 
 /* ensures we've just read the audio frame header and are ready to decode */
 MINIFLAC_PRIVATE
-MINIFLAC_RESULT miniflac_frame_sync(miniflac_frame* frame, miniflac_bitreader* br, miniflac_streaminfo* info);
+MINIFLAC_RESULT miniflac_frame_sync(miniflac_frame* frame, miniflac_bitreader* br, miniflac_streaminfo_t* info);
 
 MINIFLAC_PRIVATE
-MINIFLAC_RESULT miniflac_frame_decode(miniflac_frame* frame, miniflac_bitreader* br, miniflac_streaminfo* info, int32_t** output);
+MINIFLAC_RESULT miniflac_frame_decode(miniflac_frame* frame, miniflac_bitreader* br, miniflac_streaminfo_t* info, int32_t** output);
 
 #ifdef __cplusplus
 }

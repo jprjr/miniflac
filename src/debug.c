@@ -289,8 +289,8 @@ miniflac_dump_frame(miniflac_frame* frame, uint8_t indent) {
     miniflac_dump_subframe(&frame->subframe,indent);
 }
 
-void miniflac_dump_streaminfo(miniflac_streaminfo* streaminfo, uint8_t indent) {
-    dumpf(indent,"streaminfo: (%lu bytes)\n",sizeof(miniflac_streaminfo));
+void miniflac_dump_streaminfo(miniflac_streaminfo_t* streaminfo, uint8_t indent) {
+    dumpf(indent,"streaminfo: (%lu bytes)\n",sizeof(miniflac_streaminfo_t));
     indent += 2;
     dumpf(indent,"state: %s\n",miniflac_streaminfo_state_str[streaminfo->state]);
     dumpf(indent,"min_block_size: %u\n",streaminfo->min_block_size);

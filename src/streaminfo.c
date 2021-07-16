@@ -3,7 +3,7 @@
 
 MINIFLAC_PRIVATE
 void
-miniflac_streaminfo_init(miniflac_streaminfo* streaminfo) {
+miniflac_streaminfo_init(miniflac_streaminfo_t* streaminfo) {
     unsigned int i;
     streaminfo->state = MINIFLAC_STREAMINFO_MINBLOCKSIZE;
     streaminfo->min_block_size = 0;
@@ -21,7 +21,7 @@ miniflac_streaminfo_init(miniflac_streaminfo* streaminfo) {
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_streaminfo_decode(miniflac_streaminfo* streaminfo, miniflac_bitreader* br) {
+miniflac_streaminfo_decode(miniflac_streaminfo_t* streaminfo, miniflac_bitreader* br) {
     switch(streaminfo->state) {
         case MINIFLAC_STREAMINFO_MINBLOCKSIZE: {
             if(miniflac_bitreader_fill(br,16)) return MINIFLAC_CONTINUE;
