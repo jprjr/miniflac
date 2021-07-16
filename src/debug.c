@@ -289,23 +289,23 @@ miniflac_dump_frame(miniflac_frame* frame, uint8_t indent) {
     miniflac_dump_subframe(&frame->subframe,indent);
 }
 
-void miniflac_dump_streaminfo(miniflac_streaminfo_t* streaminfo, uint8_t indent) {
-    dumpf(indent,"streaminfo: (%lu bytes)\n",sizeof(miniflac_streaminfo_t));
+void miniflac_dump_streaminfo(miniflac_streaminfo_private_t* streaminfo, uint8_t indent) {
+    dumpf(indent,"streaminfo: (%lu bytes)\n",sizeof(miniflac_streaminfo_private_t));
     indent += 2;
     dumpf(indent,"state: %s\n",miniflac_streaminfo_state_str[streaminfo->state]);
-    dumpf(indent,"min_block_size: %u\n",streaminfo->min_block_size);
-    dumpf(indent,"max_block_size: %u\n",streaminfo->max_block_size);
-    dumpf(indent,"min_frame_size: %u\n",streaminfo->min_frame_size);
-    dumpf(indent,"max_frame_size: %u\n",streaminfo->max_frame_size);
-    dumpf(indent,"sample_rate: %u\n",streaminfo->sample_rate);
-    dumpf(indent,"channels: %u\n",streaminfo->channels);
-    dumpf(indent,"bps: %u\n",streaminfo->bps);
-    dumpf(indent,"total_samples: %lu\n",streaminfo->total_samples);
+    dumpf(indent,"min_block_size: %u\n",streaminfo->info.min_block_size);
+    dumpf(indent,"max_block_size: %u\n",streaminfo->info.max_block_size);
+    dumpf(indent,"min_frame_size: %u\n",streaminfo->info.min_frame_size);
+    dumpf(indent,"max_frame_size: %u\n",streaminfo->info.max_frame_size);
+    dumpf(indent,"sample_rate: %u\n",streaminfo->info.sample_rate);
+    dumpf(indent,"channels: %u\n",streaminfo->info.channels);
+    dumpf(indent,"bps: %u\n",streaminfo->info.bps);
+    dumpf(indent,"total_samples: %lu\n",streaminfo->info.total_samples);
     dumpf(indent,"md5: %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x\n",
-      streaminfo->md5[ 0], streaminfo->md5[ 1], streaminfo->md5[ 2], streaminfo->md5[ 3],
-      streaminfo->md5[ 4], streaminfo->md5[ 5], streaminfo->md5[ 6], streaminfo->md5[ 7],
-      streaminfo->md5[ 8], streaminfo->md5[ 9], streaminfo->md5[10], streaminfo->md5[11],
-      streaminfo->md5[12], streaminfo->md5[13], streaminfo->md5[14], streaminfo->md5[15]);
+      streaminfo->info.md5[ 0], streaminfo->info.md5[ 1], streaminfo->info.md5[ 2], streaminfo->info.md5[ 3],
+      streaminfo->info.md5[ 4], streaminfo->info.md5[ 5], streaminfo->info.md5[ 6], streaminfo->info.md5[ 7],
+      streaminfo->info.md5[ 8], streaminfo->info.md5[ 9], streaminfo->info.md5[10], streaminfo->info.md5[11],
+      streaminfo->info.md5[12], streaminfo->info.md5[13], streaminfo->info.md5[14], streaminfo->info.md5[15]);
 }
 
 void miniflac_dump_metadata_header(miniflac_metadata_header* header, uint8_t indent) {

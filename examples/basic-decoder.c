@@ -170,7 +170,6 @@ int main(int argc, const char *argv[]) {
     }
 
     assert(res >= 0);
-    assert(used == 0);
     wav_header_finish(output,decoder->frame.header.bps);
     r = 0;
 
