@@ -13,6 +13,23 @@
 #include <stdint.h>
 #include <assert.h>
 
+static void
+dump_streaminfo(miniflac_streaminfo_t* streaminfo) {
+    fprintf(stdout,"min_block_size: %u\n",streaminfo->min_block_size);
+    fprintf(stdout,"max_block_size: %u\n",streaminfo->max_block_size);
+    fprintf(stdout,"min_frame_size: %u\n",streaminfo->min_frame_size);
+    fprintf(stdout,"max_frame_size: %u\n",streaminfo->max_frame_size);
+    fprintf(stdout,"sample_rate: %u\n",streaminfo->sample_rate);
+    fprintf(stdout,"channels: %u\n",streaminfo->channels);
+    fprintf(stdout,"bps: %u\n",streaminfo->bps);
+    fprintf(stdout,"total_samples: %lu\n",streaminfo->total_samples);
+    fprintf(stdout,"md5: %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x\n",
+      streaminfo->md5[ 0], streaminfo->md5[ 1], streaminfo->md5[ 2], streaminfo->md5[ 3],
+      streaminfo->md5[ 4], streaminfo->md5[ 5], streaminfo->md5[ 6], streaminfo->md5[ 7],
+      streaminfo->md5[ 8], streaminfo->md5[ 9], streaminfo->md5[10], streaminfo->md5[11],
+      streaminfo->md5[12], streaminfo->md5[13], streaminfo->md5[14], streaminfo->md5[15]);
+}
+
 int main(int argc, const char *argv[]) {
     MINIFLAC_RESULT res;
     int r = 1;
@@ -27,6 +44,7 @@ int main(int argc, const char *argv[]) {
     int32_t** samples = NULL;
     uint8_t* outSamples = NULL;
 
+    miniflac_streaminfo_t streaminfo;
     uint32_t incoming_string_length = 0;
     char* string_buffer = NULL;
     uint32_t string_buffer_length = 0;
@@ -84,7 +102,15 @@ int main(int argc, const char *argv[]) {
 
     /* work our way through the metadata frames */
     while(decoder->state == MINIFLAC_METADATA) {
-        if(decoder->metadata.header.type == MINIFLAC_METADATA_VORBIS_COMMENT) {
+        if(decoder->metadata.header.type == MINIFLAC_METADATA_STREAMINFO) {
+            if(miniflac_streaminfo(decoder,&buffer[pos],length,&used,&streaminfo) != MINIFLAC_OK) {
+                abort();
+            }
+            length -= used;
+            pos += used;
+            dump_streaminfo(&streaminfo);
+        }
+        else if(decoder->metadata.header.type == MINIFLAC_METADATA_VORBIS_COMMENT) {
             uint32_t i = 0;
             if(miniflac_vendor_length(decoder,&buffer[pos],length,&used,&incoming_string_length) != MINIFLAC_OK) abort();
             length -= used;

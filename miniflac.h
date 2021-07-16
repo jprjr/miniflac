@@ -575,6 +575,11 @@ MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_decode(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, int32_t** samples);
 
+/* parse a streaminfo block */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_streaminfo(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, miniflac_streaminfo_t* streaminfo);
+
 /* get the length of the vendor string, automatically skips metadata blocks, throws an error on audio frames */
 MINIFLAC_API
 MINIFLAC_RESULT
@@ -710,7 +715,7 @@ miniflac_streaminfo_init(miniflac_streaminfo_private_t* streaminfo);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_streaminfo_decode(miniflac_streaminfo_private_t* streaminfo, miniflac_bitreader* br);
+miniflac_streaminfo_decode(miniflac_streaminfo_private_t* streaminfo, miniflac_bitreader* br, miniflac_streaminfo_t *out);
 
 MINIFLAC_PRIVATE
 void
@@ -1011,6 +1016,44 @@ miniflac_decode_native(miniflac_t* pFlac, const uint8_t* data, uint32_t length, 
 
 static
 MINIFLAC_RESULT
+miniflac_streaminfo_native(miniflac_t *pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, miniflac_streaminfo_t* streaminfo) {
+    MINIFLAC_RESULT r;
+    pFlac->br.buffer = data;
+    pFlac->br.len    = length;
+    pFlac->br.pos    = 0;
+
+    while(pFlac->state != MINIFLAC_METADATA) {
+        r = miniflac_sync_internal(pFlac,&pFlac->br);
+        if(r != MINIFLAC_OK) goto miniflac_vendor_length_exit;
+    }
+
+    while(pFlac->metadata.header.type != MINIFLAC_METADATA_STREAMINFO) {
+        /* sync to the next block */
+        r = miniflac_sync_internal(pFlac,&pFlac->br);
+        if(r != MINIFLAC_OK) goto miniflac_vendor_length_exit;
+        if(pFlac->state != MINIFLAC_METADATA) {
+            r = MINIFLAC_ERROR;
+            goto miniflac_vendor_length_exit;
+        }
+    }
+
+    r = miniflac_streaminfo_decode(&pFlac->metadata.streaminfo,&pFlac->br,streaminfo);
+    /* perform some housekeeping for the metadata_decode/sync functions, minor duplication but this is a special-case block */
+    if(r == MINIFLAC_OK) {
+        pFlac->br.crc8 = 0;
+        pFlac->br.crc16 = 0;
+        pFlac->metadata.state = MINIFLAC_METADATA_HEADER;
+        pFlac->metadata.pos = 0;
+        pFlac->state = MINIFLAC_METADATA_OR_FRAME;
+    }
+
+    miniflac_vendor_length_exit:
+    *out_length = pFlac->br.pos;
+    return r;
+}
+
+static
+MINIFLAC_RESULT
 miniflac_vendor_length_native(miniflac_t *pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* vendor_length) {
     MINIFLAC_RESULT r;
     pFlac->br.buffer = data;
@@ -1211,6 +1254,31 @@ miniflac_decode_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uin
 
 static
 MINIFLAC_RESULT
+miniflac_streaminfo_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, miniflac_streaminfo_t* streaminfo) {
+    MINIFLAC_RESULT r = MINIFLAC_CONTINUE;
+
+    const uint8_t* packet = NULL;
+    uint32_t packet_length = 0;
+    uint32_t packet_used   = 0;
+
+    pFlac->ogg.br.buffer = data;
+    pFlac->ogg.br.len = length;
+    pFlac->ogg.br.pos = 0;
+
+    do {
+        r = miniflac_oggfunction_start(pFlac,data,&packet,&packet_length);
+        if(r  != MINIFLAC_OK) break;
+
+        r = miniflac_streaminfo_native(pFlac,packet,packet_length,&packet_used,streaminfo);
+        miniflac_oggfunction_end(pFlac,packet_used);
+    } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
+
+    *out_length = pFlac->ogg.br.pos;
+    return r;
+}
+
+static
+MINIFLAC_RESULT
 miniflac_vendor_length_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t *outlen) {
     MINIFLAC_RESULT r = MINIFLAC_CONTINUE;
 
@@ -1388,6 +1456,24 @@ miniflac_sync(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t*
         r = miniflac_sync_native(pFlac,data,length,out_length);
     } else {
         r = miniflac_sync_ogg(pFlac,data,length,out_length);
+    }
+
+    return r;
+}
+
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_streaminfo(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, miniflac_streaminfo_t* streaminfo) {
+    MINIFLAC_RESULT r;
+    if(pFlac->container == MINIFLAC_CONTAINER_UNKNOWN) {
+        r = miniflac_probe(pFlac,data,length);
+        if(r != MINIFLAC_OK) return r;
+    }
+
+    if(pFlac->container == MINIFLAC_CONTAINER_NATIVE) {
+        r = miniflac_streaminfo_native(pFlac,data,length,out_length,streaminfo);
+    } else {
+        r = miniflac_streaminfo_ogg(pFlac,data,length,out_length,streaminfo);
     }
 
     return r;
@@ -2683,6 +2769,18 @@ miniflac_metadata_sync(miniflac_metadata* metadata, miniflac_bitreader* br) {
     r = miniflac_metadata_header_decode(&metadata->header,br);
     if(r != MINIFLAC_OK) return r;
 
+    switch(metadata->header.type) {
+        case MINIFLAC_METADATA_STREAMINFO: {
+            miniflac_streaminfo_init(&metadata->streaminfo);
+            break;
+        }
+        case MINIFLAC_METADATA_VORBIS_COMMENT: {
+            miniflac_vorbiscomment_init(&metadata->vorbiscomment);
+            break;
+        }
+        default: break;
+    }
+
     metadata->state = MINIFLAC_METADATA_DATA;
     metadata->pos = 0;
     return MINIFLAC_OK;
@@ -2712,7 +2810,7 @@ miniflac_metadata_decode(miniflac_metadata* metadata, miniflac_bitreader *br) {
         case MINIFLAC_METADATA_DATA: {
             switch(metadata->header.type) {
                 case MINIFLAC_METADATA_STREAMINFO: {
-                    r = miniflac_streaminfo_decode(&metadata->streaminfo,br);
+                    r = miniflac_streaminfo_decode(&metadata->streaminfo,br,NULL);
                     break;
                 }
                 case MINIFLAC_METADATA_VORBIS_COMMENT: {
@@ -2964,7 +3062,8 @@ miniflac_streaminfo_init(miniflac_streaminfo_private_t* streaminfo) {
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_streaminfo_decode(miniflac_streaminfo_private_t* streaminfo, miniflac_bitreader* br) {
+miniflac_streaminfo_decode(miniflac_streaminfo_private_t* streaminfo, miniflac_bitreader* br, miniflac_streaminfo_t* out) {
+    unsigned int i;
     switch(streaminfo->state) {
         case MINIFLAC_STREAMINFO_MINBLOCKSIZE: {
             if(miniflac_bitreader_fill(br,16)) return MINIFLAC_CONTINUE;
@@ -3047,6 +3146,19 @@ miniflac_streaminfo_decode(miniflac_streaminfo_private_t* streaminfo, miniflac_b
             streaminfo->info.md5[13] = (uint8_t) miniflac_bitreader_read(br,8);
             streaminfo->info.md5[14] = (uint8_t) miniflac_bitreader_read(br,8);
             streaminfo->info.md5[15] = (uint8_t) miniflac_bitreader_read(br,8);
+            if(out != NULL) {
+                out->min_block_size = streaminfo->info.min_block_size;
+                out->max_block_size = streaminfo->info.max_block_size;
+                out->min_frame_size = streaminfo->info.min_frame_size;
+                out->max_frame_size = streaminfo->info.max_frame_size;
+                out->sample_rate = streaminfo->info.sample_rate;
+                out->channels = streaminfo->info.channels;
+                out->bps = streaminfo->info.bps;
+                out->total_samples = streaminfo->info.total_samples;
+                for(i=0;i<16;i++) {
+                    out->md5[i] = streaminfo->info.md5[i];
+                }
+            }
             break;
         }
         default: {

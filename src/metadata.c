@@ -21,6 +21,18 @@ miniflac_metadata_sync(miniflac_metadata* metadata, miniflac_bitreader* br) {
     r = miniflac_metadata_header_decode(&metadata->header,br);
     if(r != MINIFLAC_OK) return r;
 
+    switch(metadata->header.type) {
+        case MINIFLAC_METADATA_STREAMINFO: {
+            miniflac_streaminfo_init(&metadata->streaminfo);
+            break;
+        }
+        case MINIFLAC_METADATA_VORBIS_COMMENT: {
+            miniflac_vorbiscomment_init(&metadata->vorbiscomment);
+            break;
+        }
+        default: break;
+    }
+
     metadata->state = MINIFLAC_METADATA_DATA;
     metadata->pos = 0;
     return MINIFLAC_OK;
@@ -50,7 +62,7 @@ miniflac_metadata_decode(miniflac_metadata* metadata, miniflac_bitreader *br) {
         case MINIFLAC_METADATA_DATA: {
             switch(metadata->header.type) {
                 case MINIFLAC_METADATA_STREAMINFO: {
-                    r = miniflac_streaminfo_decode(&metadata->streaminfo,br);
+                    r = miniflac_streaminfo_decode(&metadata->streaminfo,br,NULL);
                     break;
                 }
                 case MINIFLAC_METADATA_VORBIS_COMMENT: {

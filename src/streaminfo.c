@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: 0BSD */
 #include "streaminfo.h"
+#include <stddef.h>
 
 MINIFLAC_PRIVATE
 void
@@ -21,7 +22,8 @@ miniflac_streaminfo_init(miniflac_streaminfo_private_t* streaminfo) {
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_streaminfo_decode(miniflac_streaminfo_private_t* streaminfo, miniflac_bitreader* br) {
+miniflac_streaminfo_decode(miniflac_streaminfo_private_t* streaminfo, miniflac_bitreader* br, miniflac_streaminfo_t* out) {
+    unsigned int i;
     switch(streaminfo->state) {
         case MINIFLAC_STREAMINFO_MINBLOCKSIZE: {
             if(miniflac_bitreader_fill(br,16)) return MINIFLAC_CONTINUE;
@@ -104,6 +106,19 @@ miniflac_streaminfo_decode(miniflac_streaminfo_private_t* streaminfo, miniflac_b
             streaminfo->info.md5[13] = (uint8_t) miniflac_bitreader_read(br,8);
             streaminfo->info.md5[14] = (uint8_t) miniflac_bitreader_read(br,8);
             streaminfo->info.md5[15] = (uint8_t) miniflac_bitreader_read(br,8);
+            if(out != NULL) {
+                out->min_block_size = streaminfo->info.min_block_size;
+                out->max_block_size = streaminfo->info.max_block_size;
+                out->min_frame_size = streaminfo->info.min_frame_size;
+                out->max_frame_size = streaminfo->info.max_frame_size;
+                out->sample_rate = streaminfo->info.sample_rate;
+                out->channels = streaminfo->info.channels;
+                out->bps = streaminfo->info.bps;
+                out->total_samples = streaminfo->info.total_samples;
+                for(i=0;i<16;i++) {
+                    out->md5[i] = streaminfo->info.md5[i];
+                }
+            }
             break;
         }
         default: {

@@ -71,6 +71,11 @@ MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_decode(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, int32_t** samples);
 
+/* parse a streaminfo block */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_streaminfo(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, miniflac_streaminfo_t* streaminfo);
+
 /* get the length of the vendor string, automatically skips metadata blocks, throws an error on audio frames */
 MINIFLAC_API
 MINIFLAC_RESULT

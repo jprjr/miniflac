@@ -55,7 +55,7 @@ miniflac_streaminfo_init(miniflac_streaminfo_private_t* streaminfo);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_streaminfo_decode(miniflac_streaminfo_private_t* streaminfo, miniflac_bitreader* br);
+miniflac_streaminfo_decode(miniflac_streaminfo_private_t* streaminfo, miniflac_bitreader* br, miniflac_streaminfo_t *out);
 
 #ifdef __cplusplus
 }
