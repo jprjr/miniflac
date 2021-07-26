@@ -317,8 +317,8 @@ void miniflac_dump_metadata_header(miniflac_metadata_header* header, uint8_t ind
     dumpf(indent,"length: %u\n",header->length);
 }
 
-void miniflac_dump_metadata(miniflac_metadata* metadata, uint8_t indent) {
-    dumpf(indent,"metadata (%lu bytes):\n",sizeof(miniflac_metadata));
+void miniflac_dump_metadata(miniflac_metadata_t* metadata, uint8_t indent) {
+    dumpf(indent,"metadata (%lu bytes):\n",sizeof(miniflac_metadata_t));
     indent += 2;
     dumpf(indent,"state: %s\n",miniflac_metadata_state_str[metadata->state]);
     dumpf(indent,"pos: %u\n", metadata->pos);

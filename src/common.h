@@ -24,7 +24,7 @@ enum MINIFLAC_RESULT {
     MINIFLAC_ERROR                             =  -1, /* generic error, likely in an invalid state */
     MINIFLAC_CONTINUE                          =   0, /* needs more data, otherwise fine */
     MINIFLAC_OK                                =   1, /* generic "OK" */
-    MINIFLAC_ITERATOR_END                      =   2, /* used by iterators to signify end-of-data */
+    MINIFLAC_METADATA_END                      =   2, /* used to signify end-of-data in a metadata block */
 };
 
 #if defined(__GNUC__) && __GNUC__ >= 2 && __GNUC_MINOR__ >= 5

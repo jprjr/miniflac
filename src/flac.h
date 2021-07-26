@@ -40,7 +40,7 @@ struct miniflac_s {
     miniflac_ogg_t ogg;
     miniflac_oggheader_t oggheader;
     miniflac_streammarker_t streammarker;
-    miniflac_metadata metadata;
+    miniflac_metadata_t metadata;
     miniflac_frame frame;
 };
 
@@ -93,18 +93,72 @@ MINIFLAC_RESULT
 miniflac_comments_total(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* total_comments);
 
 /* get the next comment length, automatically skips metadata blocks, throws an error on audio frames */
-/* returns MINIFLAC_ITERATOR_END when out of comments */
+/* returns MINIFLAC_METADATA_END when out of comments */
 MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_comment_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* comment_length);
 
 /* get the next comment string, automatically skips metadata blocks, throws an error on audio frames */
 /* will NOT be NULL-terminated! */
-/* returns MINIFLAC_ITERATOR_END when out of comments */
+/* returns MINIFLAC_METADATA_END when out of comments */
 MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_comment_string(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* buffer_used);
 
+/* read a picture type */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_picture_type(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_type);
+
+/* read a picture mime string length */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_picture_mime_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_mime_length);
+
+/* read a picture mime string */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_picture_mime_string(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* buffer_used);
+
+/* read a picture description string length */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_picture_description_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_description_length);
+
+/* read a picture description string */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_picture_description_string(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* buffer_used);
+
+/* read a picture width */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_picture_width(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_width);
+
+/* read a picture height */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_picture_height(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_height);
+
+/* read a picture colordepth */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_picture_colordepth(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_colordepth);
+
+/* read a picture totalcolors */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_picture_totalcolors(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_totalcolors);
+
+/* read a picture data length */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_picture_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_length);
+
+/* read a picture data */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_picture_data(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* buffer, uint32_t buffer_length, uint32_t* buffer_used);
 
 #ifdef __cplusplus
 }

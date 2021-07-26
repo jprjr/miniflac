@@ -148,7 +148,78 @@ int main(int argc, const char *argv[]) {
             length -= used;
             pos += used;
 
-            if(res != MINIFLAC_ITERATOR_END) abort();
+            if(res != MINIFLAC_METADATA_END) abort();
+        }
+        else if(decoder->metadata.header.type == MINIFLAC_METADATA_PICTURE) {
+            if(miniflac_picture_type(decoder,&buffer[pos],length,&used,&incoming_string_length) != MINIFLAC_OK) abort();
+            length -= used;
+            pos += used;
+            fprintf(stdout,"[picture] type=%u\n",incoming_string_length);
+
+            if(miniflac_picture_mime_length(decoder,&buffer[pos],length,&used,&incoming_string_length) != MINIFLAC_OK) abort();
+            length -= used;
+            pos += used;
+            fprintf(stdout,"[picture] mime string=[%u]",incoming_string_length);
+            fflush(stdout);
+            if(incoming_string_length > string_buffer_length) {
+                string_buffer = realloc(string_buffer,incoming_string_length + 1);
+                if(string_buffer == NULL) abort();
+                string_buffer_length = incoming_string_length;
+            }
+            if(miniflac_picture_mime_string(decoder,&buffer[pos],length,&used,string_buffer,string_buffer_length+1,&incoming_string_length) != MINIFLAC_OK) abort();
+            length -= used;
+            pos += used;
+            string_buffer[incoming_string_length] = '\0';
+            fprintf(stdout,"%s\n",string_buffer);
+
+            if(miniflac_picture_description_length(decoder,&buffer[pos],length,&used,&incoming_string_length) != MINIFLAC_OK) abort();
+            length -= used;
+            pos += used;
+            fprintf(stdout,"[picture] description string=[%u]",incoming_string_length);
+            fflush(stdout);
+            if(incoming_string_length > string_buffer_length) {
+                string_buffer = realloc(string_buffer,incoming_string_length + 1);
+                if(string_buffer == NULL) abort();
+                string_buffer_length = incoming_string_length;
+            }
+            if(miniflac_picture_description_string(decoder,&buffer[pos],length,&used,string_buffer,string_buffer_length+1,&incoming_string_length) != MINIFLAC_OK) abort();
+            length -= used;
+            pos += used;
+            string_buffer[incoming_string_length] = '\0';
+            fprintf(stdout,"%s\n",string_buffer);
+
+            if(miniflac_picture_width(decoder,&buffer[pos],length,&used,&incoming_string_length) != MINIFLAC_OK) abort();
+            length -= used;
+            pos += used;
+            fprintf(stdout,"[picture] width=%u\n",incoming_string_length);
+
+            if(miniflac_picture_height(decoder,&buffer[pos],length,&used,&incoming_string_length) != MINIFLAC_OK) abort();
+            length -= used;
+            pos += used;
+            fprintf(stdout,"[picture] height=%u\n",incoming_string_length);
+
+            if(miniflac_picture_colordepth(decoder,&buffer[pos],length,&used,&incoming_string_length) != MINIFLAC_OK) abort();
+            length -= used;
+            pos += used;
+            fprintf(stdout,"[picture] colordepth=%u\n",incoming_string_length);
+
+            if(miniflac_picture_totalcolors(decoder,&buffer[pos],length,&used,&incoming_string_length) != MINIFLAC_OK) abort();
+            length -= used;
+            pos += used;
+            fprintf(stdout,"[picture] totalcolors=%u\n",incoming_string_length);
+
+            if(miniflac_picture_length(decoder,&buffer[pos],length,&used,&incoming_string_length) != MINIFLAC_OK) abort();
+            length -= used;
+            pos += used;
+            fprintf(stdout,"[picture] data=[%u bytes]\n",incoming_string_length);
+            if(incoming_string_length > string_buffer_length) {
+                string_buffer = realloc(string_buffer,incoming_string_length + 1);
+                if(string_buffer == NULL) abort();
+                string_buffer_length = incoming_string_length;
+            }
+            if(miniflac_picture_data(decoder,&buffer[pos],length,&used,(uint8_t*)string_buffer,string_buffer_length+1,&incoming_string_length) != MINIFLAC_OK) abort();
+            length -= used;
+            pos += used;
         }
 
         if(miniflac_sync(decoder,&buffer[pos],length,&used) != MINIFLAC_OK) abort();

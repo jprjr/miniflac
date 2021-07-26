@@ -9,8 +9,9 @@
 #include "metadataheader.h"
 #include "streaminfo.h"
 #include "vorbiscomment.h"
+#include "picture.h"
 
-typedef struct miniflac_metadata_s miniflac_metadata;
+typedef struct miniflac_metadata_s miniflac_metadata_t;
 typedef enum MINIFLAC_METADATA_STATE MINIFLAC_METADATA_STATE;
 
 enum MINIFLAC_METADATA_STATE {
@@ -24,6 +25,7 @@ struct miniflac_metadata_s {
     miniflac_metadata_header        header;
     miniflac_streaminfo_private_t  streaminfo;
     miniflac_vorbiscomment_t vorbiscomment;
+    miniflac_picture_t picture;
 };
 
 #ifdef __cplusplus
@@ -32,15 +34,15 @@ extern "C" {
 
 MINIFLAC_PRIVATE
 void
-miniflac_metadata_init(miniflac_metadata* metadata);
+miniflac_metadata_init(miniflac_metadata_t* metadata);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_metadata_sync(miniflac_metadata* metadata, miniflac_bitreader* br);
+miniflac_metadata_sync(miniflac_metadata_t* metadata, miniflac_bitreader* br);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_metadata_decode(miniflac_metadata* metadata, miniflac_bitreader* br);
+miniflac_metadata_decode(miniflac_metadata_t* metadata, miniflac_bitreader* br);
 
 #ifdef __cplusplus
 }

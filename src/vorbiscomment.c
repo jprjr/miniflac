@@ -116,7 +116,7 @@ miniflac_vorbiscomment_comment_length(miniflac_vorbiscomment_t* vorbiscomment, m
         case MINIFLAC_VORBISCOMMENT_COMMENT_LENGTH: {
             case_miniflac_vorbiscomment_comment_length:
             if(vorbiscomment->cur == vorbiscomment->tot) {
-                return MINIFLAC_ITERATOR_END;
+                return MINIFLAC_METADATA_END;
             }
 
             if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;

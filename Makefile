@@ -19,6 +19,7 @@ OBJS = \
   src/metadataheader.o \
   src/ogg.o \
   src/oggheader.o \
+  src/picture.o \
   src/residual.o \
   src/subframe.o \
   src/subframe_constant.o \
@@ -40,6 +41,7 @@ SOURCES = \
   src/metadataheader.c \
   src/ogg.c \
   src/oggheader.c \
+  src/picture.c \
   src/residual.c \
   src/streaminfo.c \
   src/streammarker.c \
@@ -63,6 +65,7 @@ HEADERS = \
   src/metadata.h \
   src/ogg.h \
   src/oggheader.h \
+  src/picture.h \
   src/residual.h \
   src/subframe_fixed.h \
   src/subframe_lpc.h \

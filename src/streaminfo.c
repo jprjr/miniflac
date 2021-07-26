@@ -106,6 +106,10 @@ miniflac_streaminfo_decode(miniflac_streaminfo_private_t* streaminfo, miniflac_b
             streaminfo->info.md5[13] = (uint8_t) miniflac_bitreader_read(br,8);
             streaminfo->info.md5[14] = (uint8_t) miniflac_bitreader_read(br,8);
             streaminfo->info.md5[15] = (uint8_t) miniflac_bitreader_read(br,8);
+            streaminfo->state = MINIFLAC_STREAMINFO_COMPLETE;
+        }
+        /* fall-through */
+        case MINIFLAC_STREAMINFO_COMPLETE: {
             if(out != NULL) {
                 out->min_block_size = streaminfo->info.min_block_size;
                 out->max_block_size = streaminfo->info.max_block_size;
@@ -127,7 +131,6 @@ miniflac_streaminfo_decode(miniflac_streaminfo_private_t* streaminfo, miniflac_b
         }
     }
 
-    streaminfo->state = MINIFLAC_STREAMINFO_MINBLOCKSIZE;
     return MINIFLAC_OK;
 }
 

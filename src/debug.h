@@ -55,7 +55,7 @@ void
 miniflac_dump_residual(miniflac_residual* residual, uint8_t indent);
 
 void
-miniflac_dump_metadata(miniflac_metadata* metadata, uint8_t indent);
+miniflac_dump_metadata(miniflac_metadata_t* metadata, uint8_t indent);
 
 void
 miniflac_dump_metadata_header(miniflac_metadata_header* header, uint8_t indent);
