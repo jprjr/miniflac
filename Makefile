@@ -4,8 +4,8 @@ MISC_CFLAGS = -DMINIFLAC_ABORT_ON_ERROR
 
 OPTIMIZE = -O3
 
-CFLAGS = -Wall -Wextra -fPIC -g $(OPTIMIZE) $(MISC_CFLAGS)
-LDFLAGS =
+CFLAGS = -flto -Wall -Wextra -fPIC -g $(OPTIMIZE) $(MISC_CFLAGS)
+LDFLAGS = -flto
 
 OBJS = \
   src/bitreader.o \
@@ -114,10 +114,10 @@ examples/benchmark: examples/benchmark.o examples/slurp.o examples/tictoc.o
 	$(CC) -o $@ $^ $(LDFLAGS) -lrt $(shell pkg-config --libs flac)
 
 examples/just-decode: examples/just-decode.o examples/slurp.o examples/tictoc.o libminiflac.a
-	$(CC) -o $@ $^
+	$(CC) -o $@ $^ $(LDFLAGS)
 
 examples/just-decode-singlefile: examples/just-decode-singlefile.o examples/slurp.o examples/tictoc.o
-	$(CC) -o $@ $^
+	$(CC) -o $@ $^ $(LDFLAGS)
 
 examples/null-decoder: examples/null-decoder.o src/debug.o
 	$(CC) -o $@ $^ $(LDFLAGS)
