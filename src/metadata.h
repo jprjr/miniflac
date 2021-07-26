@@ -20,12 +20,12 @@ enum MINIFLAC_METADATA_STATE {
 };
 
 struct miniflac_metadata_s {
-    MINIFLAC_METADATA_STATE          state;
-    uint32_t                           pos;
-    miniflac_metadata_header        header;
+    MINIFLAC_METADATA_STATE             state;
+    uint32_t                              pos;
+    miniflac_metadata_header_t         header;
     miniflac_streaminfo_private_t  streaminfo;
-    miniflac_vorbiscomment_t vorbiscomment;
-    miniflac_picture_t picture;
+    miniflac_vorbiscomment_t    vorbiscomment;
+    miniflac_picture_t                picture;
 };
 
 #ifdef __cplusplus

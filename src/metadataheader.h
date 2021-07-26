@@ -7,7 +7,7 @@
 #include "common.h"
 #include "bitreader.h"
 
-typedef struct miniflac_metadata_header_s miniflac_metadata_header;
+typedef struct miniflac_metadata_header_s miniflac_metadata_header_t;
 typedef enum MINIFLAC_METADATA_TYPE MINIFLAC_METADATA_TYPE;
 typedef enum MINIFLAC_METADATA_HEADER_STATE MINIFLAC_METADATA_HEADER_STATE;
 
@@ -43,11 +43,11 @@ extern "C" {
 
 MINIFLAC_PRIVATE
 void
-miniflac_metadata_header_init(miniflac_metadata_header* header);
+miniflac_metadata_header_init(miniflac_metadata_header_t* header);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_metadata_header_decode(miniflac_metadata_header* header, miniflac_bitreader_t* br);
+miniflac_metadata_header_decode(miniflac_metadata_header_t* header, miniflac_bitreader_t* br);
 
 #ifdef __cplusplus
 }

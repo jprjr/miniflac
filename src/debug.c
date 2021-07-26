@@ -177,8 +177,8 @@ miniflac_dump_bitreader(miniflac_bitreader_t* br, uint8_t indent) {
 }
 
 void
-miniflac_dump_frame_header(miniflac_frame_header* header, uint8_t indent) {
-    dumpf(indent,"frame_header (%lu bytes):\n",sizeof(miniflac_frame_header));
+miniflac_dump_frame_header(miniflac_frame_header_t* header, uint8_t indent) {
+    dumpf(indent,"frame_header (%lu bytes):\n",sizeof(miniflac_frame_header_t));
     indent+=2;
     dumpf(indent,"state: %s\n",miniflac_frame_header_state_str[header->state]);
     dumpf(indent,"block_size_raw: %u\n",header->block_size_raw);
@@ -196,8 +196,8 @@ miniflac_dump_frame_header(miniflac_frame_header* header, uint8_t indent) {
 }
 
 void
-miniflac_dump_residual(miniflac_residual* residual, uint8_t indent) {
-    dumpf(indent,"residual (%lu bytes):\n",sizeof(miniflac_residual));
+miniflac_dump_residual(miniflac_residual_t* residual, uint8_t indent) {
+    dumpf(indent,"residual (%lu bytes):\n",sizeof(miniflac_residual_t));
     indent += 2;
     dumpf(indent,"state: %s\n",miniflac_residual_state_str[residual->state]);
     dumpf(indent,"coding_method: %u\n",residual->coding_method);
@@ -214,8 +214,8 @@ miniflac_dump_residual(miniflac_residual* residual, uint8_t indent) {
 }
 
 void
-miniflac_dump_subframe_header(miniflac_subframe_header* header, uint8_t indent) {
-    dumpf(indent,"subframe_header (%lu bytes):\n",sizeof(miniflac_subframe_header));
+miniflac_dump_subframe_header(miniflac_subframe_header_t* header, uint8_t indent) {
+    dumpf(indent,"subframe_header (%lu bytes):\n",sizeof(miniflac_subframe_header_t));
     indent += 2;
     dumpf(indent,"state: %s\n",miniflac_subframe_header_state_str[header->state]);
     dumpf(indent,"type: %s\n",miniflac_subframe_header_type_str[header->type]);
@@ -225,23 +225,23 @@ miniflac_dump_subframe_header(miniflac_subframe_header* header, uint8_t indent) 
 }
 
 void
-miniflac_dump_subframe_constant(miniflac_subframe_constant* c, uint8_t indent) {
-    dumpf(indent,"subframe_constant (%lu bytes):\n",sizeof(miniflac_subframe_constant));
+miniflac_dump_subframe_constant(miniflac_subframe_constant_t* c, uint8_t indent) {
+    dumpf(indent,"subframe_constant (%lu bytes):\n",sizeof(miniflac_subframe_constant_t));
     indent += 2;
     dumpf(indent,"state: %s\n",miniflac_subframe_constant_state_str[c->state]);
 }
 
 void
-miniflac_dump_subframe_verbatim(miniflac_subframe_verbatim* c, uint8_t indent) {
-    dumpf(indent,"subframe_verbatim (%lu bytes):\n",sizeof(miniflac_subframe_verbatim));
+miniflac_dump_subframe_verbatim(miniflac_subframe_verbatim_t* c, uint8_t indent) {
+    dumpf(indent,"subframe_verbatim (%lu bytes):\n",sizeof(miniflac_subframe_verbatim_t));
     indent += 2;
     dumpf(indent,"state: %s\n",miniflac_subframe_verbatim_state_str[c->state]);
     dumpf(indent,"pos: %u\n",c->pos);
 }
 
 void
-miniflac_dump_subframe_fixed(miniflac_subframe_fixed* c, uint8_t indent) {
-    dumpf(indent,"subframe_fixed (%lu bytes):\n",sizeof(miniflac_subframe_fixed));
+miniflac_dump_subframe_fixed(miniflac_subframe_fixed_t* c, uint8_t indent) {
+    dumpf(indent,"subframe_fixed (%lu bytes):\n",sizeof(miniflac_subframe_fixed_t));
     indent += 2;
     dumpf(indent,"state: %s\n",miniflac_subframe_fixed_state_str[c->state]);
     dumpf(indent,"pos: %u\n",c->pos);
@@ -249,9 +249,9 @@ miniflac_dump_subframe_fixed(miniflac_subframe_fixed* c, uint8_t indent) {
 }
 
 void
-miniflac_dump_subframe_lpc(miniflac_subframe_lpc* l, uint8_t indent) {
+miniflac_dump_subframe_lpc(miniflac_subframe_lpc_t* l, uint8_t indent) {
     uint32_t i;
-    dumpf(indent,"subframe_lpc (%lu bytes):\n",sizeof(miniflac_subframe_lpc));
+    dumpf(indent,"subframe_lpc (%lu bytes):\n",sizeof(miniflac_subframe_lpc_t));
     indent += 2;
     dumpf(indent,"state: %s\n",miniflac_subframe_lpc_state_str[l->state]);
     dumpf(indent,"pos: %u\n",l->pos);
@@ -265,8 +265,8 @@ miniflac_dump_subframe_lpc(miniflac_subframe_lpc* l, uint8_t indent) {
 }
 
 void
-miniflac_dump_subframe(miniflac_subframe* subframe, uint8_t indent) {
-    dumpf(indent,"subframe (%lu bytes):\n",sizeof(miniflac_subframe));
+miniflac_dump_subframe(miniflac_subframe_t* subframe, uint8_t indent) {
+    dumpf(indent,"subframe (%lu bytes):\n",sizeof(miniflac_subframe_t));
     indent += 2;
     dumpf(indent,"state: %s\n",miniflac_subframe_state_str[subframe->state]);
     dumpf(indent,"bps: %u\n",subframe->bps);
@@ -308,8 +308,8 @@ void miniflac_dump_streaminfo(miniflac_streaminfo_private_t* streaminfo, uint8_t
       streaminfo->info.md5[12], streaminfo->info.md5[13], streaminfo->info.md5[14], streaminfo->info.md5[15]);
 }
 
-void miniflac_dump_metadata_header(miniflac_metadata_header* header, uint8_t indent) {
-    dumpf(indent,"header (%lu bytes):\n",sizeof(miniflac_metadata_header));
+void miniflac_dump_metadata_header(miniflac_metadata_header_t* header, uint8_t indent) {
+    dumpf(indent,"header (%lu bytes):\n",sizeof(miniflac_metadata_header_t));
     indent += 2;
     dumpf(indent,"is_last: %u\n",header->is_last);
     dumpf(indent,"type_raw: %u\n", header->type_raw);

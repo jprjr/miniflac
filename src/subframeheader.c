@@ -3,7 +3,7 @@
 
 MINIFLAC_PRIVATE
 void
-miniflac_subframe_header_init(miniflac_subframe_header* subframeheader) {
+miniflac_subframe_header_init(miniflac_subframe_header_t* subframeheader) {
     subframeheader->state       = MINIFLAC_SUBFRAME_HEADER_RESERVEBIT1;
     subframeheader->type        = MINIFLAC_SUBFRAME_TYPE_UNKNOWN;
     subframeheader->order       = 0;
@@ -13,7 +13,7 @@ miniflac_subframe_header_init(miniflac_subframe_header* subframeheader) {
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_subframe_header_decode(miniflac_subframe_header* subframeheader, miniflac_bitreader_t* br) {
+miniflac_subframe_header_decode(miniflac_subframe_header_t* subframeheader, miniflac_bitreader_t* br) {
     uint64_t t = 0;
     switch(subframeheader->state) {
         case MINIFLAC_SUBFRAME_HEADER_RESERVEBIT1: {

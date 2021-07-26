@@ -25,8 +25,8 @@ struct miniflac_frame_s {
     MINIFLAC_FRAME_STATE state;
     uint8_t cur_subframe;
     uint16_t crc16;
-    miniflac_frame_header header;
-    miniflac_subframe subframe;
+    miniflac_frame_header_t header;
+    miniflac_subframe_t subframe;
 };
 
 #ifdef __cplusplus

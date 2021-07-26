@@ -8,7 +8,7 @@
 #include "bitreader.h"
 
 typedef enum MINIFLAC_SUBFRAME_CONSTANT_STATE MINIFLAC_SUBFRAME_CONSTANT_STATE;
-typedef struct miniflac_subframe_constant_s miniflac_subframe_constant;
+typedef struct miniflac_subframe_constant_s miniflac_subframe_constant_t;
 
 enum MINIFLAC_SUBFRAME_CONSTANT_STATE {
     MINIFLAC_SUBFRAME_CONSTANT_DECODE,
@@ -24,11 +24,11 @@ extern "C" {
 #endif
 
 MINIFLAC_PRIVATE
-void miniflac_subframe_constant_init(miniflac_subframe_constant* c);
+void miniflac_subframe_constant_init(miniflac_subframe_constant_t* c);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_subframe_constant_decode(miniflac_subframe_constant* c, miniflac_bitreader_t* br, int32_t* output, uint32_t block_size, uint8_t bps);
+miniflac_subframe_constant_decode(miniflac_subframe_constant_t* c, miniflac_bitreader_t* br, int32_t* output, uint32_t block_size, uint8_t bps);
 
 #ifdef __cplusplus
 }
