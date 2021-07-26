@@ -193,7 +193,7 @@ enum MINIFLAC_RESULT {
     MINIFLAC_ERROR                             =  -1, /* generic error, likely in an invalid state */
     MINIFLAC_CONTINUE                          =   0, /* needs more data, otherwise fine */
     MINIFLAC_OK                                =   1, /* generic "OK" */
-    MINIFLAC_METADATA_END                      =   2, /* used by iterators to signify end-of-data */
+    MINIFLAC_METADATA_END                      =   2, /* used to signify end-of-data in a metadata block */
 };
 
 enum MINIFLAC_OGGHEADER_STATE {
@@ -4065,7 +4065,7 @@ miniflac_metadata_skip(miniflac_metadata_t* metadata, miniflac_bitreader *br) {
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
 miniflac_metadata_decode(miniflac_metadata_t* metadata, miniflac_bitreader *br) {
-    MINIFLAC_RESULT r;
+    MINIFLAC_RESULT r = MINIFLAC_ERROR;
     switch(metadata->state) {
         case MINIFLAC_METADATA_HEADER: {
             r = miniflac_metadata_sync(metadata,br);
