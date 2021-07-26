@@ -75,7 +75,7 @@ HEADERS = \
   src/subframe.h \
   src/unpack.h
 
-all: libminiflac.a libminiflac.so miniflac.h examples/basic-decoder examples/single-byte-decoder utils/strip-headers examples/get-sizes examples/null-decoder
+all: libminiflac.a libminiflac.so miniflac.h examples/basic-decoder examples/single-byte-decoder utils/strip-headers examples/get-sizes examples/null-decoder examples/benchmark
 
 miniflac.h: $(SOURCES) $(HEADERS) utils/build.pl
 	./utils/build.pl > miniflac.h
@@ -100,6 +100,9 @@ examples/single-byte-decoder.o: examples/single-byte-decoder.c miniflac.h
 
 examples/basic-decoder: examples/basic-decoder.o examples/wav.o examples/pack.o examples/slurp.o src/debug.o
 	$(CC) -o $@ $^ $(LDFLAGS)
+
+examples/benchmark: examples/benchmark.o examples/slurp.o examples/tictoc.o
+	$(CC) -o $@ $^ $(LDFLAGS) -lrt $(shell pkg-config --libs flac)
 
 examples/null-decoder: examples/null-decoder.o src/debug.o
 	$(CC) -o $@ $^ $(LDFLAGS)
