@@ -28,7 +28,7 @@ void
 miniflac_dump_bitreader(miniflac_bitreader_t* br,uint8_t indent);
 
 void
-miniflac_dump_frame(miniflac_frame* frame, uint8_t indent);
+miniflac_dump_frame(miniflac_frame_t* frame, uint8_t indent);
 
 void
 miniflac_dump_frame_header(miniflac_frame_header* header, uint8_t indent);

@@ -279,8 +279,8 @@ miniflac_dump_subframe(miniflac_subframe* subframe, uint8_t indent) {
 
 
 void
-miniflac_dump_frame(miniflac_frame* frame, uint8_t indent) {
-    dumpf(indent,"frame (%lu bytes):\n",sizeof(miniflac_frame));
+miniflac_dump_frame(miniflac_frame_t* frame, uint8_t indent) {
+    dumpf(indent,"frame (%lu bytes):\n",sizeof(miniflac_frame_t));
     indent +=2;
     dumpf(indent,"state: %s\n",miniflac_frame_state_str[frame->state]);
     dumpf(indent,"cur_subframe: %u\n",frame->cur_subframe);

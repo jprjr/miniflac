@@ -146,7 +146,7 @@ typedef struct miniflac_subframe_verbatim_s miniflac_subframe_verbatim;
 typedef struct miniflac_subframe_header_s miniflac_subframe_header;
 typedef struct miniflac_subframe_s miniflac_subframe;
 typedef struct miniflac_frame_header_s miniflac_frame_header;
-typedef struct miniflac_frame_s miniflac_frame;
+typedef struct miniflac_frame_s miniflac_frame_t;
 typedef struct miniflac_s miniflac_t;
 
 typedef enum MINIFLAC_RESULT MINIFLAC_RESULT;
@@ -570,7 +570,7 @@ struct miniflac_s {
     miniflac_oggheader_t oggheader;
     miniflac_streammarker_t streammarker;
     miniflac_metadata_t metadata;
-    miniflac_frame frame;
+    miniflac_frame_t frame;
 };
 
 
@@ -944,14 +944,14 @@ MINIFLAC_PRIVATE
 MINIFLAC_RESULT miniflac_frame_header_decode(miniflac_frame_header* frame_header, miniflac_bitreader_t* br);
 
 MINIFLAC_PRIVATE
-void miniflac_frame_init(miniflac_frame* frame);
+void miniflac_frame_init(miniflac_frame_t* frame);
 
 /* ensures we've just read the audio frame header and are ready to decode */
 MINIFLAC_PRIVATE
-MINIFLAC_RESULT miniflac_frame_sync(miniflac_frame* frame, miniflac_bitreader_t* br, miniflac_streaminfo_private_t* info);
+MINIFLAC_RESULT miniflac_frame_sync(miniflac_frame_t* frame, miniflac_bitreader_t* br, miniflac_streaminfo_private_t* info);
 
 MINIFLAC_PRIVATE
-MINIFLAC_RESULT miniflac_frame_decode(miniflac_frame* frame, miniflac_bitreader_t* br, miniflac_streaminfo_private_t* info, int32_t** output);
+MINIFLAC_RESULT miniflac_frame_decode(miniflac_frame_t* frame, miniflac_bitreader_t* br, miniflac_streaminfo_private_t* info, int32_t** output);
 
 
 
@@ -2982,7 +2982,7 @@ miniflac_ogg_sync(miniflac_ogg_t* ogg,miniflac_bitreader_t* br) {
 
 MINIFLAC_PRIVATE
 void
-miniflac_frame_init(miniflac_frame* frame) {
+miniflac_frame_init(miniflac_frame_t* frame) {
     frame->crc16 = 0;
     frame->cur_subframe = 0;
     frame->state = MINIFLAC_FRAME_HEADER;
@@ -2992,7 +2992,7 @@ miniflac_frame_init(miniflac_frame* frame) {
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_frame_sync(miniflac_frame* frame, miniflac_bitreader_t* br, miniflac_streaminfo_private_t* info) {
+miniflac_frame_sync(miniflac_frame_t* frame, miniflac_bitreader_t* br, miniflac_streaminfo_private_t* info) {
     MINIFLAC_RESULT r;
     assert(frame->state == MINIFLAC_FRAME_HEADER);
     r = miniflac_frame_header_decode(&frame->header,br);
@@ -3016,7 +3016,7 @@ miniflac_frame_sync(miniflac_frame* frame, miniflac_bitreader_t* br, miniflac_st
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_frame_decode(miniflac_frame* frame, miniflac_bitreader_t* br, miniflac_streaminfo_private_t* info, int32_t** output) {
+miniflac_frame_decode(miniflac_frame_t* frame, miniflac_bitreader_t* br, miniflac_streaminfo_private_t* info, int32_t** output) {
     MINIFLAC_RESULT r;
     uint32_t bps;
     uint32_t i;

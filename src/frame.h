@@ -11,7 +11,7 @@
 #include "frameheader.h"
 #include "subframe.h"
 
-typedef struct miniflac_frame_s miniflac_frame;
+typedef struct miniflac_frame_s miniflac_frame_t;
 typedef enum MINIFLAC_FRAME_STATE MINIFLAC_FRAME_STATE;
 
 enum MINIFLAC_FRAME_STATE {
@@ -34,14 +34,14 @@ extern "C" {
 #endif
 
 MINIFLAC_PRIVATE
-void miniflac_frame_init(miniflac_frame* frame);
+void miniflac_frame_init(miniflac_frame_t* frame);
 
 /* ensures we've just read the audio frame header and are ready to decode */
 MINIFLAC_PRIVATE
-MINIFLAC_RESULT miniflac_frame_sync(miniflac_frame* frame, miniflac_bitreader_t* br, miniflac_streaminfo_private_t* info);
+MINIFLAC_RESULT miniflac_frame_sync(miniflac_frame_t* frame, miniflac_bitreader_t* br, miniflac_streaminfo_private_t* info);
 
 MINIFLAC_PRIVATE
-MINIFLAC_RESULT miniflac_frame_decode(miniflac_frame* frame, miniflac_bitreader_t* br, miniflac_streaminfo_private_t* info, int32_t** output);
+MINIFLAC_RESULT miniflac_frame_decode(miniflac_frame_t* frame, miniflac_bitreader_t* br, miniflac_streaminfo_private_t* info, int32_t** output);
 
 #ifdef __cplusplus
 }

@@ -41,7 +41,7 @@ struct miniflac_s {
     miniflac_oggheader_t oggheader;
     miniflac_streammarker_t streammarker;
     miniflac_metadata_t metadata;
-    miniflac_frame frame;
+    miniflac_frame_t frame;
 };
 
 
