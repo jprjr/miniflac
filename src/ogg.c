@@ -19,7 +19,7 @@ miniflac_ogg_init(miniflac_ogg_t* ogg) {
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_ogg_sync(miniflac_ogg_t* ogg,miniflac_bitreader* br) {
+miniflac_ogg_sync(miniflac_ogg_t* ogg,miniflac_bitreader_t* br) {
     unsigned char c;
     uint8_t buffer[8];
 

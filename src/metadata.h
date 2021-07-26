@@ -38,11 +38,11 @@ miniflac_metadata_init(miniflac_metadata_t* metadata);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_metadata_sync(miniflac_metadata_t* metadata, miniflac_bitreader* br);
+miniflac_metadata_sync(miniflac_metadata_t* metadata, miniflac_bitreader_t* br);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_metadata_decode(miniflac_metadata_t* metadata, miniflac_bitreader* br);
+miniflac_metadata_decode(miniflac_metadata_t* metadata, miniflac_bitreader_t* br);
 
 #ifdef __cplusplus
 }

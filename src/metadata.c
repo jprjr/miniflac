@@ -16,7 +16,7 @@ miniflac_metadata_init(miniflac_metadata_t* metadata) {
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_metadata_sync(miniflac_metadata_t* metadata, miniflac_bitreader* br) {
+miniflac_metadata_sync(miniflac_metadata_t* metadata, miniflac_bitreader_t* br) {
     MINIFLAC_RESULT r;
     assert(metadata->state == MINIFLAC_METADATA_HEADER);
     r = miniflac_metadata_header_decode(&metadata->header,br);
@@ -45,7 +45,7 @@ miniflac_metadata_sync(miniflac_metadata_t* metadata, miniflac_bitreader* br) {
 
 static
 MINIFLAC_RESULT
-miniflac_metadata_skip(miniflac_metadata_t* metadata, miniflac_bitreader *br) {
+miniflac_metadata_skip(miniflac_metadata_t* metadata, miniflac_bitreader_t* br) {
     while(metadata->pos < metadata->header.length) {
         if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
         miniflac_bitreader_discard(br,8);
@@ -56,7 +56,7 @@ miniflac_metadata_skip(miniflac_metadata_t* metadata, miniflac_bitreader *br) {
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_metadata_decode(miniflac_metadata_t* metadata, miniflac_bitreader *br) {
+miniflac_metadata_decode(miniflac_metadata_t* metadata, miniflac_bitreader_t* br) {
     MINIFLAC_RESULT r = MINIFLAC_ERROR;
     switch(metadata->state) {
         case MINIFLAC_METADATA_HEADER: {

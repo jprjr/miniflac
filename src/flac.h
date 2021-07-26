@@ -36,7 +36,7 @@ enum MINIFLAC_CONTAINER {
 struct miniflac_s {
     MINIFLAC_STATE state;
     MINIFLAC_CONTAINER container;
-    miniflac_bitreader br;
+    miniflac_bitreader_t br;
     miniflac_ogg_t ogg;
     miniflac_oggheader_t oggheader;
     miniflac_streammarker_t streammarker;

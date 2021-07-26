@@ -79,7 +79,7 @@ miniflac_init(miniflac_t* pFlac, MINIFLAC_CONTAINER container) {
 
 static
 MINIFLAC_RESULT
-miniflac_sync_internal(miniflac_t* pFlac, miniflac_bitreader* br) {
+miniflac_sync_internal(miniflac_t* pFlac, miniflac_bitreader_t* br) {
     MINIFLAC_RESULT r;
     unsigned char c;
     uint16_t peek;

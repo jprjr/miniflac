@@ -38,7 +38,7 @@ miniflac_subframe_lpc_init(miniflac_subframe_lpc* l);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_subframe_lpc_decode(miniflac_subframe_lpc* l, miniflac_bitreader* br, int32_t* output, uint32_t block_size, uint8_t bps, uint8_t predictor_order);
+miniflac_subframe_lpc_decode(miniflac_subframe_lpc* l, miniflac_bitreader_t* br, int32_t* output, uint32_t block_size, uint8_t bps, uint8_t predictor_order);
 
 #ifdef __cplusplus
 }

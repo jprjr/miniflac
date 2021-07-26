@@ -30,7 +30,7 @@ miniflac_subframe_verbatim_init(miniflac_subframe_verbatim* c);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_subframe_verbatim_decode(miniflac_subframe_verbatim* c, miniflac_bitreader* br, int32_t* output, uint32_t block_size, uint8_t bps);
+miniflac_subframe_verbatim_decode(miniflac_subframe_verbatim* c, miniflac_bitreader_t* br, int32_t* output, uint32_t block_size, uint8_t bps);
 
 #ifdef __cplusplus
 }

@@ -26,7 +26,7 @@ miniflac_residual_init(miniflac_residual* residual) {
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_residual_decode(miniflac_residual* residual, miniflac_bitreader* br, uint32_t* pos, uint32_t block_size, uint8_t predictor_order, int32_t *output) {
+miniflac_residual_decode(miniflac_residual* residual, miniflac_bitreader_t* br, uint32_t* pos, uint32_t block_size, uint8_t predictor_order, int32_t *output) {
     uint64_t temp;
     uint32_t temp_32;
 

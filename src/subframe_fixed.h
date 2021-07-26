@@ -32,7 +32,7 @@ miniflac_subframe_fixed_init(miniflac_subframe_fixed* c);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_subframe_fixed_decode(miniflac_subframe_fixed* c, miniflac_bitreader* br, int32_t* output, uint32_t block_size, uint8_t bps, uint8_t predictor_order);
+miniflac_subframe_fixed_decode(miniflac_subframe_fixed* c, miniflac_bitreader_t* br, int32_t* output, uint32_t block_size, uint8_t bps, uint8_t predictor_order);
 
 #ifdef __cplusplus
 }

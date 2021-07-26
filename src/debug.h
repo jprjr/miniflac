@@ -25,7 +25,7 @@ extern "C" {
 #endif
 
 void
-miniflac_dump_bitreader(miniflac_bitreader* br,uint8_t indent);
+miniflac_dump_bitreader(miniflac_bitreader_t* br,uint8_t indent);
 
 void
 miniflac_dump_frame(miniflac_frame* frame, uint8_t indent);

@@ -165,8 +165,8 @@ static const char* const miniflac_streaminfo_state_str[] = {
 };
 
 void
-miniflac_dump_bitreader(miniflac_bitreader* br, uint8_t indent) {
-    dumpf(indent,"bitreader (%lu bytes):\n",sizeof(miniflac_bitreader));
+miniflac_dump_bitreader(miniflac_bitreader_t* br, uint8_t indent) {
+    dumpf(indent,"bitreader (%lu bytes):\n",sizeof(miniflac_bitreader_t));
     indent+=2;
     dumpf(indent,"val: 0x%08lx\n",br->val);
     dumpf(indent,"bits: %u\n",br->bits);

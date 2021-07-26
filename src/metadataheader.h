@@ -47,7 +47,7 @@ miniflac_metadata_header_init(miniflac_metadata_header* header);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_metadata_header_decode(miniflac_metadata_header* header, miniflac_bitreader *br);
+miniflac_metadata_header_decode(miniflac_metadata_header* header, miniflac_bitreader_t* br);
 
 #ifdef __cplusplus
 }

@@ -40,47 +40,47 @@ miniflac_picture_init(miniflac_picture_t* picture);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_picture_read_type(miniflac_picture_t* picture, miniflac_bitreader *br, uint32_t* type);
+miniflac_picture_read_type(miniflac_picture_t* picture, miniflac_bitreader_t* br, uint32_t* type);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_picture_read_mime_length(miniflac_picture_t* picture, miniflac_bitreader *br, uint32_t* length);
+miniflac_picture_read_mime_length(miniflac_picture_t* picture, miniflac_bitreader_t* br, uint32_t* length);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_picture_read_mime_string(miniflac_picture_t* picture, miniflac_bitreader *br, char* output, uint32_t length, uint32_t* outlen);
+miniflac_picture_read_mime_string(miniflac_picture_t* picture, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_picture_read_description_length(miniflac_picture_t* picture, miniflac_bitreader *br, uint32_t* length);
+miniflac_picture_read_description_length(miniflac_picture_t* picture, miniflac_bitreader_t* br, uint32_t* length);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_picture_read_description_string(miniflac_picture_t* picture, miniflac_bitreader *br, char* output, uint32_t length, uint32_t* outlen);
+miniflac_picture_read_description_string(miniflac_picture_t* picture, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_picture_read_width(miniflac_picture_t* picture, miniflac_bitreader *br, uint32_t* length);
+miniflac_picture_read_width(miniflac_picture_t* picture, miniflac_bitreader_t* br, uint32_t* length);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_picture_read_height(miniflac_picture_t* picture, miniflac_bitreader *br, uint32_t* length);
+miniflac_picture_read_height(miniflac_picture_t* picture, miniflac_bitreader_t* br, uint32_t* length);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_picture_read_colordepth(miniflac_picture_t* picture, miniflac_bitreader *br, uint32_t* length);
+miniflac_picture_read_colordepth(miniflac_picture_t* picture, miniflac_bitreader_t* br, uint32_t* length);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_picture_read_totalcolors(miniflac_picture_t* picture, miniflac_bitreader *br, uint32_t* length);
+miniflac_picture_read_totalcolors(miniflac_picture_t* picture, miniflac_bitreader_t* br, uint32_t* length);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_picture_read_picture_length(miniflac_picture_t* picture, miniflac_bitreader *br, uint32_t* length);
+miniflac_picture_read_picture_length(miniflac_picture_t* picture, miniflac_bitreader_t* br, uint32_t* length);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_picture_read_picture_data(miniflac_picture_t* picture, miniflac_bitreader *br, uint8_t* output, uint32_t length, uint32_t* outlen);
+miniflac_picture_read_picture_data(miniflac_picture_t* picture, miniflac_bitreader_t* br, uint8_t* output, uint32_t length, uint32_t* outlen);
 
 #ifdef __cplusplus
 }

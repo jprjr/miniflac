@@ -67,7 +67,7 @@ void
 miniflac_frame_header_init(miniflac_frame_header* frame_header);
 
 MINIFLAC_PRIVATE
-MINIFLAC_RESULT miniflac_frame_header_decode(miniflac_frame_header* frame_header, miniflac_bitreader* br);
+MINIFLAC_RESULT miniflac_frame_header_decode(miniflac_frame_header* frame_header, miniflac_bitreader_t* br);
 
 #ifdef __cplusplus
 }
