@@ -1,14 +1,11 @@
 .PHONY: all clean
 
-SANITIZE_CFLAGS = -fsanitize=undefined
-SANITIZE_LDFLAGS = -fsanitize=undefined
-
 MISC_CFLAGS = -DMINIFLAC_ABORT_ON_ERROR
 
 OPTIMIZE = -O3
 
-CFLAGS = $(SANITIZE_CFLAGS) -Wall -Wextra -fPIC -g $(OPTIMIZE) $(MISC_CFLAGS)
-LDFLAGS = $(SANITIZE_LDFLAGS)
+CFLAGS = -Wall -Wextra -fPIC -g $(OPTIMIZE) $(MISC_CFLAGS)
+LDFLAGS =
 
 OBJS = \
   src/bitreader.o \
@@ -75,7 +72,7 @@ HEADERS = \
   src/subframe.h \
   src/unpack.h
 
-all: libminiflac.a libminiflac.so miniflac.h examples/basic-decoder examples/single-byte-decoder utils/strip-headers examples/get-sizes examples/null-decoder examples/benchmark
+all: libminiflac.a libminiflac.so miniflac.h examples/basic-decoder examples/single-byte-decoder utils/strip-headers examples/get-sizes examples/null-decoder examples/benchmark examples/just-decode examples/just-decode-singlefile
 
 miniflac.h: $(SOURCES) $(HEADERS) utils/build.pl
 	./utils/build.pl > miniflac.h
@@ -89,10 +86,22 @@ libminiflac.so: $(OBJS)
 examples/get-sizes: examples/get-sizes.o src/debug.o $(OBJS)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
+examples/benchmark.o: examples/benchmark.c miniflac.h
+	$(CC) $(CFLAGS) $(shell pkg-config --cflags flac) -c -o $@ $<
+
 examples/basic-decoder.o: examples/basic-decoder.c miniflac.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 examples/null-decoder.o: examples/null-decoder.c miniflac.h
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+examples/slurp.o: examples/slurp.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+examples/just-decode.o: examples/just-decode.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+examples/just-decode-singlefile.o: examples/just-decode-singlefile.c miniflac.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 examples/single-byte-decoder.o: examples/single-byte-decoder.c miniflac.h
@@ -103,6 +112,12 @@ examples/basic-decoder: examples/basic-decoder.o examples/wav.o examples/pack.o 
 
 examples/benchmark: examples/benchmark.o examples/slurp.o examples/tictoc.o
 	$(CC) -o $@ $^ $(LDFLAGS) -lrt $(shell pkg-config --libs flac)
+
+examples/just-decode: examples/just-decode.o examples/slurp.o examples/tictoc.o libminiflac.a
+	$(CC) -o $@ $^
+
+examples/just-decode-singlefile: examples/just-decode-singlefile.o examples/slurp.o examples/tictoc.o
+	$(CC) -o $@ $^
 
 examples/null-decoder: examples/null-decoder.o src/debug.o
 	$(CC) -o $@ $^ $(LDFLAGS)
@@ -120,6 +135,10 @@ clean:
 	rm -f examples/single-byte-decoder examples/single-byte-decoder.exe examples/single-byte-decoder.o
 	rm -f examples/get-sizes examples/get-sizes.exe examples/get-sizes.o
 	rm -f examples/null-decoder examples/null-decoder.exe examples/null-decoder.o
+	rm -f examples/benchmark examples/benchmark.exe examples/benchmark.o
+	rm -f examples/just-decode examples/just-decode.exe examples/just-decode.o
+	rm -f examples/just-decode-singefile examples/just-decode-singefile.exe examples/just-decode-singefile.o
 	rm -f examples/wav.o examples/pack.o examples/slurp.o
 	rm -f utils/strip-headers utils/strip-headers.exe utils/strip-headers.o
 	rm -f src/debug.o
+	rm -f examples/tictoc.o

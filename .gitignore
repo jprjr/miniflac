@@ -8,4 +8,6 @@
 /examples/get-sizes
 /examples/null-decoder
 /examples/benchmark
+/examples/just-decode
+/examples/just-decode-singlefile
 /utils/strip-headers
