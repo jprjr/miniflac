@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: 0BSD */
 #include "bitreader.h"
 #include <stddef.h>
+#include <assert.h>
 
 static const uint8_t miniflac_crc8_table[256] = {
   0x00, 0x07, 0x0e, 0x09, 0x1c, 0x1b, 0x12, 0x15,
@@ -88,6 +89,7 @@ MINIFLAC_PRIVATE
 int
 miniflac_bitreader_fill(miniflac_bitreader_t* br, uint8_t bits) {
     uint8_t byte = 0;
+    assert(bits <= 64);
     if(bits == 0) return 0;
     while(br->bits < bits && br->pos < br->len) {
         byte = br->buffer[br->pos++];
@@ -103,6 +105,7 @@ MINIFLAC_PRIVATE
 int
 miniflac_bitreader_fill_nocrc(miniflac_bitreader_t* br, uint8_t bits) {
     uint8_t byte = 0;
+    assert(bits <= 64);
     if(bits == 0) return 0;
     while(br->bits < bits && br->pos < br->len) {
         byte = br->buffer[br->pos++];
@@ -120,6 +123,7 @@ miniflac_bitreader_read(miniflac_bitreader_t* br, uint8_t bits) {
     uint64_t imask = -1LL;
     uint64_t r;
 
+    assert(bits <= br->bits);
     if(bits == 0) return 0;
 
     mask >>= (64 - bits);
@@ -157,6 +161,7 @@ miniflac_bitreader_peek(miniflac_bitreader_t* br, uint8_t bits) {
     uint64_t mask = -1LL;
     uint64_t r;
 
+    assert(bits <= br->bits);
     if(bits == 0) return 0;
 
     mask >>= (64 - bits);
@@ -169,6 +174,7 @@ void
 miniflac_bitreader_discard(miniflac_bitreader_t* br, uint8_t bits) {
     uint64_t imask = -1LL;
 
+    assert(bits <= br->bits);
     if(bits == 0) return;
 
     br->bits -= bits;
@@ -184,6 +190,7 @@ miniflac_bitreader_discard(miniflac_bitreader_t* br, uint8_t bits) {
 MINIFLAC_PRIVATE
 void
 miniflac_bitreader_align(miniflac_bitreader_t* br) {
+    assert(br->bits < 8);
     br->bits = 0;
     br->val = 0;
 }

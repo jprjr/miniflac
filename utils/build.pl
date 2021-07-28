@@ -26,6 +26,7 @@ src/frame.c
 src/frameheader.c
 src/vorbiscomment.c
 src/picture.c
+src/cuesheet.c
 src/metadata.c
 src/metadataheader.c
 src/residual.c
@@ -50,6 +51,7 @@ src/metadataheader.h
 src/streaminfo.h
 src/vorbiscomment.h
 src/picture.h
+src/cuesheet.h
 src/metadata.h
 src/residual.h
 src/subframe_fixed.h

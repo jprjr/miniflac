@@ -9,6 +9,7 @@ LDFLAGS = -flto
 
 OBJS = \
   src/bitreader.o \
+  src/cuesheet.o \
   src/flac.o \
   src/frame.o \
   src/frameheader.o \
@@ -31,6 +32,7 @@ OBJS = \
 
 SOURCES = \
   src/bitreader.c \
+  src/cuesheet.c \
   src/flac.c \
   src/frame.c \
   src/frameheader.c \
@@ -53,6 +55,7 @@ SOURCES = \
 HEADERS = \
   src/common.h \
   src/bitreader.h \
+  src/cuesheet.h \
   src/flac.h \
   src/frame.h \
   src/frameheader.h \

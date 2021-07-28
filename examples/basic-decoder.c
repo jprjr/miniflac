@@ -34,6 +34,7 @@ int main(int argc, const char *argv[]) {
     MINIFLAC_RESULT res;
     int r = 1;
     unsigned int i = 0;
+    unsigned int j = 0;
     FILE* output = NULL;
     uint32_t length = 0;
     uint32_t used = 0;
@@ -48,6 +49,8 @@ int main(int argc, const char *argv[]) {
     uint32_t incoming_string_length = 0;
     char* string_buffer = NULL;
     uint32_t string_buffer_length = 0;
+    uint8_t temp8 = 0;
+    uint64_t temp64 = 0;
 
     if(argc < 3) {
         fprintf(stderr,"Usage: %s /path/to/flac /path/to/pcm\n",argv[0]);
@@ -218,6 +221,94 @@ int main(int argc, const char *argv[]) {
                 string_buffer_length = incoming_string_length;
             }
             if(miniflac_picture_data(decoder,&buffer[pos],length,&used,(uint8_t*)string_buffer,string_buffer_length+1,&incoming_string_length) != MINIFLAC_OK) abort();
+            length -= used;
+            pos += used;
+        }
+        else if(decoder->metadata.header.type == MINIFLAC_METADATA_CUESHEET) {
+            fprintf(stdout,"[cuesheet]\n");
+            incoming_string_length = 128;
+            if(incoming_string_length > string_buffer_length) {
+                string_buffer = realloc(string_buffer,incoming_string_length + 1);
+                if(string_buffer == NULL) abort();
+                string_buffer_length = incoming_string_length;
+            }
+            if(miniflac_cuesheet_catalogue(decoder,&buffer[pos],length,&used,string_buffer,string_buffer_length+1,&incoming_string_length) != MINIFLAC_OK) abort();
+            length -= used;
+            pos += used;
+            string_buffer[incoming_string_length] = '\0';
+            fprintf(stdout,"  media catalogue number (%u): %s\n",(unsigned int)strlen(string_buffer),string_buffer);
+
+            if(miniflac_cuesheet_leadin(decoder,&buffer[pos],length,&used,&temp64) != MINIFLAC_OK) abort();
+            length -= used;
+            pos += used;
+            fprintf(stdout,"  leadin: %lu\n",temp64);
+
+            if(miniflac_cuesheet_cdflag(decoder,&buffer[pos],length,&used,&temp8) != MINIFLAC_OK) abort();
+            length -= used;
+            pos += used;
+            fprintf(stdout,"  cdflag: %u\n",temp8);
+
+            if(miniflac_cuesheet_tracks(decoder,&buffer[pos],length,&used,&temp8) != MINIFLAC_OK) abort();
+            length -= used;
+            pos += used;
+            fprintf(stdout,"  tracks: %u\n",temp8);
+
+            i = 0;
+            while( (res =miniflac_cuesheet_track_offset(decoder,&buffer[pos],length,&used,&temp64)) == MINIFLAC_OK) {
+                length -= used;
+                pos += used;
+                fprintf(stdout,"  [track %u]\n",++i);
+                fprintf(stdout,"    offset: %lu\n",temp64);
+
+                if(miniflac_cuesheet_track_number(decoder,&buffer[pos],length,&used,&temp8) != MINIFLAC_OK) abort();
+                length -= used;
+                pos += used;
+                fprintf(stdout,"    number: %u\n",temp8);
+
+                incoming_string_length = 12;
+                if(incoming_string_length > string_buffer_length) {
+                    string_buffer = realloc(string_buffer,incoming_string_length + 1);
+                    if(string_buffer == NULL) abort();
+                    string_buffer_length = incoming_string_length;
+                }
+                if(miniflac_cuesheet_track_isrc(decoder,&buffer[pos],length,&used,string_buffer,string_buffer_length+1,&incoming_string_length) != MINIFLAC_OK) abort();
+                length -= used;
+                pos += used;
+                string_buffer[incoming_string_length] = '\0';
+                fprintf(stdout,"    isrc (%u): %s\n",(unsigned int)strlen(string_buffer),string_buffer);
+
+                if(miniflac_cuesheet_track_type(decoder,&buffer[pos],length,&used,&temp8) != MINIFLAC_OK) abort();
+                length -= used;
+                pos += used;
+                fprintf(stdout,"    type: %u\n",temp8);
+
+                if(miniflac_cuesheet_track_preemph(decoder,&buffer[pos],length,&used,&temp8) != MINIFLAC_OK) abort();
+                length -= used;
+                pos += used;
+                fprintf(stdout,"    preemph: %u\n",temp8);
+
+                if(miniflac_cuesheet_track_indexpoints(decoder,&buffer[pos],length,&used,&temp8) != MINIFLAC_OK) abort();
+                length -= used;
+                pos += used;
+                fprintf(stdout,"    indexpoints: %u\n",temp8);
+
+                j = 0;
+                while( (res = miniflac_cuesheet_index_point_offset(decoder,&buffer[pos],length,&used,&temp64)) == MINIFLAC_OK) {
+                    length -= used;
+                    pos += used;
+
+                    fprintf(stdout,"    [index point %u]\n",++j);
+                    fprintf(stdout,"      offset: %lu\n",temp64);
+
+                    if(miniflac_cuesheet_index_point_number(decoder,&buffer[pos],length,&used,&temp8) != MINIFLAC_OK) abort();
+                    length -= used;
+                    pos += used;
+                    fprintf(stdout,"      number: %u\n",temp8);
+                }
+                length -= used;
+                pos += used;
+
+            }
             length -= used;
             pos += used;
         }

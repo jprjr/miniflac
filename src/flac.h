@@ -160,6 +160,66 @@ MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_picture_data(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* buffer, uint32_t buffer_length, uint32_t* buffer_used);
 
+/* read a cuesheet catalogue number */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_cuesheet_catalogue(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* outlen);
+
+/* read a cuesheet leadin value */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_cuesheet_leadin(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint64_t* leadin);
+
+/* read a cuesheet "is this a cd" flag */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_cuesheet_cdflag(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* cdflag);
+
+/* read a cuesheet total tracks */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_cuesheet_tracks(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* tracks);
+
+/* read the next track offset (can return MINIFLAC_METADATA_END) */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_cuesheet_track_offset(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint64_t* track_offset);
+
+/* read the next track number */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_cuesheet_track_number(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* track_number);
+
+/* read the next track isrc */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_cuesheet_track_isrc(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* outlen);
+
+/* read the next track type flag (0 = audio, 1 = non-audio) */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_cuesheet_track_type(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* track_type);
+
+/* read the track pre-emphasis flag */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_cuesheet_track_preemph(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* track_preemph);
+
+/* read the total number of track index points */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_cuesheet_track_indexpoints(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* track_indexpoints);
+
+/* read the next index point offset */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_cuesheet_index_point_offset(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint64_t* index_point_offset);
+
+/* read the next index point number */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_cuesheet_index_point_number(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* index_point_number);
+
 #ifdef __cplusplus
 }
 #endif

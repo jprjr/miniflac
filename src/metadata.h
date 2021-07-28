@@ -10,6 +10,7 @@
 #include "streaminfo.h"
 #include "vorbiscomment.h"
 #include "picture.h"
+#include "cuesheet.h"
 
 typedef struct miniflac_metadata_s miniflac_metadata_t;
 typedef enum MINIFLAC_METADATA_STATE MINIFLAC_METADATA_STATE;
@@ -26,6 +27,7 @@ struct miniflac_metadata_s {
     miniflac_streaminfo_private_t  streaminfo;
     miniflac_vorbiscomment_t    vorbiscomment;
     miniflac_picture_t                picture;
+    miniflac_cuesheet_t              cuesheet;
 };
 
 #ifdef __cplusplus

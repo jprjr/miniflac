@@ -265,7 +265,7 @@ miniflac_picture_read_totalcolors(miniflac_picture_t* picture, miniflac_bitreade
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_picture_read_picture_length(miniflac_picture_t* picture, miniflac_bitreader_t* br, uint32_t* length) {
+miniflac_picture_read_length(miniflac_picture_t* picture, miniflac_bitreader_t* br, uint32_t* length) {
     MINIFLAC_RESULT r = MINIFLAC_ERROR;
     switch(picture->state) {
         case MINIFLAC_PICTURE_TYPE: /* fall-through */
@@ -297,7 +297,7 @@ miniflac_picture_read_picture_length(miniflac_picture_t* picture, miniflac_bitre
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_picture_read_picture_data(miniflac_picture_t* picture, miniflac_bitreader_t* br, uint8_t* output, uint32_t length, uint32_t* outlen) {
+miniflac_picture_read_data(miniflac_picture_t* picture, miniflac_bitreader_t* br, uint8_t* output, uint32_t length, uint32_t* outlen) {
     MINIFLAC_RESULT r = MINIFLAC_ERROR;
     uint8_t c;
     switch(picture->state) {
@@ -311,7 +311,7 @@ miniflac_picture_read_picture_data(miniflac_picture_t* picture, miniflac_bitread
         case MINIFLAC_PICTURE_COLORDEPTH: /* fall-through */
         case MINIFLAC_PICTURE_TOTALCOLORS: /* fall-through */
         case MINIFLAC_PICTURE_PICTURE_LENGTH: {
-            r = miniflac_picture_read_picture_length(picture,br,NULL);
+            r = miniflac_picture_read_length(picture,br,NULL);
             if(r != MINIFLAC_OK) return r;
         }
         /* fall-through */

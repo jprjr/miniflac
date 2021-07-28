@@ -106,6 +106,7 @@ frame, or call miniflac_decode to continue on.
 
 #define MINIFLAC_COMMON_H
 #define MINIFLAC_BITREADER_H
+#define MINIFLAC_CUESHEET_H
 #define MINIFLAC_FRAME_H
 #define MINIFLAC_FRAMEHEADER_H
 #define MINIFLAC_METADATA_H

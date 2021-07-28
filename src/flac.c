@@ -370,337 +370,6 @@ miniflac_comment_string_native(miniflac_t *pFlac, const uint8_t* data, uint32_t 
     return r;
 }
 
-
-static
-MINIFLAC_RESULT
-miniflac_picture_type_native(miniflac_t *pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_type) {
-    MINIFLAC_RESULT r;
-    pFlac->br.buffer = data;
-    pFlac->br.len    = length;
-    pFlac->br.pos    = 0;
-
-    while(pFlac->state != MINIFLAC_METADATA) {
-        r = miniflac_sync_internal(pFlac,&pFlac->br);
-        if(r != MINIFLAC_OK) goto miniflac_picture_type_exit;
-    }
-
-    while(pFlac->metadata.header.type != MINIFLAC_METADATA_PICTURE) {
-        /* sync to the next block */
-        r = miniflac_sync_internal(pFlac,&pFlac->br);
-        if(r != MINIFLAC_OK) goto miniflac_picture_type_exit;
-        if(pFlac->state != MINIFLAC_METADATA) {
-            r = MINIFLAC_ERROR;
-            goto miniflac_picture_type_exit;
-        }
-    }
-
-    r = miniflac_picture_read_type(&pFlac->metadata.picture,&pFlac->br,picture_type);
-
-    miniflac_picture_type_exit:
-    *out_length = pFlac->br.pos;
-    return r;
-}
-
-static
-MINIFLAC_RESULT
-miniflac_picture_mime_length_native(miniflac_t *pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_mime_length) {
-    MINIFLAC_RESULT r;
-    pFlac->br.buffer = data;
-    pFlac->br.len    = length;
-    pFlac->br.pos    = 0;
-
-    while(pFlac->state != MINIFLAC_METADATA) {
-        r = miniflac_sync_internal(pFlac,&pFlac->br);
-        if(r != MINIFLAC_OK) goto miniflac_picture_mime_length_exit;
-    }
-
-    while(pFlac->metadata.header.type != MINIFLAC_METADATA_PICTURE) {
-        /* sync to the next block */
-        r = miniflac_sync_internal(pFlac,&pFlac->br);
-        if(r != MINIFLAC_OK) goto miniflac_picture_mime_length_exit;
-        if(pFlac->state != MINIFLAC_METADATA) {
-            r = MINIFLAC_ERROR;
-            goto miniflac_picture_mime_length_exit;
-        }
-    }
-
-    r = miniflac_picture_read_mime_length(&pFlac->metadata.picture,&pFlac->br,picture_mime_length);
-
-    miniflac_picture_mime_length_exit:
-    *out_length = pFlac->br.pos;
-    return r;
-}
-
-static
-MINIFLAC_RESULT
-miniflac_picture_mime_string_native(miniflac_t *pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* buffer_used) {
-    MINIFLAC_RESULT r;
-    pFlac->br.buffer = data;
-    pFlac->br.len    = length;
-    pFlac->br.pos    = 0;
-
-    while(pFlac->state != MINIFLAC_METADATA) {
-        r = miniflac_sync_internal(pFlac,&pFlac->br);
-        if(r != MINIFLAC_OK) goto miniflac_picture_mime_string_exit;
-    }
-
-    while(pFlac->metadata.header.type != MINIFLAC_METADATA_PICTURE) {
-        /* sync to the next block */
-        r = miniflac_sync_internal(pFlac,&pFlac->br);
-        if(r != MINIFLAC_OK) goto miniflac_picture_mime_string_exit;
-        if(pFlac->state != MINIFLAC_METADATA) {
-            r = MINIFLAC_ERROR;
-            goto miniflac_picture_mime_string_exit;
-        }
-    }
-
-    r = miniflac_picture_read_mime_string(&pFlac->metadata.picture,&pFlac->br,buffer, buffer_length, buffer_used);
-
-    miniflac_picture_mime_string_exit:
-    *out_length = pFlac->br.pos;
-    return r;
-}
-
-static
-MINIFLAC_RESULT
-miniflac_picture_description_length_native(miniflac_t *pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_description_length) {
-    MINIFLAC_RESULT r;
-    pFlac->br.buffer = data;
-    pFlac->br.len    = length;
-    pFlac->br.pos    = 0;
-
-    while(pFlac->state != MINIFLAC_METADATA) {
-        r = miniflac_sync_internal(pFlac,&pFlac->br);
-        if(r != MINIFLAC_OK) goto miniflac_picture_description_length_exit;
-    }
-
-    while(pFlac->metadata.header.type != MINIFLAC_METADATA_PICTURE) {
-        /* sync to the next block */
-        r = miniflac_sync_internal(pFlac,&pFlac->br);
-        if(r != MINIFLAC_OK) goto miniflac_picture_description_length_exit;
-        if(pFlac->state != MINIFLAC_METADATA) {
-            r = MINIFLAC_ERROR;
-            goto miniflac_picture_description_length_exit;
-        }
-    }
-
-    r = miniflac_picture_read_description_length(&pFlac->metadata.picture,&pFlac->br,picture_description_length);
-
-    miniflac_picture_description_length_exit:
-    *out_length = pFlac->br.pos;
-    return r;
-}
-
-static
-MINIFLAC_RESULT
-miniflac_picture_description_string_native(miniflac_t *pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* buffer_used) {
-    MINIFLAC_RESULT r;
-    pFlac->br.buffer = data;
-    pFlac->br.len    = length;
-    pFlac->br.pos    = 0;
-
-    while(pFlac->state != MINIFLAC_METADATA) {
-        r = miniflac_sync_internal(pFlac,&pFlac->br);
-        if(r != MINIFLAC_OK) goto miniflac_picture_description_string_exit;
-    }
-
-    while(pFlac->metadata.header.type != MINIFLAC_METADATA_PICTURE) {
-        /* sync to the next block */
-        r = miniflac_sync_internal(pFlac,&pFlac->br);
-        if(r != MINIFLAC_OK) goto miniflac_picture_description_string_exit;
-        if(pFlac->state != MINIFLAC_METADATA) {
-            r = MINIFLAC_ERROR;
-            goto miniflac_picture_description_string_exit;
-        }
-    }
-
-    r = miniflac_picture_read_description_string(&pFlac->metadata.picture,&pFlac->br,buffer, buffer_length, buffer_used);
-
-    miniflac_picture_description_string_exit:
-    *out_length = pFlac->br.pos;
-    return r;
-}
-
-static
-MINIFLAC_RESULT
-miniflac_picture_width_native(miniflac_t *pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_width) {
-    MINIFLAC_RESULT r;
-    pFlac->br.buffer = data;
-    pFlac->br.len    = length;
-    pFlac->br.pos    = 0;
-
-    while(pFlac->state != MINIFLAC_METADATA) {
-        r = miniflac_sync_internal(pFlac,&pFlac->br);
-        if(r != MINIFLAC_OK) goto miniflac_picture_width_exit;
-    }
-
-    while(pFlac->metadata.header.type != MINIFLAC_METADATA_PICTURE) {
-        /* sync to the next block */
-        r = miniflac_sync_internal(pFlac,&pFlac->br);
-        if(r != MINIFLAC_OK) goto miniflac_picture_width_exit;
-        if(pFlac->state != MINIFLAC_METADATA) {
-            r = MINIFLAC_ERROR;
-            goto miniflac_picture_width_exit;
-        }
-    }
-
-    r = miniflac_picture_read_width(&pFlac->metadata.picture,&pFlac->br,picture_width);
-
-    miniflac_picture_width_exit:
-    *out_length = pFlac->br.pos;
-    return r;
-}
-
-static
-MINIFLAC_RESULT
-miniflac_picture_height_native(miniflac_t *pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_height) {
-    MINIFLAC_RESULT r;
-    pFlac->br.buffer = data;
-    pFlac->br.len    = length;
-    pFlac->br.pos    = 0;
-
-    while(pFlac->state != MINIFLAC_METADATA) {
-        r = miniflac_sync_internal(pFlac,&pFlac->br);
-        if(r != MINIFLAC_OK) goto miniflac_picture_height_exit;
-    }
-
-    while(pFlac->metadata.header.type != MINIFLAC_METADATA_PICTURE) {
-        /* sync to the next block */
-        r = miniflac_sync_internal(pFlac,&pFlac->br);
-        if(r != MINIFLAC_OK) goto miniflac_picture_height_exit;
-        if(pFlac->state != MINIFLAC_METADATA) {
-            r = MINIFLAC_ERROR;
-            goto miniflac_picture_height_exit;
-        }
-    }
-
-    r = miniflac_picture_read_height(&pFlac->metadata.picture,&pFlac->br,picture_height);
-
-    miniflac_picture_height_exit:
-    *out_length = pFlac->br.pos;
-    return r;
-}
-
-static
-MINIFLAC_RESULT
-miniflac_picture_colordepth_native(miniflac_t *pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_colordepth) {
-    MINIFLAC_RESULT r;
-    pFlac->br.buffer = data;
-    pFlac->br.len    = length;
-    pFlac->br.pos    = 0;
-
-    while(pFlac->state != MINIFLAC_METADATA) {
-        r = miniflac_sync_internal(pFlac,&pFlac->br);
-        if(r != MINIFLAC_OK) goto miniflac_picture_colordepth_exit;
-    }
-
-    while(pFlac->metadata.header.type != MINIFLAC_METADATA_PICTURE) {
-        /* sync to the next block */
-        r = miniflac_sync_internal(pFlac,&pFlac->br);
-        if(r != MINIFLAC_OK) goto miniflac_picture_colordepth_exit;
-        if(pFlac->state != MINIFLAC_METADATA) {
-            r = MINIFLAC_ERROR;
-            goto miniflac_picture_colordepth_exit;
-        }
-    }
-
-    r = miniflac_picture_read_colordepth(&pFlac->metadata.picture,&pFlac->br,picture_colordepth);
-
-    miniflac_picture_colordepth_exit:
-    *out_length = pFlac->br.pos;
-    return r;
-}
-
-static
-MINIFLAC_RESULT
-miniflac_picture_totalcolors_native(miniflac_t *pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_totalcolors) {
-    MINIFLAC_RESULT r;
-    pFlac->br.buffer = data;
-    pFlac->br.len    = length;
-    pFlac->br.pos    = 0;
-
-    while(pFlac->state != MINIFLAC_METADATA) {
-        r = miniflac_sync_internal(pFlac,&pFlac->br);
-        if(r != MINIFLAC_OK) goto miniflac_picture_totalcolors_exit;
-    }
-
-    while(pFlac->metadata.header.type != MINIFLAC_METADATA_PICTURE) {
-        /* sync to the next block */
-        r = miniflac_sync_internal(pFlac,&pFlac->br);
-        if(r != MINIFLAC_OK) goto miniflac_picture_totalcolors_exit;
-        if(pFlac->state != MINIFLAC_METADATA) {
-            r = MINIFLAC_ERROR;
-            goto miniflac_picture_totalcolors_exit;
-        }
-    }
-
-    r = miniflac_picture_read_totalcolors(&pFlac->metadata.picture,&pFlac->br,picture_totalcolors);
-
-    miniflac_picture_totalcolors_exit:
-    *out_length = pFlac->br.pos;
-    return r;
-}
-
-static
-MINIFLAC_RESULT
-miniflac_picture_length_native(miniflac_t *pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_length) {
-    MINIFLAC_RESULT r;
-    pFlac->br.buffer = data;
-    pFlac->br.len    = length;
-    pFlac->br.pos    = 0;
-
-    while(pFlac->state != MINIFLAC_METADATA) {
-        r = miniflac_sync_internal(pFlac,&pFlac->br);
-        if(r != MINIFLAC_OK) goto miniflac_picture_length_exit;
-    }
-
-    while(pFlac->metadata.header.type != MINIFLAC_METADATA_PICTURE) {
-        /* sync to the next block */
-        r = miniflac_sync_internal(pFlac,&pFlac->br);
-        if(r != MINIFLAC_OK) goto miniflac_picture_length_exit;
-        if(pFlac->state != MINIFLAC_METADATA) {
-            r = MINIFLAC_ERROR;
-            goto miniflac_picture_length_exit;
-        }
-    }
-
-    r = miniflac_picture_read_picture_length(&pFlac->metadata.picture,&pFlac->br,picture_length);
-
-    miniflac_picture_length_exit:
-    *out_length = pFlac->br.pos;
-    return r;
-}
-
-static
-MINIFLAC_RESULT
-miniflac_picture_data_native(miniflac_t *pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* buffer, uint32_t buffer_length, uint32_t* buffer_used) {
-    MINIFLAC_RESULT r;
-    pFlac->br.buffer = data;
-    pFlac->br.len    = length;
-    pFlac->br.pos    = 0;
-
-    while(pFlac->state != MINIFLAC_METADATA) {
-        r = miniflac_sync_internal(pFlac,&pFlac->br);
-        if(r != MINIFLAC_OK) goto miniflac_picture_data_exit;
-    }
-
-    while(pFlac->metadata.header.type != MINIFLAC_METADATA_PICTURE) {
-        /* sync to the next block */
-        r = miniflac_sync_internal(pFlac,&pFlac->br);
-        if(r != MINIFLAC_OK) goto miniflac_picture_data_exit;
-        if(pFlac->state != MINIFLAC_METADATA) {
-            r = MINIFLAC_ERROR;
-            goto miniflac_picture_data_exit;
-        }
-    }
-
-    r = miniflac_picture_read_picture_data(&pFlac->metadata.picture,&pFlac->br,buffer, buffer_length, buffer_used);
-
-    miniflac_picture_data_exit:
-    *out_length = pFlac->br.pos;
-    return r;
-}
-
 static
 MINIFLAC_RESULT
 miniflac_sync_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length) {
@@ -903,281 +572,6 @@ miniflac_comment_string_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t len
 
 static
 MINIFLAC_RESULT
-miniflac_picture_type_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_type) {
-    MINIFLAC_RESULT r = MINIFLAC_CONTINUE;
-
-    const uint8_t* packet = NULL;
-    uint32_t packet_length = 0;
-    uint32_t packet_used   = 0;
-
-    pFlac->ogg.br.buffer = data;
-    pFlac->ogg.br.len = length;
-    pFlac->ogg.br.pos = 0;
-
-    do {
-        r = miniflac_oggfunction_start(pFlac,data,&packet,&packet_length);
-        if(r  != MINIFLAC_OK) break;
-
-        r = miniflac_picture_type_native(pFlac,packet,packet_length,&packet_used,picture_type);
-        miniflac_oggfunction_end(pFlac,packet_used);
-    } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
-
-    *out_length = pFlac->ogg.br.pos;
-    return r;
-}
-
-static
-MINIFLAC_RESULT
-miniflac_picture_mime_length_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_mime_length) {
-    MINIFLAC_RESULT r = MINIFLAC_CONTINUE;
-
-    const uint8_t* packet = NULL;
-    uint32_t packet_length = 0;
-    uint32_t packet_used   = 0;
-
-    pFlac->ogg.br.buffer = data;
-    pFlac->ogg.br.len = length;
-    pFlac->ogg.br.pos = 0;
-
-    do {
-        r = miniflac_oggfunction_start(pFlac,data,&packet,&packet_length);
-        if(r  != MINIFLAC_OK) break;
-
-        r = miniflac_picture_mime_length_native(pFlac,packet,packet_length,&packet_used,picture_mime_length);
-        miniflac_oggfunction_end(pFlac,packet_used);
-    } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
-
-    *out_length = pFlac->ogg.br.pos;
-    return r;
-}
-
-static
-MINIFLAC_RESULT
-miniflac_picture_mime_string_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* buffer_used) {
-    MINIFLAC_RESULT r = MINIFLAC_CONTINUE;
-
-    const uint8_t* packet = NULL;
-    uint32_t packet_length = 0;
-    uint32_t packet_used   = 0;
-
-    pFlac->ogg.br.buffer = data;
-    pFlac->ogg.br.len = length;
-    pFlac->ogg.br.pos = 0;
-
-    do {
-        r = miniflac_oggfunction_start(pFlac,data,&packet,&packet_length);
-        if(r  != MINIFLAC_OK) break;
-
-        r = miniflac_picture_mime_string_native(pFlac,packet,packet_length,&packet_used,buffer,buffer_length,buffer_used);
-        miniflac_oggfunction_end(pFlac,packet_used);
-    } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
-
-    *out_length = pFlac->ogg.br.pos;
-    return r;
-}
-
-static
-MINIFLAC_RESULT
-miniflac_picture_description_length_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_description_length) {
-    MINIFLAC_RESULT r = MINIFLAC_CONTINUE;
-
-    const uint8_t* packet = NULL;
-    uint32_t packet_length = 0;
-    uint32_t packet_used   = 0;
-
-    pFlac->ogg.br.buffer = data;
-    pFlac->ogg.br.len = length;
-    pFlac->ogg.br.pos = 0;
-
-    do {
-        r = miniflac_oggfunction_start(pFlac,data,&packet,&packet_length);
-        if(r  != MINIFLAC_OK) break;
-
-        r = miniflac_picture_description_length_native(pFlac,packet,packet_length,&packet_used,picture_description_length);
-        miniflac_oggfunction_end(pFlac,packet_used);
-    } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
-
-    *out_length = pFlac->ogg.br.pos;
-    return r;
-}
-
-static
-MINIFLAC_RESULT
-miniflac_picture_description_string_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* buffer_used) {
-    MINIFLAC_RESULT r = MINIFLAC_CONTINUE;
-
-    const uint8_t* packet = NULL;
-    uint32_t packet_length = 0;
-    uint32_t packet_used   = 0;
-
-    pFlac->ogg.br.buffer = data;
-    pFlac->ogg.br.len = length;
-    pFlac->ogg.br.pos = 0;
-
-    do {
-        r = miniflac_oggfunction_start(pFlac,data,&packet,&packet_length);
-        if(r  != MINIFLAC_OK) break;
-
-        r = miniflac_picture_description_string_native(pFlac,packet,packet_length,&packet_used,buffer,buffer_length,buffer_used);
-        miniflac_oggfunction_end(pFlac,packet_used);
-    } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
-
-    *out_length = pFlac->ogg.br.pos;
-    return r;
-}
-
-static
-MINIFLAC_RESULT
-miniflac_picture_width_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_width) {
-    MINIFLAC_RESULT r = MINIFLAC_CONTINUE;
-
-    const uint8_t* packet = NULL;
-    uint32_t packet_length = 0;
-    uint32_t packet_used   = 0;
-
-    pFlac->ogg.br.buffer = data;
-    pFlac->ogg.br.len = length;
-    pFlac->ogg.br.pos = 0;
-
-    do {
-        r = miniflac_oggfunction_start(pFlac,data,&packet,&packet_length);
-        if(r  != MINIFLAC_OK) break;
-
-        r = miniflac_picture_width_native(pFlac,packet,packet_length,&packet_used,picture_width);
-        miniflac_oggfunction_end(pFlac,packet_used);
-    } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
-
-    *out_length = pFlac->ogg.br.pos;
-    return r;
-}
-
-static
-MINIFLAC_RESULT
-miniflac_picture_height_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_height) {
-    MINIFLAC_RESULT r = MINIFLAC_CONTINUE;
-
-    const uint8_t* packet = NULL;
-    uint32_t packet_length = 0;
-    uint32_t packet_used   = 0;
-
-    pFlac->ogg.br.buffer = data;
-    pFlac->ogg.br.len = length;
-    pFlac->ogg.br.pos = 0;
-
-    do {
-        r = miniflac_oggfunction_start(pFlac,data,&packet,&packet_length);
-        if(r  != MINIFLAC_OK) break;
-
-        r = miniflac_picture_height_native(pFlac,packet,packet_length,&packet_used,picture_height);
-        miniflac_oggfunction_end(pFlac,packet_used);
-    } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
-
-    *out_length = pFlac->ogg.br.pos;
-    return r;
-}
-
-static
-MINIFLAC_RESULT
-miniflac_picture_colordepth_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_colordepth) {
-    MINIFLAC_RESULT r = MINIFLAC_CONTINUE;
-
-    const uint8_t* packet = NULL;
-    uint32_t packet_length = 0;
-    uint32_t packet_used   = 0;
-
-    pFlac->ogg.br.buffer = data;
-    pFlac->ogg.br.len = length;
-    pFlac->ogg.br.pos = 0;
-
-    do {
-        r = miniflac_oggfunction_start(pFlac,data,&packet,&packet_length);
-        if(r  != MINIFLAC_OK) break;
-
-        r = miniflac_picture_colordepth_native(pFlac,packet,packet_length,&packet_used,picture_colordepth);
-        miniflac_oggfunction_end(pFlac,packet_used);
-    } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
-
-    *out_length = pFlac->ogg.br.pos;
-    return r;
-}
-
-static
-MINIFLAC_RESULT
-miniflac_picture_totalcolors_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_totalcolors) {
-    MINIFLAC_RESULT r = MINIFLAC_CONTINUE;
-
-    const uint8_t* packet = NULL;
-    uint32_t packet_length = 0;
-    uint32_t packet_used   = 0;
-
-    pFlac->ogg.br.buffer = data;
-    pFlac->ogg.br.len = length;
-    pFlac->ogg.br.pos = 0;
-
-    do {
-        r = miniflac_oggfunction_start(pFlac,data,&packet,&packet_length);
-        if(r  != MINIFLAC_OK) break;
-
-        r = miniflac_picture_totalcolors_native(pFlac,packet,packet_length,&packet_used,picture_totalcolors);
-        miniflac_oggfunction_end(pFlac,packet_used);
-    } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
-
-    *out_length = pFlac->ogg.br.pos;
-    return r;
-}
-
-static
-MINIFLAC_RESULT
-miniflac_picture_length_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_length) {
-    MINIFLAC_RESULT r = MINIFLAC_CONTINUE;
-
-    const uint8_t* packet = NULL;
-    uint32_t packet_length = 0;
-    uint32_t packet_used   = 0;
-
-    pFlac->ogg.br.buffer = data;
-    pFlac->ogg.br.len = length;
-    pFlac->ogg.br.pos = 0;
-
-    do {
-        r = miniflac_oggfunction_start(pFlac,data,&packet,&packet_length);
-        if(r  != MINIFLAC_OK) break;
-
-        r = miniflac_picture_length_native(pFlac,packet,packet_length,&packet_used,picture_length);
-        miniflac_oggfunction_end(pFlac,packet_used);
-    } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
-
-    *out_length = pFlac->ogg.br.pos;
-    return r;
-}
-
-static
-MINIFLAC_RESULT
-miniflac_picture_data_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* buffer, uint32_t buffer_length, uint32_t* buffer_used) {
-    MINIFLAC_RESULT r = MINIFLAC_CONTINUE;
-
-    const uint8_t* packet = NULL;
-    uint32_t packet_length = 0;
-    uint32_t packet_used   = 0;
-
-    pFlac->ogg.br.buffer = data;
-    pFlac->ogg.br.len = length;
-    pFlac->ogg.br.pos = 0;
-
-    do {
-        r = miniflac_oggfunction_start(pFlac,data,&packet,&packet_length);
-        if(r  != MINIFLAC_OK) break;
-
-        r = miniflac_picture_data_native(pFlac,packet,packet_length,&packet_used,buffer,buffer_length,buffer_used);
-        miniflac_oggfunction_end(pFlac,packet_used);
-    } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
-
-    *out_length = pFlac->ogg.br.pos;
-    return r;
-}
-
-static
-MINIFLAC_RESULT
 miniflac_probe(miniflac_t* pFlac, const uint8_t* data, uint32_t length) {
     if(length == 0) return MINIFLAC_CONTINUE;
     switch(data[0]) {
@@ -1343,200 +737,161 @@ miniflac_comment_string(miniflac_t* pFlac, const uint8_t* data, uint32_t length,
     return r;
 }
 
-MINIFLAC_API
-MINIFLAC_RESULT
-miniflac_picture_type(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_type) {
-    MINIFLAC_RESULT r;
-    if(pFlac->container == MINIFLAC_CONTAINER_UNKNOWN) {
-        r = miniflac_probe(pFlac,data,length);
-        if(r != MINIFLAC_OK) return r;
-    }
+#define MINIFLAC_SUBSYS(subsys) &pFlac->metadata.subsys
 
-    if(pFlac->container == MINIFLAC_CONTAINER_NATIVE) {
-        r = miniflac_picture_type_native(pFlac,data,length,out_length,picture_type);
-    } else {
-        r = miniflac_picture_type_ogg(pFlac,data,length,out_length,picture_type);
-    }
-
-    return r;
+#define MINIFLAC_GEN_NATIVE_FUNC1(mt,subsys,val,t) \
+static \
+MINIFLAC_RESULT \
+miniflac_ ## subsys ## _ ## val ## _native(miniflac_t *pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, t* outvar) { \
+    MINIFLAC_RESULT r; \
+    pFlac->br.buffer = data; \
+    pFlac->br.len    = length; \
+    pFlac->br.pos    = 0; \
+    while(pFlac->state != MINIFLAC_METADATA) { \
+        r = miniflac_sync_internal(pFlac,&pFlac->br); \
+        if(r != MINIFLAC_OK) goto miniflac_ ## subsys ## _ ## val ##_exit; \
+    } \
+    while(pFlac->metadata.header.type != MINIFLAC_METADATA_ ## mt) { \
+        r = miniflac_sync_internal(pFlac,&pFlac->br); \
+        if(r != MINIFLAC_OK) goto miniflac_## subsys ## _ ## val ## _exit; \
+        if(pFlac->state != MINIFLAC_METADATA) { \
+            r = MINIFLAC_ERROR; \
+            goto miniflac_ ## subsys ## _ ## val ## _exit; \
+        } \
+    } \
+    r = miniflac_ ## subsys ## _read_ ## val(MINIFLAC_SUBSYS(subsys),&pFlac->br, outvar); \
+    miniflac_ ## subsys ## _ ## val ## _exit: \
+    *out_length = pFlac->br.pos; \
+    return r; \
 }
 
-MINIFLAC_API
-MINIFLAC_RESULT
-miniflac_picture_mime_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_mime_length) {
-    MINIFLAC_RESULT r;
-    if(pFlac->container == MINIFLAC_CONTAINER_UNKNOWN) {
-        r = miniflac_probe(pFlac,data,length);
-        if(r != MINIFLAC_OK) return r;
-    }
+#define MINIFLAC_GEN_OGG_FUNC1(subsys,val,t) \
+static \
+MINIFLAC_RESULT \
+miniflac_ ## subsys ## _ ## val ## _ogg(miniflac_t *pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, t* outvar) { \
+    MINIFLAC_RESULT r = MINIFLAC_CONTINUE; \
+    const uint8_t* packet = NULL; \
+    uint32_t packet_length = 0; \
+    uint32_t packet_used   = 0; \
+    pFlac->ogg.br.buffer = data; \
+    pFlac->ogg.br.len = length; \
+    pFlac->ogg.br.pos = 0; \
+    do { \
+        r = miniflac_oggfunction_start(pFlac,data,&packet,&packet_length); \
+        if(r  != MINIFLAC_OK) break; \
+        r = miniflac_ ## subsys ## _ ## val ## _native(pFlac,packet,packet_length,&packet_used,outvar); \
+        miniflac_oggfunction_end(pFlac,packet_used); \
+    } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length); \
+    *out_length = pFlac->ogg.br.pos; \
+    return r; \
+} \
 
-    if(pFlac->container == MINIFLAC_CONTAINER_NATIVE) {
-        r = miniflac_picture_mime_length_native(pFlac,data,length,out_length,picture_mime_length);
-    } else {
-        r = miniflac_picture_mime_length_ogg(pFlac,data,length,out_length,picture_mime_length);
-    }
-
-    return r;
+#define MINIFLAC_GEN_FUNC1(mt,subsys,val,t) \
+MINIFLAC_GEN_NATIVE_FUNC1(mt,subsys,val,t) \
+MINIFLAC_GEN_OGG_FUNC1(subsys,val,t) \
+MINIFLAC_API \
+MINIFLAC_RESULT \
+miniflac_ ## subsys ## _ ## val(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, t* outvar) { \
+  MINIFLAC_RESULT r; \
+  if(pFlac->container == MINIFLAC_CONTAINER_UNKNOWN) { \
+        r = miniflac_probe(pFlac,data,length); \
+        if(r != MINIFLAC_OK) return r; \
+    } \
+    if(pFlac->container == MINIFLAC_CONTAINER_NATIVE) { \
+        r = miniflac_ ## subsys ## _ ## val ## _native(pFlac,data,length,out_length,outvar); \
+    } else { \
+        r = miniflac_ ## subsys ## _ ## val ## _ogg(pFlac,data,length,out_length,outvar); \
+    } \
+    return r; \
 }
 
-MINIFLAC_API
-MINIFLAC_RESULT
-miniflac_picture_mime_string(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* buffer_used) {
-    MINIFLAC_RESULT r;
-    if(pFlac->container == MINIFLAC_CONTAINER_UNKNOWN) {
-        r = miniflac_probe(pFlac,data,length);
-        if(r != MINIFLAC_OK) return r;
-    }
-
-    if(pFlac->container == MINIFLAC_CONTAINER_NATIVE) {
-        r = miniflac_picture_mime_string_native(pFlac,data,length,out_length,buffer, buffer_length, buffer_used);
-    } else {
-        r = miniflac_picture_mime_string_ogg(pFlac,data,length,out_length,buffer, buffer_length, buffer_used);
-    }
-
-    return r;
+#define MINIFLAC_GEN_NATIVE_FUNCSTR(mt,subsys,val,t) \
+static \
+MINIFLAC_RESULT \
+miniflac_ ## subsys ## _ ## val ## _native(miniflac_t *pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, t* buffer, uint32_t bufferlen, uint32_t* outlen)  { \
+    MINIFLAC_RESULT r; \
+    pFlac->br.buffer = data; \
+    pFlac->br.len    = length; \
+    pFlac->br.pos    = 0; \
+    while(pFlac->state != MINIFLAC_METADATA) { \
+        r = miniflac_sync_internal(pFlac,&pFlac->br); \
+        if(r != MINIFLAC_OK) goto miniflac_ ## subsys ## _ ## val ##_exit; \
+    } \
+    while(pFlac->metadata.header.type != MINIFLAC_METADATA_ ## mt) { \
+        r = miniflac_sync_internal(pFlac,&pFlac->br); \
+        if(r != MINIFLAC_OK) goto miniflac_## subsys ## _ ## val ## _exit; \
+        if(pFlac->state != MINIFLAC_METADATA) { \
+            r = MINIFLAC_ERROR; \
+            goto miniflac_ ## subsys ## _ ## val ## _exit; \
+        } \
+    } \
+    r = miniflac_ ## subsys ## _read_ ## val(MINIFLAC_SUBSYS(subsys),&pFlac->br, buffer, bufferlen, outlen); \
+    miniflac_ ## subsys ## _ ## val ## _exit: \
+    *out_length = pFlac->br.pos; \
+    return r; \
 }
 
-MINIFLAC_API
-MINIFLAC_RESULT
-miniflac_picture_description_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_description_length) {
-    MINIFLAC_RESULT r;
-    if(pFlac->container == MINIFLAC_CONTAINER_UNKNOWN) {
-        r = miniflac_probe(pFlac,data,length);
-        if(r != MINIFLAC_OK) return r;
-    }
+#define MINIFLAC_GEN_OGG_FUNCSTR(subsys,val,t) \
+static \
+MINIFLAC_RESULT \
+miniflac_ ## subsys ## _ ## val ## _ogg(miniflac_t *pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, t* buffer, uint32_t bufferlen, uint32_t* outlen)  { \
+    MINIFLAC_RESULT r = MINIFLAC_CONTINUE; \
+    const uint8_t* packet = NULL; \
+    uint32_t packet_length = 0; \
+    uint32_t packet_used   = 0; \
+    pFlac->ogg.br.buffer = data; \
+    pFlac->ogg.br.len = length; \
+    pFlac->ogg.br.pos = 0; \
+    do { \
+        r = miniflac_oggfunction_start(pFlac,data,&packet,&packet_length); \
+        if(r  != MINIFLAC_OK) break; \
+        r = miniflac_ ## subsys ## _ ## val ##_native(pFlac,packet,packet_length,&packet_used,buffer,bufferlen,outlen); \
+        miniflac_oggfunction_end(pFlac,packet_used); \
+    } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length); \
+    *out_length = pFlac->ogg.br.pos; \
+    return r; \
+} \
 
-    if(pFlac->container == MINIFLAC_CONTAINER_NATIVE) {
-        r = miniflac_picture_description_length_native(pFlac,data,length,out_length,picture_description_length);
-    } else {
-        r = miniflac_picture_description_length_ogg(pFlac,data,length,out_length,picture_description_length);
-    }
-
-    return r;
+#define MINIFLAC_GEN_FUNCSTR(mt,subsys,val,t) \
+MINIFLAC_GEN_NATIVE_FUNCSTR(mt,subsys,val,t) \
+MINIFLAC_GEN_OGG_FUNCSTR(subsys,val,t) \
+MINIFLAC_API \
+MINIFLAC_RESULT \
+miniflac_ ## subsys ## _ ## val(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, t* output, uint32_t buffer_length, uint32_t* outlen) { \
+  MINIFLAC_RESULT r; \
+  if(pFlac->container == MINIFLAC_CONTAINER_UNKNOWN) { \
+        r = miniflac_probe(pFlac,data,length); \
+        if(r != MINIFLAC_OK) return r; \
+    } \
+    if(pFlac->container == MINIFLAC_CONTAINER_NATIVE) { \
+        r = miniflac_ ## subsys ## _ ## val ## _native(pFlac,data,length,out_length,output,buffer_length,outlen); \
+    } else { \
+        r = miniflac_ ## subsys ## _ ## val ## _ogg(pFlac,data,length,out_length,output,buffer_length,outlen); \
+    } \
+    return r; \
 }
 
-MINIFLAC_API
-MINIFLAC_RESULT
-miniflac_picture_description_string(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* buffer_used) {
-    MINIFLAC_RESULT r;
-    if(pFlac->container == MINIFLAC_CONTAINER_UNKNOWN) {
-        r = miniflac_probe(pFlac,data,length);
-        if(r != MINIFLAC_OK) return r;
-    }
+MINIFLAC_GEN_FUNC1(PICTURE,picture,type,uint32_t)
+MINIFLAC_GEN_FUNC1(PICTURE,picture,mime_length,uint32_t)
+MINIFLAC_GEN_FUNCSTR(PICTURE,picture,mime_string,char)
+MINIFLAC_GEN_FUNC1(PICTURE,picture,description_length,uint32_t)
+MINIFLAC_GEN_FUNCSTR(PICTURE,picture,description_string,char)
+MINIFLAC_GEN_FUNC1(PICTURE,picture,width,uint32_t)
+MINIFLAC_GEN_FUNC1(PICTURE,picture,height,uint32_t)
+MINIFLAC_GEN_FUNC1(PICTURE,picture,colordepth,uint32_t)
+MINIFLAC_GEN_FUNC1(PICTURE,picture,totalcolors,uint32_t)
+MINIFLAC_GEN_FUNC1(PICTURE,picture,length,uint32_t)
+MINIFLAC_GEN_FUNCSTR(PICTURE,picture,data,uint8_t)
 
-    if(pFlac->container == MINIFLAC_CONTAINER_NATIVE) {
-        r = miniflac_picture_description_string_native(pFlac,data,length,out_length,buffer, buffer_length, buffer_used);
-    } else {
-        r = miniflac_picture_description_string_ogg(pFlac,data,length,out_length,buffer, buffer_length, buffer_used);
-    }
-
-    return r;
-}
-
-MINIFLAC_API
-MINIFLAC_RESULT
-miniflac_picture_width(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_width) {
-    MINIFLAC_RESULT r;
-    if(pFlac->container == MINIFLAC_CONTAINER_UNKNOWN) {
-        r = miniflac_probe(pFlac,data,length);
-        if(r != MINIFLAC_OK) return r;
-    }
-
-    if(pFlac->container == MINIFLAC_CONTAINER_NATIVE) {
-        r = miniflac_picture_width_native(pFlac,data,length,out_length,picture_width);
-    } else {
-        r = miniflac_picture_width_ogg(pFlac,data,length,out_length,picture_width);
-    }
-
-    return r;
-}
-
-MINIFLAC_API
-MINIFLAC_RESULT
-miniflac_picture_height(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_height) {
-    MINIFLAC_RESULT r;
-    if(pFlac->container == MINIFLAC_CONTAINER_UNKNOWN) {
-        r = miniflac_probe(pFlac,data,length);
-        if(r != MINIFLAC_OK) return r;
-    }
-
-    if(pFlac->container == MINIFLAC_CONTAINER_NATIVE) {
-        r = miniflac_picture_height_native(pFlac,data,length,out_length,picture_height);
-    } else {
-        r = miniflac_picture_height_ogg(pFlac,data,length,out_length,picture_height);
-    }
-
-    return r;
-}
-
-MINIFLAC_API
-MINIFLAC_RESULT
-miniflac_picture_colordepth(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_colordepth) {
-    MINIFLAC_RESULT r;
-    if(pFlac->container == MINIFLAC_CONTAINER_UNKNOWN) {
-        r = miniflac_probe(pFlac,data,length);
-        if(r != MINIFLAC_OK) return r;
-    }
-
-    if(pFlac->container == MINIFLAC_CONTAINER_NATIVE) {
-        r = miniflac_picture_colordepth_native(pFlac,data,length,out_length,picture_colordepth);
-    } else {
-        r = miniflac_picture_colordepth_ogg(pFlac,data,length,out_length,picture_colordepth);
-    }
-
-    return r;
-}
-
-MINIFLAC_API
-MINIFLAC_RESULT
-miniflac_picture_totalcolors(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_totalcolors) {
-    MINIFLAC_RESULT r;
-    if(pFlac->container == MINIFLAC_CONTAINER_UNKNOWN) {
-        r = miniflac_probe(pFlac,data,length);
-        if(r != MINIFLAC_OK) return r;
-    }
-
-    if(pFlac->container == MINIFLAC_CONTAINER_NATIVE) {
-        r = miniflac_picture_totalcolors_native(pFlac,data,length,out_length,picture_totalcolors);
-    } else {
-        r = miniflac_picture_totalcolors_ogg(pFlac,data,length,out_length,picture_totalcolors);
-    }
-
-    return r;
-}
-
-MINIFLAC_API
-MINIFLAC_RESULT
-miniflac_picture_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* picture_length) {
-    MINIFLAC_RESULT r;
-    if(pFlac->container == MINIFLAC_CONTAINER_UNKNOWN) {
-        r = miniflac_probe(pFlac,data,length);
-        if(r != MINIFLAC_OK) return r;
-    }
-
-    if(pFlac->container == MINIFLAC_CONTAINER_NATIVE) {
-        r = miniflac_picture_length_native(pFlac,data,length,out_length,picture_length);
-    } else {
-        r = miniflac_picture_length_ogg(pFlac,data,length,out_length,picture_length);
-    }
-
-    return r;
-}
-
-MINIFLAC_API
-MINIFLAC_RESULT
-miniflac_picture_data(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* buffer, uint32_t buffer_length, uint32_t* buffer_used) {
-    MINIFLAC_RESULT r;
-    if(pFlac->container == MINIFLAC_CONTAINER_UNKNOWN) {
-        r = miniflac_probe(pFlac,data,length);
-        if(r != MINIFLAC_OK) return r;
-    }
-
-    if(pFlac->container == MINIFLAC_CONTAINER_NATIVE) {
-        r = miniflac_picture_data_native(pFlac,data,length,out_length,buffer, buffer_length, buffer_used);
-    } else {
-        r = miniflac_picture_data_ogg(pFlac,data,length,out_length,buffer, buffer_length, buffer_used);
-    }
-
-    return r;
-}
+MINIFLAC_GEN_FUNCSTR(CUESHEET,cuesheet,catalogue,char)
+MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,leadin,uint64_t)
+MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,cdflag,uint8_t)
+MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,tracks,uint8_t)
+MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,track_offset,uint64_t)
+MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,track_number,uint8_t)
+MINIFLAC_GEN_FUNCSTR(CUESHEET,cuesheet,track_isrc,char)
+MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,track_type,uint8_t)
+MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,track_preemph,uint8_t)
+MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,track_indexpoints,uint8_t)
+MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,index_point_offset,uint64_t)
+MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,index_point_number,uint8_t)

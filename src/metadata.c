@@ -35,6 +35,10 @@ miniflac_metadata_sync(miniflac_metadata_t* metadata, miniflac_bitreader_t* br) 
             miniflac_picture_init(&metadata->picture);
             break;
         }
+        case MINIFLAC_METADATA_CUESHEET: {
+            miniflac_cuesheet_init(&metadata->cuesheet);
+            break;
+        }
         default: break;
     }
 
@@ -58,6 +62,7 @@ MINIFLAC_PRIVATE
 MINIFLAC_RESULT
 miniflac_metadata_decode(miniflac_metadata_t* metadata, miniflac_bitreader_t* br) {
     MINIFLAC_RESULT r = MINIFLAC_ERROR;
+    uint8_t indexpoints = 0;
     switch(metadata->state) {
         case MINIFLAC_METADATA_HEADER: {
             r = miniflac_metadata_sync(metadata,br);
@@ -77,7 +82,13 @@ miniflac_metadata_decode(miniflac_metadata_t* metadata, miniflac_bitreader_t* br
                     break;
                 }
                 case MINIFLAC_METADATA_PICTURE: {
-                    r = miniflac_picture_read_picture_data(&metadata->picture,br,NULL,0,NULL);
+                    r = miniflac_picture_read_data(&metadata->picture,br,NULL,0,NULL);
+                    break;
+                }
+                case MINIFLAC_METADATA_CUESHEET: {
+                    do {
+                      r = miniflac_cuesheet_read_track_indexpoints(&metadata->cuesheet,br,&indexpoints);
+                    } while(r == MINIFLAC_OK);
                     break;
                 }
                 default: {
