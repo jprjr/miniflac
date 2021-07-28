@@ -78,7 +78,7 @@ miniflac_subframe_decode(miniflac_subframe* subframe, miniflac_bitreader* br, in
         default: break;
     }
 
-    if(subframe->header.wasted_bits) {
+    if(output != NULL && subframe->header.wasted_bits > 0) {
         for(i=0;i<block_size;i++) {
             output[i] <<= subframe->header.wasted_bits;
         }
