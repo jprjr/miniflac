@@ -74,7 +74,7 @@ static const uint16_t miniflac_crc16_table[256] = {
 
 MINIFLAC_PRIVATE
 void
-miniflac_bitreader_init(miniflac_bitreader* br) {
+miniflac_bitreader_init(miniflac_bitreader_t* br) {
     br->val = 0;
     br->bits = 0;
     br->crc8 = 0;
@@ -86,7 +86,7 @@ miniflac_bitreader_init(miniflac_bitreader* br) {
 
 MINIFLAC_PRIVATE
 int
-miniflac_bitreader_fill(miniflac_bitreader* br, uint8_t bits) {
+miniflac_bitreader_fill(miniflac_bitreader_t* br, uint8_t bits) {
     uint8_t byte = 0;
     if(bits == 0) return 0;
     while(br->bits < bits && br->pos < br->len) {
@@ -101,7 +101,7 @@ miniflac_bitreader_fill(miniflac_bitreader* br, uint8_t bits) {
 
 MINIFLAC_PRIVATE
 int
-miniflac_bitreader_fill_nocrc(miniflac_bitreader* br, uint8_t bits) {
+miniflac_bitreader_fill_nocrc(miniflac_bitreader_t* br, uint8_t bits) {
     uint8_t byte = 0;
     if(bits == 0) return 0;
     while(br->bits < bits && br->pos < br->len) {
@@ -115,7 +115,7 @@ miniflac_bitreader_fill_nocrc(miniflac_bitreader* br, uint8_t bits) {
 
 MINIFLAC_PRIVATE
 uint64_t
-miniflac_bitreader_read(miniflac_bitreader* br, uint8_t bits) {
+miniflac_bitreader_read(miniflac_bitreader_t* br, uint8_t bits) {
     uint64_t mask = -1LL;
     uint64_t imask = -1LL;
     uint64_t r;
@@ -137,7 +137,7 @@ miniflac_bitreader_read(miniflac_bitreader* br, uint8_t bits) {
 
 MINIFLAC_PRIVATE
 int64_t
-miniflac_bitreader_read_signed(miniflac_bitreader* br, uint8_t bits) {
+miniflac_bitreader_read_signed(miniflac_bitreader_t* br, uint8_t bits) {
     uint64_t t;
     uint64_t mask = -1LL;
     if(bits == 0) return 0;
@@ -153,7 +153,7 @@ miniflac_bitreader_read_signed(miniflac_bitreader* br, uint8_t bits) {
 
 MINIFLAC_PRIVATE
 uint64_t
-miniflac_bitreader_peek(miniflac_bitreader* br, uint8_t bits) {
+miniflac_bitreader_peek(miniflac_bitreader_t* br, uint8_t bits) {
     uint64_t mask = -1LL;
     uint64_t r;
 
@@ -166,7 +166,7 @@ miniflac_bitreader_peek(miniflac_bitreader* br, uint8_t bits) {
 
 MINIFLAC_PRIVATE
 void
-miniflac_bitreader_discard(miniflac_bitreader* br, uint8_t bits) {
+miniflac_bitreader_discard(miniflac_bitreader_t* br, uint8_t bits) {
     uint64_t imask = -1LL;
 
     if(bits == 0) return;
@@ -183,14 +183,14 @@ miniflac_bitreader_discard(miniflac_bitreader* br, uint8_t bits) {
 
 MINIFLAC_PRIVATE
 void
-miniflac_bitreader_align(miniflac_bitreader* br) {
+miniflac_bitreader_align(miniflac_bitreader_t* br) {
     br->bits = 0;
     br->val = 0;
 }
 
 MINIFLAC_PRIVATE
 void
-miniflac_bitreader_reset_crc(miniflac_bitreader* br) {
+miniflac_bitreader_reset_crc(miniflac_bitreader_t* br) {
     uint64_t val = br->val;
     uint8_t bits = br->bits;
 

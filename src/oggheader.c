@@ -8,7 +8,7 @@ miniflac_oggheader_init(miniflac_oggheader_t* oggheader) {
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_oggheader_decode(miniflac_oggheader_t* oggheader, miniflac_bitreader* br) {
+miniflac_oggheader_decode(miniflac_oggheader_t* oggheader, miniflac_bitreader_t* br) {
     switch(oggheader->state) {
         case MINIFLAC_OGGHEADER_PACKETTYPE: {
             if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;

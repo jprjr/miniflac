@@ -7,7 +7,7 @@
 #include "common.h"
 #include "bitreader.h"
 
-typedef struct miniflac_subframe_header_s miniflac_subframe_header;
+typedef struct miniflac_subframe_header_s miniflac_subframe_header_t;
 typedef enum MINIFLAC_SUBFRAME_TYPE MINIFLAC_SUBFRAME_TYPE;
 typedef enum MINIFLAC_SUBFRAME_HEADER_STATE MINIFLAC_SUBFRAME_HEADER_STATE;
 
@@ -40,11 +40,11 @@ extern "C" {
 
 MINIFLAC_PRIVATE
 void
-miniflac_subframe_header_init(miniflac_subframe_header* subframeheader);
+miniflac_subframe_header_init(miniflac_subframe_header_t* subframeheader);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_subframe_header_decode(miniflac_subframe_header* subframeheader, miniflac_bitreader* br);
+miniflac_subframe_header_decode(miniflac_subframe_header_t* subframeheader, miniflac_bitreader_t* br);
 
 #ifdef __cplusplus
 }

@@ -3,7 +3,7 @@
 
 MINIFLAC_PRIVATE
 void
-miniflac_metadata_header_init(miniflac_metadata_header* header) {
+miniflac_metadata_header_init(miniflac_metadata_header_t* header) {
     header->state = MINIFLAC_METADATA_LAST_FLAG;
     header->type = MINIFLAC_METADATA_UNKNOWN;
     header->is_last = 0;
@@ -13,7 +13,7 @@ miniflac_metadata_header_init(miniflac_metadata_header* header) {
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_metadata_header_decode(miniflac_metadata_header* header, miniflac_bitreader *br) {
+miniflac_metadata_header_decode(miniflac_metadata_header_t* header, miniflac_bitreader_t* br) {
     switch(header->state) {
         case MINIFLAC_METADATA_LAST_FLAG: {
             if(miniflac_bitreader_fill(br,1)) return MINIFLAC_CONTINUE;

@@ -7,7 +7,7 @@
 #include "common.h"
 #include "bitreader.h"
 
-typedef struct miniflac_residual_s miniflac_residual;
+typedef struct miniflac_residual_s miniflac_residual_t;
 typedef enum MINIFLAC_RESIDUAL_STATE MINIFLAC_RESIDUAL_STATE;
 
 enum MINIFLAC_RESIDUAL_STATE {
@@ -44,11 +44,11 @@ extern "C" {
 
 MINIFLAC_PRIVATE
 void
-miniflac_residual_init(miniflac_residual* residual);
+miniflac_residual_init(miniflac_residual_t* residual);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_residual_decode(miniflac_residual* residual, miniflac_bitreader* br, uint32_t* pos, uint32_t block_size, uint8_t predictor_order, int32_t *out);
+miniflac_residual_decode(miniflac_residual_t* residual, miniflac_bitreader_t* br, uint32_t* pos, uint32_t block_size, uint8_t predictor_order, int32_t *out);
 
 #ifdef __cplusplus
 }

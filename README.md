@@ -6,19 +6,19 @@ functions, does not allocate any memory.
 ## Features
 
 * push-style API
-* does not allocate memory
+* does not allocate memory or use any c library functions
 * handles native FLAC as well as Ogg FLAC
 * single C file
 * metadata decoding for:
   * [`STREAMINFO`](https://xiph.org/flac/format.html#metadata_block_streaminfo)
   * [`VORBIS_COMMENT`](https://xiph.org/flac/format.html#metadata_block_vorbis_comment)
+  * [`PICTURE`](https://xiph.org/flac/format.html#metadata_block_picture)
 
 ## Future Improvements
 
 * Speed optimizations
 * Memory reduction
 * Metadata Support for (in priority order):
-  * [`PICTURE`](https://xiph.org/flac/format.html#metadata_block_picture)
   * [`CUESHEET`](https://xiph.org/flac/format.html#metadata_block_cuesheet)
   * [`SEEKTABLE`](https://xiph.org/flac/format.html#metadata_block_seektable)
   * [`APPLICATION`](https://xiph.org/flac/format.html#metadata_block_application)

@@ -3,7 +3,7 @@
 
 MINIFLAC_PRIVATE
 void
-miniflac_frame_header_init(miniflac_frame_header* header) {
+miniflac_frame_header_init(miniflac_frame_header_t* header) {
     header->block_size_raw = 0;
     header->sample_rate_raw = 0;
     header->channel_assignment_raw = 0;
@@ -22,7 +22,7 @@ miniflac_frame_header_init(miniflac_frame_header* header) {
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_frame_header_decode(miniflac_frame_header* header, miniflac_bitreader* br) {
+miniflac_frame_header_decode(miniflac_frame_header_t* header, miniflac_bitreader_t* br) {
     uint64_t t;
 
     switch(header->state) {

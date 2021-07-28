@@ -8,7 +8,7 @@
 #include "bitreader.h"
 #include "residual.h"
 
-typedef struct miniflac_subframe_fixed_s miniflac_subframe_fixed;
+typedef struct miniflac_subframe_fixed_s miniflac_subframe_fixed_t;
 typedef enum MINIFLAC_SUBFRAME_FIXED_STATE MINIFLAC_SUBFRAME_FIXED_STATE;
 
 enum MINIFLAC_SUBFRAME_FIXED_STATE {
@@ -18,7 +18,7 @@ enum MINIFLAC_SUBFRAME_FIXED_STATE {
 struct miniflac_subframe_fixed_s {
     MINIFLAC_SUBFRAME_FIXED_STATE state;
     uint32_t pos;
-    miniflac_residual residual;
+    miniflac_residual_t residual;
 };
 
 
@@ -28,11 +28,11 @@ extern "C" {
 
 MINIFLAC_PRIVATE
 void
-miniflac_subframe_fixed_init(miniflac_subframe_fixed* c);
+miniflac_subframe_fixed_init(miniflac_subframe_fixed_t* c);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_subframe_fixed_decode(miniflac_subframe_fixed* c, miniflac_bitreader* br, int32_t* output, uint32_t block_size, uint8_t bps, uint8_t predictor_order);
+miniflac_subframe_fixed_decode(miniflac_subframe_fixed_t* c, miniflac_bitreader_t* br, int32_t* output, uint32_t block_size, uint8_t bps, uint8_t predictor_order);
 
 #ifdef __cplusplus
 }

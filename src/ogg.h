@@ -27,7 +27,7 @@ enum MINIFLAC_OGG_STATE {
 
 struct miniflac_ogg_s {
     MINIFLAC_OGG_STATE state;
-    miniflac_bitreader br; /* maintain our own bitreader */
+    miniflac_bitreader_t br; /* maintain our own bitreader */
     uint8_t version;
     uint8_t headertype;
     int64_t granulepos;
@@ -49,7 +49,7 @@ miniflac_ogg_init(miniflac_ogg_t* ogg);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_ogg_sync(miniflac_ogg_t* ogg, miniflac_bitreader* br);
+miniflac_ogg_sync(miniflac_ogg_t* ogg, miniflac_bitreader_t* br);
 
 #ifdef __cplusplus
 }

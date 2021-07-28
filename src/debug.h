@@ -25,40 +25,40 @@ extern "C" {
 #endif
 
 void
-miniflac_dump_bitreader(miniflac_bitreader* br,uint8_t indent);
+miniflac_dump_bitreader(miniflac_bitreader_t* br,uint8_t indent);
 
 void
-miniflac_dump_frame(miniflac_frame* frame, uint8_t indent);
+miniflac_dump_frame(miniflac_frame_t* frame, uint8_t indent);
 
 void
-miniflac_dump_frame_header(miniflac_frame_header* header, uint8_t indent);
+miniflac_dump_frame_header(miniflac_frame_header_t* header, uint8_t indent);
 
 void
-miniflac_dump_subframe(miniflac_subframe* subframe, uint8_t indent);
+miniflac_dump_subframe(miniflac_subframe_t* subframe, uint8_t indent);
 
 void
-miniflac_dump_subframe_header(miniflac_subframe_header* header, uint8_t indent);
+miniflac_dump_subframe_header(miniflac_subframe_header_t* header, uint8_t indent);
 
 void
-miniflac_dump_subframe_constant(miniflac_subframe_constant* constant, uint8_t indent);
+miniflac_dump_subframe_constant(miniflac_subframe_constant_t* constant, uint8_t indent);
 
 void
-miniflac_dump_subframe_verbatim(miniflac_subframe_verbatim* verbatim, uint8_t indent);
+miniflac_dump_subframe_verbatim(miniflac_subframe_verbatim_t* verbatim, uint8_t indent);
 
 void
-miniflac_dump_subframe_fixed(miniflac_subframe_fixed* fixed, uint8_t indent);
+miniflac_dump_subframe_fixed(miniflac_subframe_fixed_t* fixed, uint8_t indent);
 
 void
-miniflac_dump_subframe_lpc(miniflac_subframe_lpc* lpc, uint8_t indent);
+miniflac_dump_subframe_lpc(miniflac_subframe_lpc_t* lpc, uint8_t indent);
 
 void
-miniflac_dump_residual(miniflac_residual* residual, uint8_t indent);
+miniflac_dump_residual(miniflac_residual_t* residual, uint8_t indent);
 
 void
-miniflac_dump_metadata(miniflac_metadata* metadata, uint8_t indent);
+miniflac_dump_metadata(miniflac_metadata_t* metadata, uint8_t indent);
 
 void
-miniflac_dump_metadata_header(miniflac_metadata_header* header, uint8_t indent);
+miniflac_dump_metadata_header(miniflac_metadata_header_t* header, uint8_t indent);
 
 void
 miniflac_dump_ogg(miniflac_ogg_t* ogg, uint8_t indent);
