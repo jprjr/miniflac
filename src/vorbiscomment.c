@@ -5,28 +5,28 @@
 
 MINIFLAC_PRIVATE
 void
-miniflac_vorbiscomment_init(miniflac_vorbiscomment_t* vorbiscomment) {
-    vorbiscomment->state = MINIFLAC_VORBISCOMMENT_VENDOR_LENGTH;
-    vorbiscomment->len = 0;
-    vorbiscomment->pos = 0;
-    vorbiscomment->tot = 0;
-    vorbiscomment->cur = 0;
+miniflac_vorbis_comment_init(miniflac_vorbis_comment_t* vorbis_comment) {
+    vorbis_comment->state = MINIFLAC_VORBISCOMMENT_VENDOR_LENGTH;
+    vorbis_comment->len = 0;
+    vorbis_comment->pos = 0;
+    vorbis_comment->tot = 0;
+    vorbis_comment->cur = 0;
 }
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_vorbiscomment_vendor_length(miniflac_vorbiscomment_t* vorbiscomment, miniflac_bitreader_t* br, uint32_t* length) {
+miniflac_vorbis_comment_vendor_length(miniflac_vorbis_comment_t* vorbis_comment, miniflac_bitreader_t* br, uint32_t* length) {
     uint8_t buffer[4];
-    switch(vorbiscomment->state) {
+    switch(vorbis_comment->state) {
         case MINIFLAC_VORBISCOMMENT_VENDOR_LENGTH: {
             if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
             buffer[0] = miniflac_bitreader_read(br,8);
             buffer[1] = miniflac_bitreader_read(br,8);
             buffer[2] = miniflac_bitreader_read(br,8);
             buffer[3] = miniflac_bitreader_read(br,8);
-            vorbiscomment->len = miniflac_unpack_uint32le(buffer);
-            if(length != NULL) *length = vorbiscomment->len;
-            vorbiscomment->state = MINIFLAC_VORBISCOMMENT_VENDOR_STRING;
+            vorbis_comment->len = miniflac_unpack_uint32le(buffer);
+            if(length != NULL) *length = vorbis_comment->len;
+            vorbis_comment->state = MINIFLAC_VORBISCOMMENT_VENDOR_STRING;
             return MINIFLAC_OK;
         } default: break;
     }
@@ -37,29 +37,29 @@ miniflac_vorbiscomment_vendor_length(miniflac_vorbiscomment_t* vorbiscomment, mi
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_vorbiscomment_vendor_string(miniflac_vorbiscomment_t* vorbiscomment, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen) {
+miniflac_vorbis_comment_vendor_string(miniflac_vorbis_comment_t* vorbis_comment, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen) {
     MINIFLAC_RESULT r = MINIFLAC_ERROR;
     char c;
 
-    switch(vorbiscomment->state) {
+    switch(vorbis_comment->state) {
         case MINIFLAC_VORBISCOMMENT_VENDOR_LENGTH: {
-            r = miniflac_vorbiscomment_vendor_length(vorbiscomment,br,NULL);
+            r = miniflac_vorbis_comment_vendor_length(vorbis_comment,br,NULL);
             if(r != MINIFLAC_OK) return r;
         }
         /* fall-through */
         case MINIFLAC_VORBISCOMMENT_VENDOR_STRING: {
-            while(vorbiscomment->pos < vorbiscomment->len) {
+            while(vorbis_comment->pos < vorbis_comment->len) {
                 if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
                 c = (char)miniflac_bitreader_read(br,8);
-                if(output != NULL && vorbiscomment->pos < length) {
-                    output[vorbiscomment->pos] = c;
+                if(output != NULL && vorbis_comment->pos < length) {
+                    output[vorbis_comment->pos] = c;
                 }
-                vorbiscomment->pos++;
+                vorbis_comment->pos++;
             }
             if(outlen != NULL) {
-                *outlen = vorbiscomment->len <= length ? vorbiscomment->len : length;
+                *outlen = vorbis_comment->len <= length ? vorbis_comment->len : length;
             }
-            vorbiscomment->state = MINIFLAC_VORBISCOMMENT_TOTAL_COMMENTS;
+            vorbis_comment->state = MINIFLAC_VORBISCOMMENT_TOTAL_COMMENTS;
             return MINIFLAC_OK;
         }
         default: break;
@@ -71,14 +71,14 @@ miniflac_vorbiscomment_vendor_string(miniflac_vorbiscomment_t* vorbiscomment, mi
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_vorbiscomment_total_comments(miniflac_vorbiscomment_t* vorbiscomment, miniflac_bitreader_t* br, uint32_t* total) {
+miniflac_vorbis_comment_total_comments(miniflac_vorbis_comment_t* vorbis_comment, miniflac_bitreader_t* br, uint32_t* total) {
     uint8_t buffer[4];
     MINIFLAC_RESULT r = MINIFLAC_ERROR;
 
-    switch(vorbiscomment->state) {
+    switch(vorbis_comment->state) {
         case MINIFLAC_VORBISCOMMENT_VENDOR_LENGTH: /* fall-through */
         case MINIFLAC_VORBISCOMMENT_VENDOR_STRING: {
-            r = miniflac_vorbiscomment_vendor_string(vorbiscomment,br,NULL,0,NULL);
+            r = miniflac_vorbis_comment_vendor_string(vorbis_comment,br,NULL,0,NULL);
             if(r != MINIFLAC_OK) return r;
         }
         /* fall-through */
@@ -88,9 +88,9 @@ miniflac_vorbiscomment_total_comments(miniflac_vorbiscomment_t* vorbiscomment, m
             buffer[1] = miniflac_bitreader_read(br,8);
             buffer[2] = miniflac_bitreader_read(br,8);
             buffer[3] = miniflac_bitreader_read(br,8);
-            vorbiscomment->tot = miniflac_unpack_uint32le(buffer);
-            if(total != NULL) *total = vorbiscomment->tot;
-            vorbiscomment->state = MINIFLAC_VORBISCOMMENT_COMMENT_LENGTH;
+            vorbis_comment->tot = miniflac_unpack_uint32le(buffer);
+            if(total != NULL) *total = vorbis_comment->tot;
+            vorbis_comment->state = MINIFLAC_VORBISCOMMENT_COMMENT_LENGTH;
             return MINIFLAC_OK;
         }
         default: break;
@@ -101,21 +101,21 @@ miniflac_vorbiscomment_total_comments(miniflac_vorbiscomment_t* vorbiscomment, m
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_vorbiscomment_comment_length(miniflac_vorbiscomment_t* vorbiscomment, miniflac_bitreader_t* br, uint32_t* length) {
+miniflac_vorbis_comment_comment_length(miniflac_vorbis_comment_t* vorbis_comment, miniflac_bitreader_t* br, uint32_t* length) {
     uint8_t buffer[4];
     MINIFLAC_RESULT r = MINIFLAC_ERROR;
 
-    switch(vorbiscomment->state) {
+    switch(vorbis_comment->state) {
         case MINIFLAC_VORBISCOMMENT_VENDOR_LENGTH: /* fall-through */
         case MINIFLAC_VORBISCOMMENT_VENDOR_STRING: /* fall-through */
         case MINIFLAC_VORBISCOMMENT_TOTAL_COMMENTS: {
-            r = miniflac_vorbiscomment_total_comments(vorbiscomment,br,NULL);
+            r = miniflac_vorbis_comment_total_comments(vorbis_comment,br,NULL);
             if(r != MINIFLAC_OK) return r;
         }
         /* fall-through */
         case MINIFLAC_VORBISCOMMENT_COMMENT_LENGTH: {
-            case_miniflac_vorbiscomment_comment_length:
-            if(vorbiscomment->cur == vorbiscomment->tot) {
+            case_miniflac_vorbis_comment_comment_length:
+            if(vorbis_comment->cur == vorbis_comment->tot) {
                 return MINIFLAC_METADATA_END;
             }
 
@@ -124,16 +124,16 @@ miniflac_vorbiscomment_comment_length(miniflac_vorbiscomment_t* vorbiscomment, m
             buffer[1] = miniflac_bitreader_read(br,8);
             buffer[2] = miniflac_bitreader_read(br,8);
             buffer[3] = miniflac_bitreader_read(br,8);
-            vorbiscomment->len = miniflac_unpack_uint32le(buffer);
-            vorbiscomment->pos = 0;
-            if(length != NULL) *length = vorbiscomment->len;
-            vorbiscomment->state = MINIFLAC_VORBISCOMMENT_COMMENT_STRING;
+            vorbis_comment->len = miniflac_unpack_uint32le(buffer);
+            vorbis_comment->pos = 0;
+            if(length != NULL) *length = vorbis_comment->len;
+            vorbis_comment->state = MINIFLAC_VORBISCOMMENT_COMMENT_STRING;
             return MINIFLAC_OK;
         }
         case MINIFLAC_VORBISCOMMENT_COMMENT_STRING: {
-            r = miniflac_vorbiscomment_comment_string(vorbiscomment,br,NULL,0,NULL);
+            r = miniflac_vorbis_comment_comment_string(vorbis_comment,br,NULL,0,NULL);
             if(r != MINIFLAC_OK) return r;
-            goto case_miniflac_vorbiscomment_comment_length;
+            goto case_miniflac_vorbis_comment_comment_length;
         }
         default: break;
     }
@@ -143,33 +143,33 @@ miniflac_vorbiscomment_comment_length(miniflac_vorbiscomment_t* vorbiscomment, m
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_vorbiscomment_comment_string(miniflac_vorbiscomment_t* vorbiscomment, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen) {
+miniflac_vorbis_comment_comment_string(miniflac_vorbis_comment_t* vorbis_comment, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen) {
     MINIFLAC_RESULT r = MINIFLAC_ERROR;
     char c;
 
-    switch(vorbiscomment->state) {
+    switch(vorbis_comment->state) {
         case MINIFLAC_VORBISCOMMENT_VENDOR_LENGTH:
         case MINIFLAC_VORBISCOMMENT_VENDOR_STRING:
         case MINIFLAC_VORBISCOMMENT_TOTAL_COMMENTS:
         case MINIFLAC_VORBISCOMMENT_COMMENT_LENGTH: {
-            r = miniflac_vorbiscomment_comment_length(vorbiscomment,br,NULL);
+            r = miniflac_vorbis_comment_comment_length(vorbis_comment,br,NULL);
             if(r != MINIFLAC_OK) return r;
         }
         /* fall-through */
         case MINIFLAC_VORBISCOMMENT_COMMENT_STRING: {
-            while(vorbiscomment->pos < vorbiscomment->len) {
+            while(vorbis_comment->pos < vorbis_comment->len) {
                 if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
                 c = (char)miniflac_bitreader_read(br,8);
-                if(output != NULL && vorbiscomment->pos < length) {
-                    output[vorbiscomment->pos] = c;
+                if(output != NULL && vorbis_comment->pos < length) {
+                    output[vorbis_comment->pos] = c;
                 }
-                vorbiscomment->pos++;
+                vorbis_comment->pos++;
             }
             if(outlen != NULL) {
-                *outlen = vorbiscomment->len <= length ? vorbiscomment->len : length;
+                *outlen = vorbis_comment->len <= length ? vorbis_comment->len : length;
             }
-            vorbiscomment->cur++;
-            vorbiscomment->state = MINIFLAC_VORBISCOMMENT_COMMENT_LENGTH;
+            vorbis_comment->cur++;
+            vorbis_comment->state = MINIFLAC_VORBISCOMMENT_COMMENT_LENGTH;
             return MINIFLAC_OK;
         }
         default: break;

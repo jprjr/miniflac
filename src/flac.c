@@ -243,7 +243,7 @@ miniflac_vendor_length_native(miniflac_t *pFlac, const uint8_t* data, uint32_t l
         }
     }
 
-    r = miniflac_vorbiscomment_vendor_length(&pFlac->metadata.vorbiscomment,&pFlac->br,vendor_length);
+    r = miniflac_vorbis_comment_vendor_length(&pFlac->metadata.vorbis_comment,&pFlac->br,vendor_length);
 
     miniflac_vendor_length_exit:
     *out_length = pFlac->br.pos;
@@ -273,7 +273,7 @@ miniflac_vendor_string_native(miniflac_t *pFlac, const uint8_t* data, uint32_t l
         }
     }
 
-    r = miniflac_vorbiscomment_vendor_string(&pFlac->metadata.vorbiscomment,&pFlac->br,buffer, buffer_length, buffer_used);
+    r = miniflac_vorbis_comment_vendor_string(&pFlac->metadata.vorbis_comment,&pFlac->br,buffer, buffer_length, buffer_used);
 
     miniflac_vendor_string_exit:
     *out_length = pFlac->br.pos;
@@ -303,7 +303,7 @@ miniflac_comments_total_native(miniflac_t *pFlac, const uint8_t* data, uint32_t 
         }
     }
 
-    r = miniflac_vorbiscomment_total_comments(&pFlac->metadata.vorbiscomment,&pFlac->br,total_comments);
+    r = miniflac_vorbis_comment_total_comments(&pFlac->metadata.vorbis_comment,&pFlac->br,total_comments);
 
     miniflac_comments_total_exit:
     *out_length = pFlac->br.pos;
@@ -333,7 +333,7 @@ miniflac_comment_length_native(miniflac_t *pFlac, const uint8_t* data, uint32_t 
         }
     }
 
-    r = miniflac_vorbiscomment_comment_length(&pFlac->metadata.vorbiscomment,&pFlac->br,comment_length);
+    r = miniflac_vorbis_comment_comment_length(&pFlac->metadata.vorbis_comment,&pFlac->br,comment_length);
 
     miniflac_comment_length_exit:
     *out_length = pFlac->br.pos;
@@ -363,7 +363,7 @@ miniflac_comment_string_native(miniflac_t *pFlac, const uint8_t* data, uint32_t 
         }
     }
 
-    r = miniflac_vorbiscomment_comment_string(&pFlac->metadata.vorbiscomment,&pFlac->br,buffer, buffer_length, buffer_used);
+    r = miniflac_vorbis_comment_comment_string(&pFlac->metadata.vorbis_comment,&pFlac->br,buffer, buffer_length, buffer_used);
 
     miniflac_comment_string_exit:
     *out_length = pFlac->br.pos;

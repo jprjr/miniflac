@@ -7,7 +7,7 @@
 #include "common.h"
 #include "bitreader.h"
 
-typedef struct miniflac_vorbiscomment_s miniflac_vorbiscomment_t;
+typedef struct miniflac_vorbis_comment_s miniflac_vorbis_comment_t;
 typedef enum MINIFLAC_VORBISCOMMENT_STATE MINIFLAC_VORBISCOMMENT_STATE;
 
 enum MINIFLAC_VORBISCOMMENT_STATE {
@@ -18,7 +18,7 @@ enum MINIFLAC_VORBISCOMMENT_STATE {
     MINIFLAC_VORBISCOMMENT_COMMENT_STRING,
 };
 
-struct miniflac_vorbiscomment_s {
+struct miniflac_vorbis_comment_s {
     MINIFLAC_VORBISCOMMENT_STATE    state;
     uint32_t len; /* length of the current string we're decoding */
     uint32_t pos; /* position within current string */
@@ -32,27 +32,27 @@ extern "C" {
 
 MINIFLAC_PRIVATE
 void
-miniflac_vorbiscomment_init(miniflac_vorbiscomment_t* vorbiscomment);
+miniflac_vorbis_comment_init(miniflac_vorbis_comment_t* vorbis_comment);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_vorbiscomment_vendor_length(miniflac_vorbiscomment_t* vorbiscomment, miniflac_bitreader_t* br, uint32_t* length);
+miniflac_vorbis_comment_vendor_length(miniflac_vorbis_comment_t* vorbis_comment, miniflac_bitreader_t* br, uint32_t* length);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_vorbiscomment_vendor_string(miniflac_vorbiscomment_t* vorbiscomment, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen);
+miniflac_vorbis_comment_vendor_string(miniflac_vorbis_comment_t* vorbis_comment, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_vorbiscomment_total_comments(miniflac_vorbiscomment_t* vorbiscomment, miniflac_bitreader_t* br, uint32_t* total);
+miniflac_vorbis_comment_total_comments(miniflac_vorbis_comment_t* vorbis_comment, miniflac_bitreader_t* br, uint32_t* total);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_vorbiscomment_comment_length(miniflac_vorbiscomment_t* vorbiscomment, miniflac_bitreader_t* br, uint32_t* length);
+miniflac_vorbis_comment_comment_length(miniflac_vorbis_comment_t* vorbis_comment, miniflac_bitreader_t* br, uint32_t* length);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_vorbiscomment_comment_string(miniflac_vorbiscomment_t* vorbiscomment, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen);
+miniflac_vorbis_comment_comment_string(miniflac_vorbis_comment_t* vorbis_comment, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen);
 
 #ifdef __cplusplus
 }

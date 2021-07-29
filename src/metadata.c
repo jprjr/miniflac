@@ -10,7 +10,7 @@ miniflac_metadata_init(miniflac_metadata_t* metadata) {
     metadata->pos = 0;
     miniflac_metadata_header_init(&metadata->header);
     miniflac_streaminfo_init(&metadata->streaminfo);
-    miniflac_vorbiscomment_init(&metadata->vorbiscomment);
+    miniflac_vorbis_comment_init(&metadata->vorbis_comment);
     miniflac_picture_init(&metadata->picture);
 }
 
@@ -28,7 +28,7 @@ miniflac_metadata_sync(miniflac_metadata_t* metadata, miniflac_bitreader_t* br) 
             break;
         }
         case MINIFLAC_METADATA_VORBIS_COMMENT: {
-            miniflac_vorbiscomment_init(&metadata->vorbiscomment);
+            miniflac_vorbis_comment_init(&metadata->vorbis_comment);
             break;
         }
         case MINIFLAC_METADATA_PICTURE: {
@@ -77,7 +77,7 @@ miniflac_metadata_decode(miniflac_metadata_t* metadata, miniflac_bitreader_t* br
                 }
                 case MINIFLAC_METADATA_VORBIS_COMMENT: {
                     do {
-                        r = miniflac_vorbiscomment_comment_length(&metadata->vorbiscomment,br,NULL);
+                        r = miniflac_vorbis_comment_comment_length(&metadata->vorbis_comment,br,NULL);
                     } while(r == MINIFLAC_OK);
                     break;
                 }
