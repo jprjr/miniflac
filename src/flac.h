@@ -79,31 +79,31 @@ miniflac_streaminfo(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uin
 /* get the length of the vendor string, automatically skips metadata blocks, throws an error on audio frames */
 MINIFLAC_API
 MINIFLAC_RESULT
-miniflac_vendor_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* vendor_length);
+miniflac_vorbis_comment_vendor_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* vendor_length);
 
 /* get the vendor string, automatically skips metadata blocks, throws an error on audio frames */
 /* will NOT be NULL-terminated! */
 MINIFLAC_API
 MINIFLAC_RESULT
-miniflac_vendor_string(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* buffer_used);
+miniflac_vorbis_comment_vendor_string(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* buffer_used);
 
 /* get the total number of comments, automatically skips metadata blocks, throws an error on audio frames */
 MINIFLAC_API
 MINIFLAC_RESULT
-miniflac_comments_total(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* total_comments);
+miniflac_vorbis_comment_total(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* total_comments);
 
 /* get the next comment length, automatically skips metadata blocks, throws an error on audio frames */
 /* returns MINIFLAC_METADATA_END when out of comments */
 MINIFLAC_API
 MINIFLAC_RESULT
-miniflac_comment_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* comment_length);
+miniflac_vorbis_comment_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* comment_length);
 
 /* get the next comment string, automatically skips metadata blocks, throws an error on audio frames */
 /* will NOT be NULL-terminated! */
 /* returns MINIFLAC_METADATA_END when out of comments */
 MINIFLAC_API
 MINIFLAC_RESULT
-miniflac_comment_string(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* buffer_used);
+miniflac_vorbis_comment_string(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* buffer_used);
 
 /* read a picture type */
 MINIFLAC_API

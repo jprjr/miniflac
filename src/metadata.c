@@ -72,7 +72,7 @@ miniflac_metadata_decode(miniflac_metadata_t* metadata, miniflac_bitreader_t* br
         case MINIFLAC_METADATA_DATA: {
             switch(metadata->header.type) {
                 case MINIFLAC_METADATA_STREAMINFO: {
-                    r = miniflac_streaminfo_decode(&metadata->streaminfo,br,NULL);
+                    r = miniflac_streaminfo_read_streaminfo(&metadata->streaminfo,br,NULL);
                     break;
                 }
                 case MINIFLAC_METADATA_VORBIS_COMMENT: {

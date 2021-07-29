@@ -191,37 +191,6 @@ miniflac_decode_native(miniflac_t* pFlac, const uint8_t* data, uint32_t length, 
 
 static
 MINIFLAC_RESULT
-miniflac_streaminfo_native(miniflac_t *pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, miniflac_streaminfo_t* streaminfo) {
-    MINIFLAC_RESULT r;
-    pFlac->br.buffer = data;
-    pFlac->br.len    = length;
-    pFlac->br.pos    = 0;
-
-    while(pFlac->state != MINIFLAC_METADATA) {
-        r = miniflac_sync_internal(pFlac,&pFlac->br);
-        if(r != MINIFLAC_OK) goto miniflac_streaminfo_decode_exit;
-    }
-
-    while(pFlac->metadata.header.type != MINIFLAC_METADATA_STREAMINFO) {
-        /* sync to the next block */
-        r = miniflac_sync_internal(pFlac,&pFlac->br);
-        if(r != MINIFLAC_OK) goto miniflac_streaminfo_decode_exit;
-        if(pFlac->state != MINIFLAC_METADATA) {
-            r = MINIFLAC_ERROR;
-            goto miniflac_streaminfo_decode_exit;
-        }
-    }
-
-    r = miniflac_streaminfo_decode(&pFlac->metadata.streaminfo,&pFlac->br,streaminfo);
-    /* perform some housekeeping for the metadata_decode/sync functions, minor duplication but this is a special-case block */
-
-    miniflac_streaminfo_decode_exit:
-    *out_length = pFlac->br.pos;
-    return r;
-}
-
-static
-MINIFLAC_RESULT
 miniflac_sync_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length) {
     MINIFLAC_RESULT r = MINIFLAC_CONTINUE;
 
@@ -263,31 +232,6 @@ miniflac_decode_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uin
         if(r  != MINIFLAC_OK) break;
 
         r = miniflac_decode_native(pFlac,packet,packet_length,&packet_used,samples);
-        miniflac_oggfunction_end(pFlac,packet_used);
-    } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
-
-    *out_length = pFlac->ogg.br.pos;
-    return r;
-}
-
-static
-MINIFLAC_RESULT
-miniflac_streaminfo_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, miniflac_streaminfo_t* streaminfo) {
-    MINIFLAC_RESULT r = MINIFLAC_CONTINUE;
-
-    const uint8_t* packet = NULL;
-    uint32_t packet_length = 0;
-    uint32_t packet_used   = 0;
-
-    pFlac->ogg.br.buffer = data;
-    pFlac->ogg.br.len = length;
-    pFlac->ogg.br.pos = 0;
-
-    do {
-        r = miniflac_oggfunction_start(pFlac,data,&packet,&packet_length);
-        if(r  != MINIFLAC_OK) break;
-
-        r = miniflac_streaminfo_native(pFlac,packet,packet_length,&packet_used,streaminfo);
         miniflac_oggfunction_end(pFlac,packet_used);
     } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
 
@@ -349,24 +293,6 @@ miniflac_sync(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t*
         r = miniflac_sync_native(pFlac,data,length,out_length);
     } else {
         r = miniflac_sync_ogg(pFlac,data,length,out_length);
-    }
-
-    return r;
-}
-
-MINIFLAC_API
-MINIFLAC_RESULT
-miniflac_streaminfo(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, miniflac_streaminfo_t* streaminfo) {
-    MINIFLAC_RESULT r;
-    if(pFlac->container == MINIFLAC_CONTAINER_UNKNOWN) {
-        r = miniflac_probe(pFlac,data,length);
-        if(r != MINIFLAC_OK) return r;
-    }
-
-    if(pFlac->container == MINIFLAC_CONTAINER_NATIVE) {
-        r = miniflac_streaminfo_native(pFlac,data,length,out_length,streaminfo);
-    } else {
-        r = miniflac_streaminfo_ogg(pFlac,data,length,out_length,streaminfo);
     }
 
     return r;
@@ -504,6 +430,15 @@ miniflac_ ## subsys ## _ ## val(miniflac_t* pFlac, const uint8_t* data, uint32_t
         r = miniflac_ ## subsys ## _ ## val ## _ogg(pFlac,data,length,out_length,output,buffer_length,outlen); \
     } \
     return r; \
+}
+
+MINIFLAC_GEN_FUNC1(STREAMINFO,streaminfo,streaminfo,miniflac_streaminfo_t)
+
+/* generated function is something like miniflac_streaminfo_streaminfo, provide a wrapper */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_streaminfo(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, miniflac_streaminfo_t* streaminfo) {
+    return miniflac_streaminfo_streaminfo(pFlac,data,length,out_length,streaminfo);
 }
 
 MINIFLAC_GEN_FUNC1(VORBIS_COMMENT,vorbis_comment,vendor_length,uint32_t)
