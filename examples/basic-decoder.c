@@ -51,6 +51,7 @@ int main(int argc, const char *argv[]) {
     uint32_t string_buffer_length = 0;
     uint8_t temp8 = 0;
     uint16_t temp16 = 0;
+    uint32_t temp32 = 0;
     uint64_t temp64 = 0;
 
     if(argc < 3) {
@@ -338,6 +339,17 @@ int main(int argc, const char *argv[]) {
             }
             length -= used;
             pos += used;
+        }
+
+        else if(decoder->metadata.header.type == MINIFLAC_METADATA_APPLICATION) {
+            fprintf(stdout,"[application]\n");
+            fprintf(stdout,"  length: %u bytes\n",decoder->metadata.application.len);
+            if(miniflac_application_id(decoder,&buffer[pos],length,&used,&temp32) != MINIFLAC_OK) abort();
+            length -= used;
+            pos += used;
+            fprintf(stdout,"  id: 0x%08x\n",temp32);
+
+            /* skip actually decoding for now */
         }
 
         if(miniflac_sync(decoder,&buffer[pos],length,&used) != MINIFLAC_OK) abort();

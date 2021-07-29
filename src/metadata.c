@@ -12,6 +12,8 @@ miniflac_metadata_init(miniflac_metadata_t* metadata) {
     miniflac_streaminfo_init(&metadata->streaminfo);
     miniflac_vorbis_comment_init(&metadata->vorbis_comment);
     miniflac_picture_init(&metadata->picture);
+    miniflac_seektable_init(&metadata->seektable);
+    miniflac_application_init(&metadata->application);
 }
 
 MINIFLAC_PRIVATE
@@ -42,6 +44,11 @@ miniflac_metadata_sync(miniflac_metadata_t* metadata, miniflac_bitreader_t* br) 
         case MINIFLAC_METADATA_SEEKTABLE: {
             miniflac_seektable_init(&metadata->seektable);
             metadata->seektable.len = metadata->header.length / 18;
+            break;
+        }
+        case MINIFLAC_METADATA_APPLICATION: {
+            miniflac_application_init(&metadata->application);
+            metadata->application.len = metadata->header.length - 4;
             break;
         }
         default: break;
@@ -99,6 +106,10 @@ miniflac_metadata_decode(miniflac_metadata_t* metadata, miniflac_bitreader_t* br
                     do {
                       r = miniflac_seektable_read_samples(&metadata->seektable,br,NULL);
                     } while(r == MINIFLAC_OK);
+                    break;
+                }
+                case MINIFLAC_METADATA_APPLICATION: {
+                    r = miniflac_application_read_data(&metadata->application,br,NULL,0,NULL);
                     break;
                 }
                 default: {

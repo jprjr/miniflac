@@ -104,6 +104,7 @@ frame, or call miniflac_decode to continue on.
 #define MINIFLAC_PURE __attribute__((const))
 #endif
 
+#define MINIFLAC_APPLICATION_H
 #define MINIFLAC_COMMON_H
 #define MINIFLAC_BITREADER_H
 #define MINIFLAC_CUESHEET_H

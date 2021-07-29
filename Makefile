@@ -8,6 +8,7 @@ CFLAGS = -flto -Wall -Wextra -fPIC -g $(OPTIMIZE) $(MISC_CFLAGS)
 LDFLAGS = -flto
 
 OBJS = \
+  src/application.o \
   src/bitreader.o \
   src/cuesheet.o \
   src/flac.o \
@@ -32,6 +33,7 @@ OBJS = \
   src/unpack.o
 
 SOURCES = \
+  src/application.c \
   src/bitreader.c \
   src/cuesheet.c \
   src/flac.c \
@@ -55,6 +57,7 @@ SOURCES = \
   src/unpack.c
 
 HEADERS = \
+  src/application.h \
   src/common.h \
   src/bitreader.h \
   src/cuesheet.h \

@@ -104,6 +104,7 @@ frame, or call miniflac_decode to continue on.
 #define MINIFLAC_PURE __attribute__((const))
 #endif
 
+#define MINIFLAC_APPLICATION_H
 #define MINIFLAC_COMMON_H
 #define MINIFLAC_BITREADER_H
 #define MINIFLAC_CUESHEET_H
@@ -141,6 +142,7 @@ typedef struct miniflac_vorbis_comment_s miniflac_vorbis_comment_t;
 typedef struct miniflac_picture_s miniflac_picture_t;
 typedef struct miniflac_cuesheet_s miniflac_cuesheet_t;
 typedef struct miniflac_seektable_s miniflac_seektable_t;
+typedef struct miniflac_application_s miniflac_application_t;
 typedef struct miniflac_metadata_s miniflac_metadata_t;
 typedef struct miniflac_residual_s miniflac_residual_t;
 typedef struct miniflac_subframe_fixed_s miniflac_subframe_fixed_t;
@@ -164,6 +166,7 @@ typedef enum MINIFLAC_VORBISCOMMENT_STATE MINIFLAC_VORBISCOMMENT_STATE;
 typedef enum MINIFLAC_PICTURE_STATE MINIFLAC_PICTURE_STATE;
 typedef enum MINIFLAC_CUESHEET_STATE MINIFLAC_CUESHEET_STATE;
 typedef enum MINIFLAC_SEEKTABLE_STATE MINIFLAC_SEEKTABLE_STATE;
+typedef enum MINIFLAC_APPLICATION_STATE MINIFLAC_APPLICATION_STATE;
 typedef enum MINIFLAC_METADATA_STATE MINIFLAC_METADATA_STATE;
 typedef enum MINIFLAC_RESIDUAL_STATE MINIFLAC_RESIDUAL_STATE;
 typedef enum MINIFLAC_SUBFRAME_FIXED_STATE MINIFLAC_SUBFRAME_FIXED_STATE;
@@ -298,6 +301,11 @@ enum MINIFLAC_SEEKTABLE_STATE {
     MINIFLAC_SEEKTABLE_SAMPLE_NUMBER,
     MINIFLAC_SEEKTABLE_SAMPLE_OFFSET,
     MINIFLAC_SEEKTABLE_SAMPLES,
+};
+
+enum MINIFLAC_APPLICATION_STATE {
+    MINIFLAC_APPLICATION_ID,
+    MINIFLAC_APPLICATION_DATA,
 };
 
 enum MINIFLAC_METADATA_STATE {
@@ -512,6 +520,12 @@ struct miniflac_seektable_s {
     uint32_t pos; /* current seekpoint */
 };
 
+struct miniflac_application_s {
+    MINIFLAC_APPLICATION_STATE    state;
+    uint32_t len; /* length of data */
+    uint32_t pos; /* current byte */
+};
+
 struct miniflac_metadata_s {
     MINIFLAC_METADATA_STATE               state;
     uint32_t                                pos;
@@ -521,6 +535,7 @@ struct miniflac_metadata_s {
     miniflac_picture_t                  picture;
     miniflac_cuesheet_t                cuesheet;
     miniflac_seektable_t              seektable;
+    miniflac_application_t          application;
 };
 
 struct miniflac_residual_s {
@@ -811,6 +826,16 @@ MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_seektable_samples(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint16_t* samples);
 
+/* read an application block's ID */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_application_id(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* id);
+
+/* read an application block's data */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_application_data(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* buffer, uint32_t buffer_length, uint32_t* outlen);
+
 
 #ifdef __cplusplus
 }
@@ -1058,6 +1083,18 @@ miniflac_seektable_read_sample_offset(miniflac_seektable_t* seektable, miniflac_
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
 miniflac_seektable_read_samples(miniflac_seektable_t* seektable, miniflac_bitreader_t* br, uint16_t* samples);
+
+MINIFLAC_PRIVATE
+void
+miniflac_application_init(miniflac_application_t* application);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_application_read_id(miniflac_application_t* application, miniflac_bitreader_t* br, uint32_t* id);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_application_read_data(miniflac_application_t* application, miniflac_bitreader_t* br, uint8_t* output, uint32_t length, uint32_t* outlen);
 
 MINIFLAC_PRIVATE
 void
@@ -1618,6 +1655,9 @@ MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,index_point_number,uint8_t)
 MINIFLAC_GEN_FUNC1(SEEKTABLE,seektable,sample_number,uint64_t)
 MINIFLAC_GEN_FUNC1(SEEKTABLE,seektable,sample_offset,uint64_t)
 MINIFLAC_GEN_FUNC1(SEEKTABLE,seektable,samples,uint16_t)
+
+MINIFLAC_GEN_FUNC1(APPLICATION,application,id,uint32_t)
+MINIFLAC_GEN_FUNCSTR(APPLICATION,application,data,uint8_t)
 MINIFLAC_PRIVATE
 uint32_t
 miniflac_unpack_uint32le(uint8_t buffer[4]) {
@@ -3690,6 +3730,66 @@ miniflac_seektable_read_samples(miniflac_seektable_t* seektable, miniflac_bitrea
 
 MINIFLAC_PRIVATE
 void
+miniflac_application_init(miniflac_application_t* application) {
+    application->state = MINIFLAC_APPLICATION_ID;
+    application->len = 0;
+    application->pos = 0;
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_application_read_id(miniflac_application_t* application, miniflac_bitreader_t* br, uint32_t* id) {
+    uint32_t t;
+    switch(application->state) {
+        case MINIFLAC_APPLICATION_ID: {
+            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            t = (uint32_t)miniflac_bitreader_read(br,32);
+            if(id != NULL) {
+                *id = t;
+            }
+            application->state = MINIFLAC_APPLICATION_DATA;
+            return MINIFLAC_OK;
+        }
+        default: break;
+    }
+    miniflac_abort();
+    return MINIFLAC_ERROR;
+}
+
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_application_read_data(miniflac_application_t* application, miniflac_bitreader_t* br, uint8_t* output, uint32_t length, uint32_t* outlen) {
+    MINIFLAC_RESULT r = MINIFLAC_ERROR;
+    uint8_t d;
+    switch(application->state) {
+        case MINIFLAC_APPLICATION_ID: {
+            r = miniflac_application_read_id(application,br,NULL);
+            if(r != MINIFLAC_OK) return r;
+        }
+        /* fall-through */
+        case MINIFLAC_APPLICATION_DATA: {
+            while(application->pos < application->len) {
+                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                d = (uint8_t) miniflac_bitreader_read(br,8);
+                if(output != NULL && application->pos < length) {
+                    output[application->pos] = d;
+                }
+                application->pos++;
+            }
+            if(outlen != NULL) {
+                *outlen = application->len <= length ? application->len : length;
+            }
+            return MINIFLAC_OK;
+        }
+        default: break;
+    }
+    miniflac_abort();
+    return MINIFLAC_ERROR;
+}
+
+MINIFLAC_PRIVATE
+void
 miniflac_metadata_init(miniflac_metadata_t* metadata) {
     metadata->state = MINIFLAC_METADATA_HEADER;
     metadata->pos = 0;
@@ -3697,6 +3797,8 @@ miniflac_metadata_init(miniflac_metadata_t* metadata) {
     miniflac_streaminfo_init(&metadata->streaminfo);
     miniflac_vorbis_comment_init(&metadata->vorbis_comment);
     miniflac_picture_init(&metadata->picture);
+    miniflac_seektable_init(&metadata->seektable);
+    miniflac_application_init(&metadata->application);
 }
 
 MINIFLAC_PRIVATE
@@ -3727,6 +3829,11 @@ miniflac_metadata_sync(miniflac_metadata_t* metadata, miniflac_bitreader_t* br) 
         case MINIFLAC_METADATA_SEEKTABLE: {
             miniflac_seektable_init(&metadata->seektable);
             metadata->seektable.len = metadata->header.length / 18;
+            break;
+        }
+        case MINIFLAC_METADATA_APPLICATION: {
+            miniflac_application_init(&metadata->application);
+            metadata->application.len = metadata->header.length - 4;
             break;
         }
         default: break;
@@ -3784,6 +3891,10 @@ miniflac_metadata_decode(miniflac_metadata_t* metadata, miniflac_bitreader_t* br
                     do {
                       r = miniflac_seektable_read_samples(&metadata->seektable,br,NULL);
                     } while(r == MINIFLAC_OK);
+                    break;
+                }
+                case MINIFLAC_METADATA_APPLICATION: {
+                    r = miniflac_application_read_data(&metadata->application,br,NULL,0,NULL);
                     break;
                 }
                 default: {
