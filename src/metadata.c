@@ -77,7 +77,7 @@ miniflac_metadata_decode(miniflac_metadata_t* metadata, miniflac_bitreader_t* br
                 }
                 case MINIFLAC_METADATA_VORBIS_COMMENT: {
                     do {
-                        r = miniflac_vorbis_comment_comment_length(&metadata->vorbis_comment,br,NULL);
+                        r = miniflac_vorbis_comment_read_length(&metadata->vorbis_comment,br,NULL);
                     } while(r == MINIFLAC_OK);
                     break;
                 }

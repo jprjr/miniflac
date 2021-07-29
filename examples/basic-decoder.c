@@ -115,7 +115,7 @@ int main(int argc, const char *argv[]) {
         }
         else if(decoder->metadata.header.type == MINIFLAC_METADATA_VORBIS_COMMENT) {
             uint32_t i = 0;
-            if(miniflac_vendor_length(decoder,&buffer[pos],length,&used,&incoming_string_length) != MINIFLAC_OK) abort();
+            if(miniflac_vorbis_comment_vendor_length(decoder,&buffer[pos],length,&used,&incoming_string_length) != MINIFLAC_OK) abort();
             length -= used;
             pos += used;
             if(incoming_string_length > string_buffer_length) {
@@ -124,14 +124,14 @@ int main(int argc, const char *argv[]) {
                 string_buffer_length = incoming_string_length;
             }
             fprintf(stdout,"[vendor string][%u]: ",incoming_string_length);
-            if(miniflac_vendor_string(decoder,&buffer[pos],length,&used,string_buffer,string_buffer_length+1,&incoming_string_length) != MINIFLAC_OK)
+            if(miniflac_vorbis_comment_vendor_string(decoder,&buffer[pos],length,&used,string_buffer,string_buffer_length+1,&incoming_string_length) != MINIFLAC_OK)
                 abort();
             length -= used;
             pos += used;
             string_buffer[incoming_string_length] = '\0';
             fprintf(stdout,"%s\n",string_buffer);
 
-            while( (res =miniflac_comment_length(decoder,&buffer[pos],length,&used,&incoming_string_length)) == MINIFLAC_OK) {
+            while( (res =miniflac_vorbis_comment_length(decoder,&buffer[pos],length,&used,&incoming_string_length)) == MINIFLAC_OK) {
                 length -= used;
                 pos += used;
                 fprintf(stdout,"[comment %u][%u]:\n",i++,incoming_string_length);
@@ -140,7 +140,7 @@ int main(int argc, const char *argv[]) {
                     if(string_buffer == NULL) abort();
                     string_buffer_length = incoming_string_length;
                 }
-                if(miniflac_comment_string(decoder,&buffer[pos],length,&used,string_buffer,string_buffer_length+1,&incoming_string_length) != MINIFLAC_OK)
+                if(miniflac_vorbis_comment_string(decoder,&buffer[pos],length,&used,string_buffer,string_buffer_length+1,&incoming_string_length) != MINIFLAC_OK)
                     abort();
                 length -= used;
                 pos += used;

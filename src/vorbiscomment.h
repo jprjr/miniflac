@@ -36,23 +36,23 @@ miniflac_vorbis_comment_init(miniflac_vorbis_comment_t* vorbis_comment);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_vorbis_comment_vendor_length(miniflac_vorbis_comment_t* vorbis_comment, miniflac_bitreader_t* br, uint32_t* length);
+miniflac_vorbis_comment_read_vendor_length(miniflac_vorbis_comment_t* vorbis_comment, miniflac_bitreader_t* br, uint32_t* length);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_vorbis_comment_vendor_string(miniflac_vorbis_comment_t* vorbis_comment, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen);
+miniflac_vorbis_comment_read_vendor_string(miniflac_vorbis_comment_t* vorbis_comment, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_vorbis_comment_total_comments(miniflac_vorbis_comment_t* vorbis_comment, miniflac_bitreader_t* br, uint32_t* total);
+miniflac_vorbis_comment_read_total(miniflac_vorbis_comment_t* vorbis_comment, miniflac_bitreader_t* br, uint32_t* total);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_vorbis_comment_comment_length(miniflac_vorbis_comment_t* vorbis_comment, miniflac_bitreader_t* br, uint32_t* length);
+miniflac_vorbis_comment_read_length(miniflac_vorbis_comment_t* vorbis_comment, miniflac_bitreader_t* br, uint32_t* length);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_vorbis_comment_comment_string(miniflac_vorbis_comment_t* vorbis_comment, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen);
+miniflac_vorbis_comment_read_string(miniflac_vorbis_comment_t* vorbis_comment, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen);
 
 #ifdef __cplusplus
 }
