@@ -115,6 +115,7 @@ frame, or call miniflac_decode to continue on.
 #define MINIFLAC_OGGHEADER_H
 #define MINIFLAC_PICTURE_H
 #define MINIFLAC_RESIDUAL_H
+#define MINIFLAC_SEEKTABLE_H
 #define MINIFLAC_STREAMINFO_H
 #define MINIFLAC_STREAMMARKER_H
 #define MINIFLAC_SUBFRAME_CONSTANT_H

@@ -220,6 +220,21 @@ MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_cuesheet_index_point_number(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* index_point_number);
 
+/* read the next seekpoint sample number */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_seektable_sample_number(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint64_t* sample_number);
+
+/* read the next seekpoint sample offset */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_seektable_sample_offset(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint64_t* sample_offset);
+
+/* read the next seekpoint # of samples in seekpoint */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_seektable_samples(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint16_t* samples);
+
 #ifdef __cplusplus
 }
 #endif

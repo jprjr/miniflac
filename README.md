@@ -14,13 +14,13 @@ functions, does not allocate any memory.
   * [`VORBIS_COMMENT`](https://xiph.org/flac/format.html#metadata_block_vorbis_comment)
   * [`PICTURE`](https://xiph.org/flac/format.html#metadata_block_picture)
   * [`CUESHEET`](https://xiph.org/flac/format.html#metadata_block_cuesheet)
+  * [`SEEKTABLE`](https://xiph.org/flac/format.html#metadata_block_seektable)
 
 ## Future Improvements
 
 * Speed optimizations
 * Memory reduction
 * Metadata Support for (in priority order):
-  * [`SEEKTABLE`](https://xiph.org/flac/format.html#metadata_block_seektable)
   * [`APPLICATION`](https://xiph.org/flac/format.html#metadata_block_application)
 
 ## Usage

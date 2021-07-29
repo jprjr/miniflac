@@ -115,6 +115,7 @@ frame, or call miniflac_decode to continue on.
 #define MINIFLAC_OGGHEADER_H
 #define MINIFLAC_PICTURE_H
 #define MINIFLAC_RESIDUAL_H
+#define MINIFLAC_SEEKTABLE_H
 #define MINIFLAC_STREAMINFO_H
 #define MINIFLAC_STREAMMARKER_H
 #define MINIFLAC_SUBFRAME_CONSTANT_H
@@ -139,6 +140,7 @@ typedef struct miniflac_streaminfo_private_s miniflac_streaminfo_private_t;
 typedef struct miniflac_vorbis_comment_s miniflac_vorbis_comment_t;
 typedef struct miniflac_picture_s miniflac_picture_t;
 typedef struct miniflac_cuesheet_s miniflac_cuesheet_t;
+typedef struct miniflac_seektable_s miniflac_seektable_t;
 typedef struct miniflac_metadata_s miniflac_metadata_t;
 typedef struct miniflac_residual_s miniflac_residual_t;
 typedef struct miniflac_subframe_fixed_s miniflac_subframe_fixed_t;
@@ -161,6 +163,7 @@ typedef enum MINIFLAC_STREAMINFO_STATE MINIFLAC_STREAMINFO_STATE;
 typedef enum MINIFLAC_VORBISCOMMENT_STATE MINIFLAC_VORBISCOMMENT_STATE;
 typedef enum MINIFLAC_PICTURE_STATE MINIFLAC_PICTURE_STATE;
 typedef enum MINIFLAC_CUESHEET_STATE MINIFLAC_CUESHEET_STATE;
+typedef enum MINIFLAC_SEEKTABLE_STATE MINIFLAC_SEEKTABLE_STATE;
 typedef enum MINIFLAC_METADATA_STATE MINIFLAC_METADATA_STATE;
 typedef enum MINIFLAC_RESIDUAL_STATE MINIFLAC_RESIDUAL_STATE;
 typedef enum MINIFLAC_SUBFRAME_FIXED_STATE MINIFLAC_SUBFRAME_FIXED_STATE;
@@ -289,6 +292,12 @@ enum MINIFLAC_CUESHEET_STATE {
     MINIFLAC_CUESHEET_INDEX_OFFSET,
     MINIFLAC_CUESHEET_INDEX_NUMBER,
     MINIFLAC_CUESHEET_INDEX_RESERVE,
+};
+
+enum MINIFLAC_SEEKTABLE_STATE {
+    MINIFLAC_SEEKTABLE_SAMPLE_NUMBER,
+    MINIFLAC_SEEKTABLE_SAMPLE_OFFSET,
+    MINIFLAC_SEEKTABLE_SAMPLES,
 };
 
 enum MINIFLAC_METADATA_STATE {
@@ -497,6 +506,12 @@ struct miniflac_cuesheet_s {
     uint8_t points;
 };
 
+struct miniflac_seektable_s {
+    MINIFLAC_SEEKTABLE_STATE    state;
+    uint32_t len; /* number of seekpoints */
+    uint32_t pos; /* current seekpoint */
+};
+
 struct miniflac_metadata_s {
     MINIFLAC_METADATA_STATE               state;
     uint32_t                                pos;
@@ -505,6 +520,7 @@ struct miniflac_metadata_s {
     miniflac_vorbis_comment_t    vorbis_comment;
     miniflac_picture_t                  picture;
     miniflac_cuesheet_t                cuesheet;
+    miniflac_seektable_t              seektable;
 };
 
 struct miniflac_residual_s {
@@ -780,6 +796,21 @@ MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_cuesheet_index_point_number(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* index_point_number);
 
+/* read the next seekpoint sample number */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_seektable_sample_number(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint64_t* sample_number);
+
+/* read the next seekpoint sample offset */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_seektable_sample_offset(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint64_t* sample_offset);
+
+/* read the next seekpoint # of samples in seekpoint */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_seektable_samples(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint16_t* samples);
+
 
 #ifdef __cplusplus
 }
@@ -1011,6 +1042,22 @@ miniflac_cuesheet_read_index_point_offset(miniflac_cuesheet_t* cuesheet, minifla
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
 miniflac_cuesheet_read_index_point_number(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, uint8_t* index_point_number);
+
+MINIFLAC_PRIVATE
+void
+miniflac_seektable_init(miniflac_seektable_t* seektable);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_seektable_read_sample_number(miniflac_seektable_t* seektable, miniflac_bitreader_t* br, uint64_t* sample_number);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_seektable_read_sample_offset(miniflac_seektable_t* seektable, miniflac_bitreader_t* br, uint64_t* sample_offset);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_seektable_read_samples(miniflac_seektable_t* seektable, miniflac_bitreader_t* br, uint16_t* samples);
 
 MINIFLAC_PRIVATE
 void
@@ -1567,6 +1614,10 @@ MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,track_preemph,uint8_t)
 MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,track_indexpoints,uint8_t)
 MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,index_point_offset,uint64_t)
 MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,index_point_number,uint8_t)
+
+MINIFLAC_GEN_FUNC1(SEEKTABLE,seektable,sample_number,uint64_t)
+MINIFLAC_GEN_FUNC1(SEEKTABLE,seektable,sample_offset,uint64_t)
+MINIFLAC_GEN_FUNC1(SEEKTABLE,seektable,samples,uint16_t)
 MINIFLAC_PRIVATE
 uint32_t
 miniflac_unpack_uint32le(uint8_t buffer[4]) {
@@ -3553,6 +3604,92 @@ miniflac_cuesheet_read_index_point_number(miniflac_cuesheet_t* cuesheet, minifla
 
 MINIFLAC_PRIVATE
 void
+miniflac_seektable_init(miniflac_seektable_t* seektable) {
+    seektable->state = MINIFLAC_SEEKTABLE_SAMPLE_NUMBER;
+    seektable->len = 0;
+    seektable->pos = 0;
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_seektable_read_sample_number(miniflac_seektable_t* seektable, miniflac_bitreader_t* br, uint64_t* sample_number) {
+    uint64_t t = 0;
+
+    switch(seektable->state) {
+        case MINIFLAC_SEEKTABLE_SAMPLE_NUMBER: {
+            if(seektable->pos == seektable->len) return MINIFLAC_METADATA_END;
+            if(miniflac_bitreader_fill(br,64)) return MINIFLAC_CONTINUE;
+            t = miniflac_bitreader_read(br,64);
+            if(sample_number != NULL) {
+                *sample_number = t;
+            }
+            seektable->state = MINIFLAC_SEEKTABLE_SAMPLE_OFFSET;
+            return MINIFLAC_OK;
+        }
+        default: break;
+    }
+    miniflac_abort();
+    return MINIFLAC_ERROR;
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_seektable_read_sample_offset(miniflac_seektable_t* seektable, miniflac_bitreader_t* br, uint64_t* sample_offset) {
+    MINIFLAC_RESULT r = MINIFLAC_ERROR;
+    uint64_t t = 0;
+
+    switch(seektable->state) {
+        case MINIFLAC_SEEKTABLE_SAMPLE_NUMBER: {
+            r = miniflac_seektable_read_sample_number(seektable,br,NULL);
+            if(r != MINIFLAC_OK) return r;
+        }
+        /* fall-through */
+        case MINIFLAC_SEEKTABLE_SAMPLE_OFFSET: {
+            if(miniflac_bitreader_fill(br,64)) return MINIFLAC_CONTINUE;
+            t = miniflac_bitreader_read(br,64);
+            if(sample_offset != NULL) {
+                *sample_offset = t;
+            }
+            seektable->state = MINIFLAC_SEEKTABLE_SAMPLES;
+            return MINIFLAC_OK;
+        }
+        default: break;
+    }
+    miniflac_abort();
+    return MINIFLAC_ERROR;
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_seektable_read_samples(miniflac_seektable_t* seektable, miniflac_bitreader_t* br, uint16_t* samples) {
+    MINIFLAC_RESULT r = MINIFLAC_ERROR;
+    uint16_t t = 0;
+
+    switch(seektable->state) {
+        case MINIFLAC_SEEKTABLE_SAMPLE_NUMBER: /* fall-through */
+        case MINIFLAC_SEEKTABLE_SAMPLE_OFFSET: {
+            r = miniflac_seektable_read_sample_offset(seektable,br,NULL);
+            if(r != MINIFLAC_OK) return r;
+        }
+        /* fall-through */
+        case MINIFLAC_SEEKTABLE_SAMPLES: {
+            if(miniflac_bitreader_fill(br,16)) return MINIFLAC_CONTINUE;
+            t = (uint16_t)miniflac_bitreader_read(br,16);
+            if(samples != NULL) {
+                *samples = t;
+            }
+            seektable->pos++;
+            seektable->state = MINIFLAC_SEEKTABLE_SAMPLE_NUMBER;
+            return MINIFLAC_OK;
+        }
+        default: break;
+    }
+    miniflac_abort();
+    return MINIFLAC_ERROR;
+}
+
+MINIFLAC_PRIVATE
+void
 miniflac_metadata_init(miniflac_metadata_t* metadata) {
     metadata->state = MINIFLAC_METADATA_HEADER;
     metadata->pos = 0;
@@ -3587,6 +3724,11 @@ miniflac_metadata_sync(miniflac_metadata_t* metadata, miniflac_bitreader_t* br) 
             miniflac_cuesheet_init(&metadata->cuesheet);
             break;
         }
+        case MINIFLAC_METADATA_SEEKTABLE: {
+            miniflac_seektable_init(&metadata->seektable);
+            metadata->seektable.len = metadata->header.length / 18;
+            break;
+        }
         default: break;
     }
 
@@ -3610,7 +3752,6 @@ MINIFLAC_PRIVATE
 MINIFLAC_RESULT
 miniflac_metadata_decode(miniflac_metadata_t* metadata, miniflac_bitreader_t* br) {
     MINIFLAC_RESULT r = MINIFLAC_ERROR;
-    uint8_t indexpoints = 0;
     switch(metadata->state) {
         case MINIFLAC_METADATA_HEADER: {
             r = miniflac_metadata_sync(metadata,br);
@@ -3635,7 +3776,13 @@ miniflac_metadata_decode(miniflac_metadata_t* metadata, miniflac_bitreader_t* br
                 }
                 case MINIFLAC_METADATA_CUESHEET: {
                     do {
-                      r = miniflac_cuesheet_read_track_indexpoints(&metadata->cuesheet,br,&indexpoints);
+                      r = miniflac_cuesheet_read_track_indexpoints(&metadata->cuesheet,br,NULL);
+                    } while(r == MINIFLAC_OK);
+                    break;
+                }
+                case MINIFLAC_METADATA_SEEKTABLE: {
+                    do {
+                      r = miniflac_seektable_read_samples(&metadata->seektable,br,NULL);
                     } while(r == MINIFLAC_OK);
                     break;
                 }

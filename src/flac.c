@@ -471,3 +471,7 @@ MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,track_preemph,uint8_t)
 MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,track_indexpoints,uint8_t)
 MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,index_point_offset,uint64_t)
 MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,index_point_number,uint8_t)
+
+MINIFLAC_GEN_FUNC1(SEEKTABLE,seektable,sample_number,uint64_t)
+MINIFLAC_GEN_FUNC1(SEEKTABLE,seektable,sample_offset,uint64_t)
+MINIFLAC_GEN_FUNC1(SEEKTABLE,seektable,samples,uint16_t)

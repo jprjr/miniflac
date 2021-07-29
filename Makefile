@@ -19,6 +19,7 @@ OBJS = \
   src/oggheader.o \
   src/picture.o \
   src/residual.o \
+  src/seektable.o \
   src/subframe.o \
   src/subframe_constant.o \
   src/subframe_verbatim.o \
@@ -42,6 +43,7 @@ SOURCES = \
   src/oggheader.c \
   src/picture.c \
   src/residual.c \
+  src/seektable.c \
   src/streaminfo.c \
   src/streammarker.c \
   src/subframe.c \
@@ -67,6 +69,7 @@ HEADERS = \
   src/oggheader.h \
   src/picture.h \
   src/residual.h \
+  src/seektable.h \
   src/subframe_fixed.h \
   src/subframe_lpc.h \
   src/subframe_constant.h \

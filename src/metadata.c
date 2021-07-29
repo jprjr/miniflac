@@ -39,6 +39,11 @@ miniflac_metadata_sync(miniflac_metadata_t* metadata, miniflac_bitreader_t* br) 
             miniflac_cuesheet_init(&metadata->cuesheet);
             break;
         }
+        case MINIFLAC_METADATA_SEEKTABLE: {
+            miniflac_seektable_init(&metadata->seektable);
+            metadata->seektable.len = metadata->header.length / 18;
+            break;
+        }
         default: break;
     }
 
@@ -62,7 +67,6 @@ MINIFLAC_PRIVATE
 MINIFLAC_RESULT
 miniflac_metadata_decode(miniflac_metadata_t* metadata, miniflac_bitreader_t* br) {
     MINIFLAC_RESULT r = MINIFLAC_ERROR;
-    uint8_t indexpoints = 0;
     switch(metadata->state) {
         case MINIFLAC_METADATA_HEADER: {
             r = miniflac_metadata_sync(metadata,br);
@@ -87,7 +91,13 @@ miniflac_metadata_decode(miniflac_metadata_t* metadata, miniflac_bitreader_t* br
                 }
                 case MINIFLAC_METADATA_CUESHEET: {
                     do {
-                      r = miniflac_cuesheet_read_track_indexpoints(&metadata->cuesheet,br,&indexpoints);
+                      r = miniflac_cuesheet_read_track_indexpoints(&metadata->cuesheet,br,NULL);
+                    } while(r == MINIFLAC_OK);
+                    break;
+                }
+                case MINIFLAC_METADATA_SEEKTABLE: {
+                    do {
+                      r = miniflac_seektable_read_samples(&metadata->seektable,br,NULL);
                     } while(r == MINIFLAC_OK);
                     break;
                 }

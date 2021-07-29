@@ -50,6 +50,7 @@ int main(int argc, const char *argv[]) {
     char* string_buffer = NULL;
     uint32_t string_buffer_length = 0;
     uint8_t temp8 = 0;
+    uint16_t temp16 = 0;
     uint64_t temp64 = 0;
 
     if(argc < 3) {
@@ -311,6 +312,29 @@ int main(int argc, const char *argv[]) {
                 length -= used;
                 pos += used;
 
+            }
+            length -= used;
+            pos += used;
+        }
+        else if(decoder->metadata.header.type == MINIFLAC_METADATA_SEEKTABLE) {
+            fprintf(stdout,"[seektable]\n");
+            i = 0;
+            while( (res = miniflac_seektable_sample_number(decoder,&buffer[pos],length,&used,&temp64)) == MINIFLAC_OK) {
+                length -= used;
+                pos += used;
+
+                fprintf(stdout,"  [seekpoint %u]\n",++i);
+                fprintf(stdout,"    sample number: %lu\n",temp64);
+
+                if(miniflac_seektable_sample_offset(decoder,&buffer[pos],length,&used,&temp64) != MINIFLAC_OK) abort();
+                length -= used;
+                pos += used;
+                fprintf(stdout,"    sample offset: %lu\n",temp64);
+
+                if(miniflac_seektable_samples(decoder,&buffer[pos],length,&used,&temp16) != MINIFLAC_OK) abort();
+                length -= used;
+                pos += used;
+                fprintf(stdout,"    samples: %u\n",temp16);
             }
             length -= used;
             pos += used;
