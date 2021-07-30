@@ -126,6 +126,7 @@ frame, or call miniflac_decode to continue on.
 #define MINIFLAC_SUBFRAME_LPC_H
 #define MINIFLAC_SUBFRAME_VERBATIM_H
 #define MINIFLAC_UNPACK_H
+#define MINIFLAC_VORBIS_COMMENT_H
 
 #ifndef MINIFLAC_PURE
 #define MINIFLAC_PURE

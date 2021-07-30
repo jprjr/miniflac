@@ -5,6 +5,57 @@
 #define dump(indent,str) fprintf(stderr,"%*s" str, indent, "")
 #define dumpf(indent,str,...) fprintf(stderr,"%*s" str, indent, "", __VA_ARGS__)
 
+static const char* const miniflac_application_state_str[] = {
+    "MINIFLAC_APPLICATION_ID",
+    "MINIFLAC_APPLICATION_DATA",
+};
+
+static const char* const miniflac_cuesheet_state_str[] = {
+    "MINIFLAC_CUESHEET_CATALOG",
+    "MINIFLAC_CUESHEET_LEADIN",
+    "MINIFLAC_CUESHEET_CDFLAG",
+    "MINIFLAC_CUESHEET_SHEET_RESERVE",
+    "MINIFLAC_CUESHEET_TRACKS",
+    "MINIFLAC_CUESHEET_TRACKOFFSET",
+    "MINIFLAC_CUESHEET_TRACKNUMBER",
+    "MINIFLAC_CUESHEET_TRACKISRC",
+    "MINIFLAC_CUESHEET_TRACKTYPE",
+    "MINIFLAC_CUESHEET_TRACKPREEMPH",
+    "MINIFLAC_CUESHEET_TRACK_RESERVE",
+    "MINIFLAC_CUESHEET_TRACKPOINTS",
+    "MINIFLAC_CUESHEET_INDEX_OFFSET",
+    "MINIFLAC_CUESHEET_INDEX_NUMBER",
+    "MINIFLAC_CUESHEET_INDEX_RESERVE",
+};
+
+static const char* const miniflac_picture_state_str[] = {
+    "MINIFLAC_PICTURE_TYPE",
+    "MINIFLAC_PICTURE_MIME_LENGTH",
+    "MINIFLAC_PICTURE_MIME_STRING",
+    "MINIFLAC_PICTURE_DESCRIPTION_LENGTH",
+    "MINIFLAC_PICTURE_DESCRIPTION_STRING",
+    "MINIFLAC_PICTURE_WIDTH",
+    "MINIFLAC_PICTURE_HEIGHT",
+    "MINIFLAC_PICTURE_COLORDEPTH",
+    "MINIFLAC_PICTURE_TOTALCOLORS",
+    "MINIFLAC_PICTURE_PICTURE_LENGTH",
+    "MINIFLAC_PICTURE_PICTURE_DATA",
+};
+
+static const char* const miniflac_seektable_state_str[] = {
+    "MINIFLAC_SEEKTABLE_SAMPLE_NUMBER",
+    "MINIFLAC_SEEKTABLE_SAMPLE_OFFSET",
+    "MINIFLAC_SEEKTABLE_SAMPLES",
+};
+
+static const char* const miniflac_vorbis_comment_state_str[] = {
+    "MINIFLAC_VORBISCOMMENT_VENDOR_LENGTH",
+    "MINIFLAC_VORBISCOMMENT_VENDOR_STRING",
+    "MINIFLAC_VORBISCOMMENT_TOTAL_COMMENTS",
+    "MINIFLAC_VORBISCOMMENT_COMMENT_LENGTH",
+    "MINIFLAC_VORBISCOMMENT_COMMENT_STRING",
+};
+
 static const char* const miniflac_state_str[] = {
     "MINIFLAC_UNKNOWN",
     "MINIFLAC_STREAMMARKER",
@@ -163,6 +214,52 @@ static const char* const miniflac_streaminfo_state_str[] = {
     "MINIFLAC_STREAMINFO_MD5_3",
     "MINIFLAC_STREAMINFO_MD5_4",
 };
+
+void miniflac_dump_application(miniflac_application_t* application, uint8_t indent) {
+    dumpf(indent,"application (%lu bytes):\n",sizeof(miniflac_application_t));
+    indent += 2;
+    dumpf(indent,"state: %s\n",miniflac_application_state_str[application->state]);
+    dumpf(indent,"len: %u\n",application->len);
+    dumpf(indent,"pos: %u\n",application->pos);
+}
+
+void miniflac_dump_cuesheet(miniflac_cuesheet_t* cuesheet, uint8_t indent) {
+    dumpf(indent,"cuesheet (%lu bytes):\n",sizeof(miniflac_cuesheet_t));
+    indent += 2;
+    dumpf(indent,"state: %s\n",miniflac_cuesheet_state_str[cuesheet->state]);
+    dumpf(indent,"pos: %u\n",cuesheet->pos);
+    dumpf(indent,"track: %u\n",cuesheet->track);
+    dumpf(indent,"tracks: %u\n",cuesheet->tracks);
+    dumpf(indent,"point: %u\n",cuesheet->point);
+    dumpf(indent,"points: %u\n",cuesheet->points);
+}
+
+void miniflac_dump_picture(miniflac_picture_t* picture, uint8_t indent) {
+    dumpf(indent,"picture (%lu bytes):\n",sizeof(miniflac_picture_t));
+    indent += 2;
+    dumpf(indent,"state: %s\n",miniflac_picture_state_str[picture->state]);
+    dumpf(indent,"len: %u\n",picture->len);
+    dumpf(indent,"pos: %u\n",picture->pos);
+}
+
+void miniflac_dump_seektable(miniflac_seektable_t* seektable, uint8_t indent) {
+    dumpf(indent,"seektable (%lu bytes):\n",sizeof(miniflac_seektable_t));
+    indent += 2;
+    dumpf(indent,"state: %s\n",miniflac_seektable_state_str[seektable->state]);
+    dumpf(indent,"len: %u\n",seektable->len);
+    dumpf(indent,"pos: %u\n",seektable->pos);
+}
+
+
+void miniflac_dump_vorbis_comment(miniflac_vorbis_comment_t* vorbis_comment, uint8_t indent) {
+    dumpf(indent,"vorbis_comment (%lu bytes):\n",sizeof(miniflac_vorbis_comment_t));
+    indent += 2;
+    dumpf(indent,"state: %s\n",miniflac_vorbis_comment_state_str[vorbis_comment->state]);
+    dumpf(indent,"len: %u\n",vorbis_comment->len);
+    dumpf(indent,"pos: %u\n",vorbis_comment->pos);
+    dumpf(indent,"tot: %u\n",vorbis_comment->tot);
+    dumpf(indent,"cur: %u\n",vorbis_comment->cur);
+}
 
 void
 miniflac_dump_bitreader(miniflac_bitreader_t* br, uint8_t indent) {
@@ -324,6 +421,11 @@ void miniflac_dump_metadata(miniflac_metadata_t* metadata, uint8_t indent) {
     dumpf(indent,"pos: %u\n", metadata->pos);
     miniflac_dump_metadata_header(&metadata->header,indent);
     miniflac_dump_streaminfo(&metadata->streaminfo,indent);
+    miniflac_dump_vorbis_comment(&metadata->vorbis_comment,indent);
+    miniflac_dump_picture(&metadata->picture,indent);
+    miniflac_dump_cuesheet(&metadata->cuesheet,indent);
+    miniflac_dump_seektable(&metadata->seektable,indent);
+    miniflac_dump_application(&metadata->application,indent);
 }
 
 void
@@ -345,6 +447,7 @@ miniflac_dump_ogg(miniflac_ogg_t* ogg, uint8_t indent) {
     dumpf(indent,"ogg (%lu bytes):\n",sizeof(miniflac_ogg_t));
     indent += 2;
     dumpf(indent,"state: %s\n",miniflac_ogg_state_str[ogg->state]);
+    miniflac_dump_bitreader(&ogg->br,indent);
     dumpf(indent,"version: %u\n", ogg->version);
     dumpf(indent,"headertype: %u\n", ogg->headertype);
     dumpf(indent+2,"continuation: %d\n",(ogg->headertype & 0x01) == 0x01);

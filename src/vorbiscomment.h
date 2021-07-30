@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: 0BSD */
-#ifndef MINIFLAC_VORBISCOMMENT_H
-#define MINIFLAC_VORBISCOMMENT_H
+#ifndef MINIFLAC_VORBIS_COMMENT_H
+#define MINIFLAC_VORBIS_COMMENT_H
 
 #include <stdint.h>
 

@@ -2,12 +2,16 @@
 #ifndef MINIFLAC_DEBUG_H
 #define MINIFLAC_DEBUG_H
 
+#include "application.h"
+#include "cuesheet.h"
 #include "bitreader.h"
 #include "ogg.h"
 #include "oggheader.h"
 #include "flac.h"
 #include "frame.h"
 #include "frameheader.h"
+#include "picture.h"
+#include "seektable.h"
 #include "subframe.h"
 #include "subframeheader.h"
 #include "subframe_constant.h"
@@ -19,6 +23,7 @@
 #include "streammarker.h"
 #include "metadata.h"
 #include "metadataheader.h"
+#include "vorbiscomment.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,6 +31,21 @@ extern "C" {
 
 void
 miniflac_dump_bitreader(miniflac_bitreader_t* br,uint8_t indent);
+
+void
+miniflac_dump_application(miniflac_application_t* application, uint8_t indent);
+
+void
+miniflac_dump_cuesheet(miniflac_cuesheet_t* cuesheet, uint8_t indent);
+
+void
+miniflac_dump_picture(miniflac_picture_t* picture, uint8_t indent);
+
+void
+miniflac_dump_seektable(miniflac_seektable_t* seektable, uint8_t indent);
+
+void
+miniflac_dump_vorbis_comment(miniflac_vorbis_comment_t* vorbis_comment, uint8_t indent);
 
 void
 miniflac_dump_frame(miniflac_frame_t* frame, uint8_t indent);

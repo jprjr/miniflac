@@ -54,7 +54,8 @@ SOURCES = \
   src/subframeheader.c \
   src/subframe_lpc.c \
   src/subframe_verbatim.c \
-  src/unpack.c
+  src/unpack.c \
+  src/vorbiscomment.c
 
 HEADERS = \
   src/application.h \
@@ -68,6 +69,7 @@ HEADERS = \
   src/metadataheader.h \
   src/streaminfo.h \
   src/metadata.h \
+  src/miniflac.h \
   src/ogg.h \
   src/oggheader.h \
   src/picture.h \
@@ -79,7 +81,8 @@ HEADERS = \
   src/subframe_verbatim.h \
   src/subframeheader.h \
   src/subframe.h \
-  src/unpack.h
+  src/unpack.h \
+  src/vorbiscomment.h
 
 all: libminiflac.a libminiflac.so miniflac.h examples/basic-decoder examples/single-byte-decoder utils/strip-headers examples/get-sizes examples/null-decoder examples/benchmark examples/just-decode examples/just-decode-singlefile
 
