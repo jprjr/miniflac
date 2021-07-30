@@ -303,7 +303,7 @@ miniflac_cuesheet_leadin(miniflac_t* pFlac, const uint8_t* data, uint32_t length
 /* read a cuesheet "is this a cd" flag */
 MINIFLAC_API
 MINIFLAC_RESULT
-miniflac_cuesheet_cdflag(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* cdflag);
+miniflac_cuesheet_cd_flag(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* cd_flag);
 
 /* read a cuesheet total tracks */
 MINIFLAC_API
@@ -333,12 +333,12 @@ miniflac_cuesheet_track_isrc_string(miniflac_t* pFlac, const uint8_t* data, uint
 /* read the next track type flag (0 = audio, 1 = non-audio) */
 MINIFLAC_API
 MINIFLAC_RESULT
-miniflac_cuesheet_track_type(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* track_type);
+miniflac_cuesheet_track_audio_flag(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* track_audio_flag);
 
 /* read the track pre-emphasis flag */
 MINIFLAC_API
 MINIFLAC_RESULT
-miniflac_cuesheet_track_preemph(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* track_preemph);
+miniflac_cuesheet_track_preemph_flag(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* track_preemph_flag);
 
 /* read the total number of track index points */
 MINIFLAC_API

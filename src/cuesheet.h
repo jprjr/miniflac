@@ -59,7 +59,7 @@ miniflac_cuesheet_read_leadin(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_cuesheet_read_cdflag(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, uint8_t* cdflag);
+miniflac_cuesheet_read_cd_flag(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, uint8_t* cd_flag);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
@@ -83,11 +83,11 @@ miniflac_cuesheet_read_track_isrc_string(miniflac_cuesheet_t* cuesheet, miniflac
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_cuesheet_read_track_type(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, uint8_t* track_type);
+miniflac_cuesheet_read_track_audio_flag(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, uint8_t* track_audio_flag);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_cuesheet_read_track_preemph(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, uint8_t* track_preemph);
+miniflac_cuesheet_read_track_preemph_flag(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, uint8_t* track_preemph_flag);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT

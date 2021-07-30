@@ -267,10 +267,10 @@ dump_cuesheet(miniflac_t* decoder, membuffer_t* mem) {
     mem->pos += used;
     fprintf(stdout,"  leadin: %lu\n",temp64);
 
-    if(miniflac_cuesheet_cdflag(decoder,&mem->buffer[mem->pos],mem->len,&used,&temp8) != MINIFLAC_OK) abort();
+    if(miniflac_cuesheet_cd_flag(decoder,&mem->buffer[mem->pos],mem->len,&used,&temp8) != MINIFLAC_OK) abort();
     mem->len -= used;
     mem->pos += used;
-    fprintf(stdout,"  cdflag: %u\n",temp8);
+    fprintf(stdout,"  cd_flag: %u\n",temp8);
 
     if(miniflac_cuesheet_tracks(decoder,&mem->buffer[mem->pos],mem->len,&used,&temp8) != MINIFLAC_OK) abort();
     mem->len -= used;
@@ -312,12 +312,12 @@ dump_cuesheet(miniflac_t* decoder, membuffer_t* mem) {
         }
         fprintf(stdout,"\n");
 
-        if(miniflac_cuesheet_track_type(decoder,&mem->buffer[mem->pos],mem->len,&used,&temp8) != MINIFLAC_OK) abort();
+        if(miniflac_cuesheet_track_audio_flag(decoder,&mem->buffer[mem->pos],mem->len,&used,&temp8) != MINIFLAC_OK) abort();
         mem->len -= used;
         mem->pos += used;
         fprintf(stdout,"    type: %u\n",temp8);
 
-        if(miniflac_cuesheet_track_preemph(decoder,&mem->buffer[mem->pos],mem->len,&used,&temp8) != MINIFLAC_OK) abort();
+        if(miniflac_cuesheet_track_preemph_flag(decoder,&mem->buffer[mem->pos],mem->len,&used,&temp8) != MINIFLAC_OK) abort();
         mem->len -= used;
         mem->pos += used;
         fprintf(stdout,"    preemph: %u\n",temp8);

@@ -83,7 +83,7 @@ miniflac_cuesheet_read_leadin(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_cuesheet_read_cdflag(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, uint8_t* flag) {
+miniflac_cuesheet_read_cd_flag(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, uint8_t* flag) {
     MINIFLAC_RESULT r = MINIFLAC_ERROR;
     uint8_t f = 0;
 
@@ -118,7 +118,7 @@ miniflac_cuesheet_read_tracks(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_
         case MINIFLAC_CUESHEET_CATALOG: /* fall-through */
         case MINIFLAC_CUESHEET_LEADIN: /* fall-through */
         case MINIFLAC_CUESHEET_CDFLAG: {
-            r = miniflac_cuesheet_read_cdflag(cuesheet,br,NULL);
+            r = miniflac_cuesheet_read_cd_flag(cuesheet,br,NULL);
             if(r != MINIFLAC_OK) return r;
         }
         /* fall-through */
@@ -280,7 +280,7 @@ miniflac_cuesheet_read_track_isrc_string(miniflac_cuesheet_t* cuesheet, miniflac
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_cuesheet_read_track_type(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, uint8_t* track_type) {
+miniflac_cuesheet_read_track_audio_flag(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, uint8_t* track_audio_flag) {
     MINIFLAC_RESULT r = MINIFLAC_ERROR;
     uint8_t f = 0;
 
@@ -300,8 +300,8 @@ miniflac_cuesheet_read_track_type(miniflac_cuesheet_t* cuesheet, miniflac_bitrea
         case MINIFLAC_CUESHEET_TRACKTYPE: {
             if(miniflac_bitreader_fill(br,1)) return MINIFLAC_CONTINUE;
             f = (uint8_t)miniflac_bitreader_read(br,1);
-            if(track_type != NULL) {
-                *track_type = f;
+            if(track_audio_flag != NULL) {
+                *track_audio_flag = f;
             }
             cuesheet->state = MINIFLAC_CUESHEET_TRACKPREEMPH;
             return MINIFLAC_OK;
@@ -314,7 +314,7 @@ miniflac_cuesheet_read_track_type(miniflac_cuesheet_t* cuesheet, miniflac_bitrea
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_cuesheet_read_track_preemph(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, uint8_t* track_preemph) {
+miniflac_cuesheet_read_track_preemph_flag(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, uint8_t* track_preemph_flag) {
     MINIFLAC_RESULT r = MINIFLAC_ERROR;
     uint8_t f = 0;
 
@@ -328,15 +328,15 @@ miniflac_cuesheet_read_track_preemph(miniflac_cuesheet_t* cuesheet, miniflac_bit
         case MINIFLAC_CUESHEET_TRACKNUMBER: /* fall-through */
         case MINIFLAC_CUESHEET_TRACKISRC: /* fall-through */
         case MINIFLAC_CUESHEET_TRACKTYPE: {
-            r = miniflac_cuesheet_read_track_type(cuesheet,br,NULL);
+            r = miniflac_cuesheet_read_track_audio_flag(cuesheet,br,NULL);
             if(r != MINIFLAC_OK) return r;
         }
         /* fall-through */
         case MINIFLAC_CUESHEET_TRACKPREEMPH: {
             if(miniflac_bitreader_fill(br,1)) return MINIFLAC_CONTINUE;
             f = (uint8_t)miniflac_bitreader_read(br,1);
-            if(track_preemph != NULL) {
-                *track_preemph = f;
+            if(track_preemph_flag != NULL) {
+                *track_preemph_flag = f;
             }
             miniflac_bitreader_discard(br,6);
             cuesheet->pos = 0;
@@ -376,7 +376,7 @@ miniflac_cuesheet_read_track_indexpoints(miniflac_cuesheet_t* cuesheet, miniflac
         case MINIFLAC_CUESHEET_TRACKISRC: /* fall-through */
         case MINIFLAC_CUESHEET_TRACKTYPE: /* fall-through */
         case MINIFLAC_CUESHEET_TRACKPREEMPH: {
-            r = miniflac_cuesheet_read_track_preemph(cuesheet,br,NULL);
+            r = miniflac_cuesheet_read_track_preemph_flag(cuesheet,br,NULL);
             if(r != MINIFLAC_OK) return r;
         }
         /* fall-through */
