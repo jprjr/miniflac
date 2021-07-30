@@ -47,7 +47,11 @@ miniflac_cuesheet_init(miniflac_cuesheet_t* cuesheet);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_cuesheet_read_catalogue(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen);
+miniflac_cuesheet_read_catalogue_length(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, uint32_t* catalogue_length);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_cuesheet_read_catalogue_string(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
@@ -71,7 +75,11 @@ miniflac_cuesheet_read_track_number(miniflac_cuesheet_t* cuesheet, miniflac_bitr
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_cuesheet_read_track_isrc(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen);
+miniflac_cuesheet_read_track_isrc_length(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, uint32_t* track_isrc_length);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_cuesheet_read_track_isrc_string(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT

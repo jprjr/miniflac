@@ -71,10 +71,55 @@ MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_decode(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, int32_t** samples);
 
-/* parse a streaminfo block */
+/* get the minimum block size */
 MINIFLAC_API
 MINIFLAC_RESULT
-miniflac_streaminfo(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, miniflac_streaminfo_t* streaminfo);
+miniflac_streaminfo_min_block_size(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint16_t* min_block_size);
+
+/* get the maximum block size */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_streaminfo_max_block_size(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint16_t* max_block_size);
+
+/* get the minimum frame size */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_streaminfo_min_frame_size(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* min_frame_size);
+
+/* get the maximum frame size */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_streaminfo_max_frame_size(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* max_frame_size);
+
+/* get the sample rate */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_streaminfo_sample_rate(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* sample_rate);
+
+/* get the channel count */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_streaminfo_channels(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* channels);
+
+/* get the bits per second */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_streaminfo_bps(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* bps);
+
+/* get the total samples */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_streaminfo_total_samples(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint64_t* total_samples);
+
+/* get the md5 length (always 16) */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_streaminfo_md5_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* md5_length);
+
+/* get the md5 string */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_streaminfo_md5_data(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* buffer, uint32_t buffer_length, uint32_t* buffer_used);
 
 /* get the length of the vendor string, automatically skips metadata blocks, throws an error on audio frames */
 MINIFLAC_API
@@ -160,10 +205,15 @@ MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_picture_data(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* buffer, uint32_t buffer_length, uint32_t* buffer_used);
 
+/* read a cuesheet catalogue length (128 bytes_ */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_cuesheet_catalogue_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* catalogue_length);
+
 /* read a cuesheet catalogue number */
 MINIFLAC_API
 MINIFLAC_RESULT
-miniflac_cuesheet_catalogue(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* outlen);
+miniflac_cuesheet_catalogue_string(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* outlen);
 
 /* read a cuesheet leadin value */
 MINIFLAC_API
@@ -190,10 +240,15 @@ MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_cuesheet_track_number(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* track_number);
 
-/* read the next track isrc */
+/* read the next track isrc length */
 MINIFLAC_API
 MINIFLAC_RESULT
-miniflac_cuesheet_track_isrc(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* outlen);
+miniflac_cuesheet_track_isrc_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* isrc_length);
+
+/* read the next track isrc string */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_cuesheet_track_isrc_string(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* outlen);
 
 /* read the next track type flag (0 = audio, 1 = non-audio) */
 MINIFLAC_API
@@ -239,6 +294,11 @@ miniflac_seektable_samples(miniflac_t* pFlac, const uint8_t* data, uint32_t leng
 MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_application_id(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* id);
+
+/* read an application block's data length */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_application_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* application_length);
 
 /* read an application block's data */
 MINIFLAC_API

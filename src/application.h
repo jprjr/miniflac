@@ -37,6 +37,10 @@ miniflac_application_read_id(miniflac_application_t* application, miniflac_bitre
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
+miniflac_application_read_length(miniflac_application_t* application, miniflac_bitreader_t* br, uint32_t* length);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
 miniflac_application_read_data(miniflac_application_t* application, miniflac_bitreader_t* br, uint8_t* output, uint32_t length, uint32_t* outlen);
 
 #ifdef __cplusplus

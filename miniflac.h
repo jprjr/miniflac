@@ -138,7 +138,6 @@ typedef struct miniflac_ogg_s miniflac_ogg_t;
 typedef struct miniflac_streammarker_s miniflac_streammarker_t;
 typedef struct miniflac_metadata_header_s miniflac_metadata_header_t;
 typedef struct miniflac_streaminfo_s miniflac_streaminfo_t;
-typedef struct miniflac_streaminfo_private_s miniflac_streaminfo_private_t;
 typedef struct miniflac_vorbis_comment_s miniflac_vorbis_comment_t;
 typedef struct miniflac_picture_s miniflac_picture_t;
 typedef struct miniflac_cuesheet_s miniflac_cuesheet_t;
@@ -468,28 +467,14 @@ enum MINIFLAC_STREAMINFO_STATE {
     MINIFLAC_STREAMINFO_CHANNELS,
     MINIFLAC_STREAMINFO_BPS,
     MINIFLAC_STREAMINFO_TOTALSAMPLES,
-    MINIFLAC_STREAMINFO_MD5_1,
-    MINIFLAC_STREAMINFO_MD5_2,
-    MINIFLAC_STREAMINFO_MD5_3,
-    MINIFLAC_STREAMINFO_MD5_4,
-    MINIFLAC_STREAMINFO_COMPLETE,
+    MINIFLAC_STREAMINFO_MD5,
 };
 
 struct miniflac_streaminfo_s {
-    uint16_t        min_block_size;
-    uint16_t        max_block_size;
-    uint32_t        min_frame_size;
-    uint32_t        max_frame_size;
-    uint32_t           sample_rate;
-    uint8_t               channels;
-    uint8_t                    bps;
-    uint64_t         total_samples;
-    uint8_t                md5[16];
-};
-
-struct miniflac_streaminfo_private_s {
-    miniflac_streaminfo_t      info;
     MINIFLAC_STREAMINFO_STATE state;
+    uint8_t                     pos;
+    uint32_t            sample_rate;
+    uint8_t                     bps;
 };
 
 struct miniflac_vorbis_comment_s {
@@ -531,7 +516,7 @@ struct miniflac_metadata_s {
     MINIFLAC_METADATA_STATE               state;
     uint32_t                                pos;
     miniflac_metadata_header_t           header;
-    miniflac_streaminfo_private_t    streaminfo;
+    miniflac_streaminfo_t            streaminfo;
     miniflac_vorbis_comment_t    vorbis_comment;
     miniflac_picture_t                  picture;
     miniflac_cuesheet_t                cuesheet;
@@ -663,10 +648,55 @@ MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_decode(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, int32_t** samples);
 
-/* parse a streaminfo block */
+/* get the minimum block size */
 MINIFLAC_API
 MINIFLAC_RESULT
-miniflac_streaminfo(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, miniflac_streaminfo_t* streaminfo);
+miniflac_streaminfo_min_block_size(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint16_t* min_block_size);
+
+/* get the maximum block size */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_streaminfo_max_block_size(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint16_t* max_block_size);
+
+/* get the minimum frame size */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_streaminfo_min_frame_size(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* min_frame_size);
+
+/* get the maximum frame size */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_streaminfo_max_frame_size(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* max_frame_size);
+
+/* get the sample rate */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_streaminfo_sample_rate(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* sample_rate);
+
+/* get the channel count */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_streaminfo_channels(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* channels);
+
+/* get the bits per second */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_streaminfo_bps(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* bps);
+
+/* get the total samples */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_streaminfo_total_samples(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint64_t* total_samples);
+
+/* get the md5 length (always 16) */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_streaminfo_md5_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* md5_length);
+
+/* get the md5 string */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_streaminfo_md5_data(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* buffer, uint32_t buffer_length, uint32_t* buffer_used);
 
 /* get the length of the vendor string, automatically skips metadata blocks, throws an error on audio frames */
 MINIFLAC_API
@@ -752,10 +782,15 @@ MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_picture_data(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* buffer, uint32_t buffer_length, uint32_t* buffer_used);
 
+/* read a cuesheet catalogue length (128 bytes_ */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_cuesheet_catalogue_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* catalogue_length);
+
 /* read a cuesheet catalogue number */
 MINIFLAC_API
 MINIFLAC_RESULT
-miniflac_cuesheet_catalogue(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* outlen);
+miniflac_cuesheet_catalogue_string(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* outlen);
 
 /* read a cuesheet leadin value */
 MINIFLAC_API
@@ -782,10 +817,15 @@ MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_cuesheet_track_number(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* track_number);
 
-/* read the next track isrc */
+/* read the next track isrc length */
 MINIFLAC_API
 MINIFLAC_RESULT
-miniflac_cuesheet_track_isrc(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* outlen);
+miniflac_cuesheet_track_isrc_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* isrc_length);
+
+/* read the next track isrc string */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_cuesheet_track_isrc_string(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* outlen);
 
 /* read the next track type flag (0 = audio, 1 = non-audio) */
 MINIFLAC_API
@@ -831,6 +871,11 @@ miniflac_seektable_samples(miniflac_t* pFlac, const uint8_t* data, uint32_t leng
 MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_application_id(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* id);
+
+/* read an application block's data length */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_application_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* application_length);
 
 /* read an application block's data */
 MINIFLAC_API
@@ -939,11 +984,47 @@ miniflac_metadata_header_decode(miniflac_metadata_header_t* header, miniflac_bit
 
 MINIFLAC_PRIVATE
 void
-miniflac_streaminfo_init(miniflac_streaminfo_private_t* streaminfo);
+miniflac_streaminfo_init(miniflac_streaminfo_t* streaminfo);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_streaminfo_read_streaminfo(miniflac_streaminfo_private_t* streaminfo, miniflac_bitreader_t* br, miniflac_streaminfo_t *out);
+miniflac_streaminfo_read_min_block_size(miniflac_streaminfo_t* streaminfo, miniflac_bitreader_t* br, uint16_t* min_block_size);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_streaminfo_read_max_block_size(miniflac_streaminfo_t* streaminfo, miniflac_bitreader_t* br, uint16_t* max_block_size);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_streaminfo_read_min_frame_size(miniflac_streaminfo_t* streaminfo, miniflac_bitreader_t* br, uint32_t* min_frame_size);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_streaminfo_read_max_frame_size(miniflac_streaminfo_t* streaminfo, miniflac_bitreader_t* br, uint32_t* max_frame_size);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_streaminfo_read_sample_rate(miniflac_streaminfo_t* streaminfo, miniflac_bitreader_t* br, uint32_t* sample_rate);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_streaminfo_read_channels(miniflac_streaminfo_t* streaminfo, miniflac_bitreader_t* br, uint8_t* channels);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_streaminfo_read_bps(miniflac_streaminfo_t* streaminfo, miniflac_bitreader_t* br, uint8_t* bps);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_streaminfo_read_total_samples(miniflac_streaminfo_t* streaminfo, miniflac_bitreader_t* br, uint64_t* total_samples);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_streaminfo_read_md5_length(miniflac_streaminfo_t* streaminfo, miniflac_bitreader_t* br, uint32_t* md5_length);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_streaminfo_read_md5_data(miniflac_streaminfo_t* streaminfo, miniflac_bitreader_t* br, uint8_t* output, uint32_t length, uint32_t* outlen);
 
 MINIFLAC_PRIVATE
 void
@@ -1023,7 +1104,11 @@ miniflac_cuesheet_init(miniflac_cuesheet_t* cuesheet);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_cuesheet_read_catalogue(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen);
+miniflac_cuesheet_read_catalogue_length(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, uint32_t* catalogue_length);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_cuesheet_read_catalogue_string(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
@@ -1047,7 +1132,11 @@ miniflac_cuesheet_read_track_number(miniflac_cuesheet_t* cuesheet, miniflac_bitr
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_cuesheet_read_track_isrc(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen);
+miniflac_cuesheet_read_track_isrc_length(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, uint32_t* track_isrc_length);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_cuesheet_read_track_isrc_string(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
@@ -1092,6 +1181,10 @@ miniflac_application_init(miniflac_application_t* application);
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
 miniflac_application_read_id(miniflac_application_t* application, miniflac_bitreader_t* br, uint32_t* id);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_application_read_length(miniflac_application_t* application, miniflac_bitreader_t* br, uint32_t* length);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
@@ -1176,10 +1269,10 @@ void miniflac_frame_init(miniflac_frame_t* frame);
 
 /* ensures we've just read the audio frame header and are ready to decode */
 MINIFLAC_PRIVATE
-MINIFLAC_RESULT miniflac_frame_sync(miniflac_frame_t* frame, miniflac_bitreader_t* br, miniflac_streaminfo_private_t* info);
+MINIFLAC_RESULT miniflac_frame_sync(miniflac_frame_t* frame, miniflac_bitreader_t* br, miniflac_streaminfo_t* info);
 
 MINIFLAC_PRIVATE
-MINIFLAC_RESULT miniflac_frame_decode(miniflac_frame_t* frame, miniflac_bitreader_t* br, miniflac_streaminfo_private_t* info, int32_t** output);
+MINIFLAC_RESULT miniflac_frame_decode(miniflac_frame_t* frame, miniflac_bitreader_t* br, miniflac_streaminfo_t* info, int32_t** output);
 
 
 
@@ -1613,14 +1706,16 @@ miniflac_ ## subsys ## _ ## val(miniflac_t* pFlac, const uint8_t* data, uint32_t
     return r; \
 }
 
-MINIFLAC_GEN_FUNC1(STREAMINFO,streaminfo,streaminfo,miniflac_streaminfo_t)
-
-/* generated function is something like miniflac_streaminfo_streaminfo, provide a wrapper */
-MINIFLAC_API
-MINIFLAC_RESULT
-miniflac_streaminfo(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, miniflac_streaminfo_t* streaminfo) {
-    return miniflac_streaminfo_streaminfo(pFlac,data,length,out_length,streaminfo);
-}
+MINIFLAC_GEN_FUNC1(STREAMINFO,streaminfo,min_block_size,uint16_t)
+MINIFLAC_GEN_FUNC1(STREAMINFO,streaminfo,max_block_size,uint16_t)
+MINIFLAC_GEN_FUNC1(STREAMINFO,streaminfo,min_frame_size,uint32_t)
+MINIFLAC_GEN_FUNC1(STREAMINFO,streaminfo,max_frame_size,uint32_t)
+MINIFLAC_GEN_FUNC1(STREAMINFO,streaminfo,sample_rate,uint32_t)
+MINIFLAC_GEN_FUNC1(STREAMINFO,streaminfo,channels,uint8_t)
+MINIFLAC_GEN_FUNC1(STREAMINFO,streaminfo,bps,uint8_t)
+MINIFLAC_GEN_FUNC1(STREAMINFO,streaminfo,total_samples,uint64_t)
+MINIFLAC_GEN_FUNC1(STREAMINFO,streaminfo,md5_length,uint32_t)
+MINIFLAC_GEN_FUNCSTR(STREAMINFO,streaminfo,md5_data,uint8_t)
 
 MINIFLAC_GEN_FUNC1(VORBIS_COMMENT,vorbis_comment,vendor_length,uint32_t)
 MINIFLAC_GEN_FUNCSTR(VORBIS_COMMENT,vorbis_comment,vendor_string,char)
@@ -1640,13 +1735,15 @@ MINIFLAC_GEN_FUNC1(PICTURE,picture,totalcolors,uint32_t)
 MINIFLAC_GEN_FUNC1(PICTURE,picture,length,uint32_t)
 MINIFLAC_GEN_FUNCSTR(PICTURE,picture,data,uint8_t)
 
-MINIFLAC_GEN_FUNCSTR(CUESHEET,cuesheet,catalogue,char)
+MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,catalogue_length,uint32_t)
+MINIFLAC_GEN_FUNCSTR(CUESHEET,cuesheet,catalogue_string,char)
 MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,leadin,uint64_t)
 MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,cdflag,uint8_t)
 MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,tracks,uint8_t)
 MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,track_offset,uint64_t)
 MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,track_number,uint8_t)
-MINIFLAC_GEN_FUNCSTR(CUESHEET,cuesheet,track_isrc,char)
+MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,track_isrc_length,uint32_t)
+MINIFLAC_GEN_FUNCSTR(CUESHEET,cuesheet,track_isrc_string,char)
 MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,track_type,uint8_t)
 MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,track_preemph,uint8_t)
 MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,track_indexpoints,uint8_t)
@@ -1658,6 +1755,7 @@ MINIFLAC_GEN_FUNC1(SEEKTABLE,seektable,sample_offset,uint64_t)
 MINIFLAC_GEN_FUNC1(SEEKTABLE,seektable,samples,uint16_t)
 
 MINIFLAC_GEN_FUNC1(APPLICATION,application,id,uint32_t)
+MINIFLAC_GEN_FUNC1(APPLICATION,application,length,uint32_t)
 MINIFLAC_GEN_FUNCSTR(APPLICATION,application,data,uint8_t)
 MINIFLAC_PRIVATE
 uint32_t
@@ -2164,20 +2262,20 @@ miniflac_frame_init(miniflac_frame_t* frame) {
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_frame_sync(miniflac_frame_t* frame, miniflac_bitreader_t* br, miniflac_streaminfo_private_t* info) {
+miniflac_frame_sync(miniflac_frame_t* frame, miniflac_bitreader_t* br, miniflac_streaminfo_t* info) {
     MINIFLAC_RESULT r;
     assert(frame->state == MINIFLAC_FRAME_HEADER);
     r = miniflac_frame_header_decode(&frame->header,br);
     if(r != MINIFLAC_OK) return r;
 
     if(frame->header.sample_rate == 0) {
-        if(info->info.sample_rate == 0) return MINIFLAC_FRAME_INVALID_SAMPLE_RATE;
-        frame->header.sample_rate = info->info.sample_rate;
+        if(info->sample_rate == 0) return MINIFLAC_FRAME_INVALID_SAMPLE_RATE;
+        frame->header.sample_rate = info->sample_rate;
     }
 
     if(frame->header.bps == 0) {
-        if(info->info.bps == 0) return MINIFLAC_FRAME_INVALID_SAMPLE_SIZE;
-        frame->header.bps = info->info.bps;
+        if(info->bps == 0) return MINIFLAC_FRAME_INVALID_SAMPLE_SIZE;
+        frame->header.bps = info->bps;
     }
 
     frame->state = MINIFLAC_FRAME_SUBFRAME;
@@ -2188,7 +2286,7 @@ miniflac_frame_sync(miniflac_frame_t* frame, miniflac_bitreader_t* br, miniflac_
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_frame_decode(miniflac_frame_t* frame, miniflac_bitreader_t* br, miniflac_streaminfo_private_t* info, int32_t** output) {
+miniflac_frame_decode(miniflac_frame_t* frame, miniflac_bitreader_t* br, miniflac_streaminfo_t* info, int32_t** output) {
     MINIFLAC_RESULT r;
     uint32_t bps;
     uint32_t i;
@@ -3194,7 +3292,23 @@ miniflac_cuesheet_init(miniflac_cuesheet_t* cuesheet) {
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_cuesheet_read_catalogue(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen) {
+miniflac_cuesheet_read_catalogue_length(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, uint32_t* catalogue_length) {
+    (void)br;
+    switch(cuesheet->state) {
+        case MINIFLAC_CUESHEET_CATALOG: {
+            if(catalogue_length != NULL) {
+                *catalogue_length = 128;
+            }
+            return MINIFLAC_OK;
+        }
+        default: break;
+    }
+    return MINIFLAC_ERROR;
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_cuesheet_read_catalogue_string(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen) {
     char c;
 
     switch(cuesheet->state) {
@@ -3228,7 +3342,7 @@ miniflac_cuesheet_read_leadin(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_
 
     switch(cuesheet->state) {
         case MINIFLAC_CUESHEET_CATALOG: {
-            r = miniflac_cuesheet_read_catalogue(cuesheet,br, NULL, 0, NULL);
+            r = miniflac_cuesheet_read_catalogue_string(cuesheet,br, NULL, 0, NULL);
             if(r != MINIFLAC_OK) return r;
         }
         /* fall-through */
@@ -3379,7 +3493,35 @@ miniflac_cuesheet_read_track_number(miniflac_cuesheet_t* cuesheet, miniflac_bitr
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_cuesheet_read_track_isrc(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen) {
+miniflac_cuesheet_read_track_isrc_length(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, uint32_t* isrc_length) {
+    MINIFLAC_RESULT r = MINIFLAC_ERROR;
+    switch(cuesheet->state) {
+        case MINIFLAC_CUESHEET_CATALOG: /* fall-through */
+        case MINIFLAC_CUESHEET_LEADIN: /* fall-through */
+        case MINIFLAC_CUESHEET_CDFLAG: /* fall-through */
+        case MINIFLAC_CUESHEET_SHEET_RESERVE: /* fall-through */
+        case MINIFLAC_CUESHEET_TRACKS: /* fall-through */
+        case MINIFLAC_CUESHEET_TRACKOFFSET: /* fall-through */
+        case MINIFLAC_CUESHEET_TRACKNUMBER: {
+            r = miniflac_cuesheet_read_track_number(cuesheet,br,NULL);
+            if(r != MINIFLAC_OK) return r;
+        }
+        /* fall-through */
+        case MINIFLAC_CUESHEET_TRACKISRC: {
+            if(isrc_length != NULL) {
+                *isrc_length = 12;
+            }
+            return MINIFLAC_OK;
+        }
+        default: break;
+    }
+    miniflac_abort();
+    return MINIFLAC_ERROR;
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_cuesheet_read_track_isrc_string(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen) {
     MINIFLAC_RESULT r = MINIFLAC_ERROR;
     char c;
     switch(cuesheet->state) {
@@ -3431,7 +3573,7 @@ miniflac_cuesheet_read_track_type(miniflac_cuesheet_t* cuesheet, miniflac_bitrea
         case MINIFLAC_CUESHEET_TRACKOFFSET: /* fall-through */
         case MINIFLAC_CUESHEET_TRACKNUMBER: /* fall-through */
         case MINIFLAC_CUESHEET_TRACKISRC: {
-            r = miniflac_cuesheet_read_track_isrc(cuesheet,br,NULL,0,NULL);
+            r = miniflac_cuesheet_read_track_isrc_string(cuesheet,br,NULL,0,NULL);
             if(r != MINIFLAC_OK) return r;
         }
         /* fall-through */
@@ -3757,6 +3899,27 @@ miniflac_application_read_id(miniflac_application_t* application, miniflac_bitre
     return MINIFLAC_ERROR;
 }
 
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_application_read_length(miniflac_application_t* application, miniflac_bitreader_t* br, uint32_t* length) {
+    MINIFLAC_RESULT r = MINIFLAC_ERROR;
+    switch(application->state) {
+        case MINIFLAC_APPLICATION_ID: {
+            r = miniflac_application_read_id(application,br,NULL);
+            if(r != MINIFLAC_OK) return r;
+        }
+        /* fall-through */
+        case MINIFLAC_APPLICATION_DATA: {
+            if(length != NULL) {
+                *length = application->len;
+            }
+            return MINIFLAC_OK;
+        }
+        default: break;
+    }
+    miniflac_abort();
+    return MINIFLAC_ERROR;
+}
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
@@ -3869,7 +4032,7 @@ miniflac_metadata_decode(miniflac_metadata_t* metadata, miniflac_bitreader_t* br
         case MINIFLAC_METADATA_DATA: {
             switch(metadata->header.type) {
                 case MINIFLAC_METADATA_STREAMINFO: {
-                    r = miniflac_streaminfo_read_streaminfo(&metadata->streaminfo,br,NULL);
+                    r = miniflac_streaminfo_read_md5_data(&metadata->streaminfo,br,NULL,0,NULL);
                     break;
                 }
                 case MINIFLAC_METADATA_VORBIS_COMMENT: {
@@ -4125,134 +4288,306 @@ miniflac_residual_decode(miniflac_residual_t* residual, miniflac_bitreader_t* br
 
 MINIFLAC_PRIVATE
 void
-miniflac_streaminfo_init(miniflac_streaminfo_private_t* streaminfo) {
-    unsigned int i;
+miniflac_streaminfo_init(miniflac_streaminfo_t* streaminfo) {
     streaminfo->state = MINIFLAC_STREAMINFO_MINBLOCKSIZE;
-    streaminfo->info.min_block_size = 0;
-    streaminfo->info.max_block_size = 0;
-    streaminfo->info.min_frame_size = 0;
-    streaminfo->info.max_frame_size = 0;
-    streaminfo->info.sample_rate = 0;
-    streaminfo->info.channels = 0;
-    streaminfo->info.bps = 0;
-    streaminfo->info.total_samples = 0;
-    for(i=0;i<16;i++) {
-        streaminfo->info.md5[i] = 0;
-    }
+    streaminfo->pos = 0;
+    streaminfo->sample_rate = 0;
+    streaminfo->bps = 0;
 }
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_streaminfo_read_streaminfo(miniflac_streaminfo_private_t* streaminfo, miniflac_bitreader_t* br, miniflac_streaminfo_t* out) {
-    unsigned int i;
+miniflac_streaminfo_read_min_block_size(miniflac_streaminfo_t* streaminfo, miniflac_bitreader_t* br, uint16_t* min_block_size) {
+    uint16_t t;
     switch(streaminfo->state) {
         case MINIFLAC_STREAMINFO_MINBLOCKSIZE: {
             if(miniflac_bitreader_fill(br,16)) return MINIFLAC_CONTINUE;
-            streaminfo->info.min_block_size = (uint16_t) miniflac_bitreader_read(br,16);
+            t = (uint16_t) miniflac_bitreader_read(br,16);
+            if(min_block_size != NULL) {
+                *min_block_size = t;
+            }
             streaminfo->state = MINIFLAC_STREAMINFO_MAXBLOCKSIZE;
+            return MINIFLAC_OK;
+        }
+        default: break;
+    }
+
+    miniflac_abort();
+    return MINIFLAC_ERROR;
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_streaminfo_read_max_block_size(miniflac_streaminfo_t* streaminfo, miniflac_bitreader_t* br, uint16_t* max_block_size) {
+    uint16_t t;
+    MINIFLAC_RESULT r = MINIFLAC_ERROR;
+    switch(streaminfo->state) {
+        case MINIFLAC_STREAMINFO_MINBLOCKSIZE: {
+            r = miniflac_streaminfo_read_min_block_size(streaminfo,br,NULL);
+            if(r != MINIFLAC_OK) return r;
         }
         /* fall-through */
         case MINIFLAC_STREAMINFO_MAXBLOCKSIZE: {
             if(miniflac_bitreader_fill(br,16)) return MINIFLAC_CONTINUE;
-            streaminfo->info.max_block_size = (uint16_t) miniflac_bitreader_read(br,16);
+            t = (uint16_t) miniflac_bitreader_read(br,16);
+            if(max_block_size != NULL) {
+                *max_block_size = t;
+            }
             streaminfo->state = MINIFLAC_STREAMINFO_MINFRAMESIZE;
+            return MINIFLAC_OK;
+        }
+        default: break;
+    }
+
+    miniflac_abort();
+    return MINIFLAC_ERROR;
+}
+
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_streaminfo_read_min_frame_size(miniflac_streaminfo_t* streaminfo, miniflac_bitreader_t* br, uint32_t* min_frame_size) {
+    uint32_t t;
+    MINIFLAC_RESULT r = MINIFLAC_ERROR;
+    switch(streaminfo->state) {
+        case MINIFLAC_STREAMINFO_MINBLOCKSIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_MAXBLOCKSIZE: {
+            r = miniflac_streaminfo_read_max_block_size(streaminfo,br,NULL);
+            if(r != MINIFLAC_OK) return r;
         }
         /* fall-through */
         case MINIFLAC_STREAMINFO_MINFRAMESIZE: {
             if(miniflac_bitreader_fill(br,24)) return MINIFLAC_CONTINUE;
-            streaminfo->info.min_frame_size = (uint32_t) miniflac_bitreader_read(br,24);
+            t = (uint32_t) miniflac_bitreader_read(br,24);
+            if(min_frame_size != NULL) {
+                *min_frame_size = t;
+            }
             streaminfo->state = MINIFLAC_STREAMINFO_MAXFRAMESIZE;
+            return MINIFLAC_OK;
+        }
+        default: break;
+    }
+
+    miniflac_abort();
+    return MINIFLAC_ERROR;
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_streaminfo_read_max_frame_size(miniflac_streaminfo_t* streaminfo, miniflac_bitreader_t* br, uint32_t* max_frame_size) {
+    uint32_t t;
+    MINIFLAC_RESULT r = MINIFLAC_ERROR;
+    switch(streaminfo->state) {
+        case MINIFLAC_STREAMINFO_MINBLOCKSIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_MAXBLOCKSIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_MINFRAMESIZE: {
+            r = miniflac_streaminfo_read_min_frame_size(streaminfo,br,NULL);
+            if(r != MINIFLAC_OK) return r;
         }
         /* fall-through */
         case MINIFLAC_STREAMINFO_MAXFRAMESIZE: {
             if(miniflac_bitreader_fill(br,24)) return MINIFLAC_CONTINUE;
-            streaminfo->info.max_frame_size = (uint32_t) miniflac_bitreader_read(br,24);
+            t = (uint32_t) miniflac_bitreader_read(br,24);
+            if(max_frame_size != NULL) {
+                *max_frame_size = t;
+            }
             streaminfo->state = MINIFLAC_STREAMINFO_SAMPLERATE;
+            return MINIFLAC_OK;
+        }
+        default: break;
+    }
+
+    miniflac_abort();
+    return MINIFLAC_ERROR;
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_streaminfo_read_sample_rate(miniflac_streaminfo_t* streaminfo, miniflac_bitreader_t* br, uint32_t* sample_rate) {
+    MINIFLAC_RESULT r = MINIFLAC_ERROR;
+    switch(streaminfo->state) {
+        case MINIFLAC_STREAMINFO_MINBLOCKSIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_MAXBLOCKSIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_MINFRAMESIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_MAXFRAMESIZE: {
+            r = miniflac_streaminfo_read_max_frame_size(streaminfo,br,NULL);
+            if(r != MINIFLAC_OK) return r;
         }
         /* fall-through */
         case MINIFLAC_STREAMINFO_SAMPLERATE: {
             if(miniflac_bitreader_fill(br,20)) return MINIFLAC_CONTINUE;
-            streaminfo->info.sample_rate = (uint32_t) miniflac_bitreader_read(br,20);
+            streaminfo->sample_rate = (uint32_t) miniflac_bitreader_read(br,20);
+            if(sample_rate != NULL) {
+                *sample_rate = streaminfo->sample_rate;
+            }
             streaminfo->state = MINIFLAC_STREAMINFO_CHANNELS;
+            return MINIFLAC_OK;
+        }
+        default: break;
+    }
+
+    miniflac_abort();
+    return MINIFLAC_ERROR;
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_streaminfo_read_channels(miniflac_streaminfo_t* streaminfo, miniflac_bitreader_t* br, uint8_t* channels) {
+    uint8_t t;
+    MINIFLAC_RESULT r = MINIFLAC_ERROR;
+    switch(streaminfo->state) {
+        case MINIFLAC_STREAMINFO_MINBLOCKSIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_MAXBLOCKSIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_MINFRAMESIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_MAXFRAMESIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_SAMPLERATE: {
+            r = miniflac_streaminfo_read_sample_rate(streaminfo,br,NULL);
+            if(r != MINIFLAC_OK) return r;
         }
         /* fall-through */
         case MINIFLAC_STREAMINFO_CHANNELS: {
             if(miniflac_bitreader_fill(br,3)) return MINIFLAC_CONTINUE;
-            streaminfo->info.channels = (uint8_t) miniflac_bitreader_read(br,3) + 1;
+            t = (uint8_t) miniflac_bitreader_read(br,3) + 1;
+            if(channels != NULL) {
+                *channels = t;
+            }
             streaminfo->state = MINIFLAC_STREAMINFO_BPS;
+            return MINIFLAC_OK;
+        }
+        default: break;
+    }
+
+    miniflac_abort();
+    return MINIFLAC_ERROR;
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_streaminfo_read_bps(miniflac_streaminfo_t* streaminfo, miniflac_bitreader_t* br, uint8_t* bps) {
+    MINIFLAC_RESULT r = MINIFLAC_ERROR;
+    switch(streaminfo->state) {
+        case MINIFLAC_STREAMINFO_MINBLOCKSIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_MAXBLOCKSIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_MINFRAMESIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_MAXFRAMESIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_SAMPLERATE: /* fall-through */
+        case MINIFLAC_STREAMINFO_CHANNELS: {
+            r = miniflac_streaminfo_read_channels(streaminfo,br,NULL);
+            if(r != MINIFLAC_OK) return r;
         }
         /* fall-through */
         case MINIFLAC_STREAMINFO_BPS: {
             if(miniflac_bitreader_fill(br,5)) return MINIFLAC_CONTINUE;
-            streaminfo->info.bps = (uint8_t) miniflac_bitreader_read(br,5) + 1;
+            streaminfo->bps = (uint8_t) miniflac_bitreader_read(br,5) + 1;
+            if(bps != NULL) {
+                *bps = streaminfo->bps;
+            }
             streaminfo->state = MINIFLAC_STREAMINFO_TOTALSAMPLES;
+            return MINIFLAC_OK;
+        }
+        default: break;
+    }
+
+    miniflac_abort();
+    return MINIFLAC_ERROR;
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_streaminfo_read_total_samples(miniflac_streaminfo_t* streaminfo, miniflac_bitreader_t* br, uint64_t* total_samples) {
+    uint64_t t;
+    MINIFLAC_RESULT r = MINIFLAC_ERROR;
+    switch(streaminfo->state) {
+        case MINIFLAC_STREAMINFO_MINBLOCKSIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_MAXBLOCKSIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_MINFRAMESIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_MAXFRAMESIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_SAMPLERATE: /* fall-through */
+        case MINIFLAC_STREAMINFO_CHANNELS: /* fall-through */
+        case MINIFLAC_STREAMINFO_BPS: {
+            r = miniflac_streaminfo_read_bps(streaminfo,br,NULL);
+            if(r != MINIFLAC_OK) return r;
         }
         /* fall-through */
         case MINIFLAC_STREAMINFO_TOTALSAMPLES: {
             if(miniflac_bitreader_fill(br,36)) return MINIFLAC_CONTINUE;
-            streaminfo->info.total_samples = (uint64_t) miniflac_bitreader_read(br,36);
-            streaminfo->state = MINIFLAC_STREAMINFO_MD5_1;
-        }
-        /* fall-through */
-        case MINIFLAC_STREAMINFO_MD5_1: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
-            streaminfo->info.md5[0] = (uint8_t) miniflac_bitreader_read(br,8);
-            streaminfo->info.md5[1] = (uint8_t) miniflac_bitreader_read(br,8);
-            streaminfo->info.md5[2] = (uint8_t) miniflac_bitreader_read(br,8);
-            streaminfo->info.md5[3] = (uint8_t) miniflac_bitreader_read(br,8);
-            streaminfo->state = MINIFLAC_STREAMINFO_MD5_2;
-        }
-        /* fall-through */
-        case MINIFLAC_STREAMINFO_MD5_2: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
-            streaminfo->info.md5[4] = (uint8_t) miniflac_bitreader_read(br,8);
-            streaminfo->info.md5[5] = (uint8_t) miniflac_bitreader_read(br,8);
-            streaminfo->info.md5[6] = (uint8_t) miniflac_bitreader_read(br,8);
-            streaminfo->info.md5[7] = (uint8_t) miniflac_bitreader_read(br,8);
-            streaminfo->state = MINIFLAC_STREAMINFO_MD5_3;
-        }
-        /* fall-through */
-        case MINIFLAC_STREAMINFO_MD5_3: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
-            streaminfo->info.md5[8] = (uint8_t) miniflac_bitreader_read(br,8);
-            streaminfo->info.md5[9] = (uint8_t) miniflac_bitreader_read(br,8);
-            streaminfo->info.md5[10] = (uint8_t) miniflac_bitreader_read(br,8);
-            streaminfo->info.md5[11] = (uint8_t) miniflac_bitreader_read(br,8);
-            streaminfo->state = MINIFLAC_STREAMINFO_MD5_4;
-        }
-        /* fall-through */
-        case MINIFLAC_STREAMINFO_MD5_4: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
-            streaminfo->info.md5[12] = (uint8_t) miniflac_bitreader_read(br,8);
-            streaminfo->info.md5[13] = (uint8_t) miniflac_bitreader_read(br,8);
-            streaminfo->info.md5[14] = (uint8_t) miniflac_bitreader_read(br,8);
-            streaminfo->info.md5[15] = (uint8_t) miniflac_bitreader_read(br,8);
-            streaminfo->state = MINIFLAC_STREAMINFO_COMPLETE;
-        }
-        /* fall-through */
-        case MINIFLAC_STREAMINFO_COMPLETE: {
-            if(out != NULL) {
-                out->min_block_size = streaminfo->info.min_block_size;
-                out->max_block_size = streaminfo->info.max_block_size;
-                out->min_frame_size = streaminfo->info.min_frame_size;
-                out->max_frame_size = streaminfo->info.max_frame_size;
-                out->sample_rate = streaminfo->info.sample_rate;
-                out->channels = streaminfo->info.channels;
-                out->bps = streaminfo->info.bps;
-                out->total_samples = streaminfo->info.total_samples;
-                for(i=0;i<16;i++) {
-                    out->md5[i] = streaminfo->info.md5[i];
-                }
+            t = (uint64_t) miniflac_bitreader_read(br,36);
+            if(total_samples != NULL) {
+                *total_samples = t;
             }
-            break;
+            streaminfo->state = MINIFLAC_STREAMINFO_MD5;
+            return MINIFLAC_OK;
         }
-        default: {
-            miniflac_abort();
-            return MINIFLAC_ERROR;
-        }
+        default: break;
     }
 
+    miniflac_abort();
+    return MINIFLAC_ERROR;
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_streaminfo_read_md5_length(miniflac_streaminfo_t* streaminfo, miniflac_bitreader_t* br, uint32_t* md5_len) {
+    MINIFLAC_RESULT r = MINIFLAC_ERROR;
+    switch(streaminfo->state) {
+        case MINIFLAC_STREAMINFO_MINBLOCKSIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_MAXBLOCKSIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_MINFRAMESIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_MAXFRAMESIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_SAMPLERATE: /* fall-through */
+        case MINIFLAC_STREAMINFO_CHANNELS: /* fall-through */
+        case MINIFLAC_STREAMINFO_BPS: /* fall-through */
+        case MINIFLAC_STREAMINFO_TOTALSAMPLES: {
+            r = miniflac_streaminfo_read_total_samples(streaminfo,br,NULL);
+            if(r != MINIFLAC_OK) return r;
+        }
+        default: break;
+    }
+    if(md5_len != NULL) {
+        *md5_len = 16;
+    }
     return MINIFLAC_OK;
+}
+
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_streaminfo_read_md5_data(miniflac_streaminfo_t* streaminfo, miniflac_bitreader_t* br, uint8_t* output, uint32_t length, uint32_t* outlen) {
+    MINIFLAC_RESULT r = MINIFLAC_ERROR;
+    uint8_t t;
+    switch(streaminfo->state) {
+        case MINIFLAC_STREAMINFO_MINBLOCKSIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_MAXBLOCKSIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_MINFRAMESIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_MAXFRAMESIZE: /* fall-through */
+        case MINIFLAC_STREAMINFO_SAMPLERATE: /* fall-through */
+        case MINIFLAC_STREAMINFO_CHANNELS: /* fall-through */
+        case MINIFLAC_STREAMINFO_BPS: /* fall-through */
+        case MINIFLAC_STREAMINFO_TOTALSAMPLES: {
+            r = miniflac_streaminfo_read_total_samples(streaminfo,br,NULL);
+            if(r != MINIFLAC_OK) return r;
+        }
+        /* fall-through */
+        case MINIFLAC_STREAMINFO_MD5: {
+            if(streaminfo->pos == 16) return MINIFLAC_METADATA_END;
+            while(streaminfo->pos < 16) {
+                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                t = (uint8_t)miniflac_bitreader_read(br,8);
+                if(output != NULL && streaminfo->pos < length) {
+                    output[streaminfo->pos] = t;
+                }
+                streaminfo->pos++;
+            }
+            if(outlen != NULL) {
+                *outlen = 16 < length ? 16 : length;
+            }
+            return MINIFLAC_OK;
+        }
+        default: break;
+    }
+
+    miniflac_abort();
+    return MINIFLAC_ERROR;
 }
 
 MINIFLAC_PRIVATE

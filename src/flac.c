@@ -432,14 +432,16 @@ miniflac_ ## subsys ## _ ## val(miniflac_t* pFlac, const uint8_t* data, uint32_t
     return r; \
 }
 
-MINIFLAC_GEN_FUNC1(STREAMINFO,streaminfo,streaminfo,miniflac_streaminfo_t)
-
-/* generated function is something like miniflac_streaminfo_streaminfo, provide a wrapper */
-MINIFLAC_API
-MINIFLAC_RESULT
-miniflac_streaminfo(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, miniflac_streaminfo_t* streaminfo) {
-    return miniflac_streaminfo_streaminfo(pFlac,data,length,out_length,streaminfo);
-}
+MINIFLAC_GEN_FUNC1(STREAMINFO,streaminfo,min_block_size,uint16_t)
+MINIFLAC_GEN_FUNC1(STREAMINFO,streaminfo,max_block_size,uint16_t)
+MINIFLAC_GEN_FUNC1(STREAMINFO,streaminfo,min_frame_size,uint32_t)
+MINIFLAC_GEN_FUNC1(STREAMINFO,streaminfo,max_frame_size,uint32_t)
+MINIFLAC_GEN_FUNC1(STREAMINFO,streaminfo,sample_rate,uint32_t)
+MINIFLAC_GEN_FUNC1(STREAMINFO,streaminfo,channels,uint8_t)
+MINIFLAC_GEN_FUNC1(STREAMINFO,streaminfo,bps,uint8_t)
+MINIFLAC_GEN_FUNC1(STREAMINFO,streaminfo,total_samples,uint64_t)
+MINIFLAC_GEN_FUNC1(STREAMINFO,streaminfo,md5_length,uint32_t)
+MINIFLAC_GEN_FUNCSTR(STREAMINFO,streaminfo,md5_data,uint8_t)
 
 MINIFLAC_GEN_FUNC1(VORBIS_COMMENT,vorbis_comment,vendor_length,uint32_t)
 MINIFLAC_GEN_FUNCSTR(VORBIS_COMMENT,vorbis_comment,vendor_string,char)
@@ -459,13 +461,15 @@ MINIFLAC_GEN_FUNC1(PICTURE,picture,totalcolors,uint32_t)
 MINIFLAC_GEN_FUNC1(PICTURE,picture,length,uint32_t)
 MINIFLAC_GEN_FUNCSTR(PICTURE,picture,data,uint8_t)
 
-MINIFLAC_GEN_FUNCSTR(CUESHEET,cuesheet,catalogue,char)
+MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,catalogue_length,uint32_t)
+MINIFLAC_GEN_FUNCSTR(CUESHEET,cuesheet,catalogue_string,char)
 MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,leadin,uint64_t)
 MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,cdflag,uint8_t)
 MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,tracks,uint8_t)
 MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,track_offset,uint64_t)
 MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,track_number,uint8_t)
-MINIFLAC_GEN_FUNCSTR(CUESHEET,cuesheet,track_isrc,char)
+MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,track_isrc_length,uint32_t)
+MINIFLAC_GEN_FUNCSTR(CUESHEET,cuesheet,track_isrc_string,char)
 MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,track_type,uint8_t)
 MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,track_preemph,uint8_t)
 MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,track_indexpoints,uint8_t)
@@ -477,4 +481,5 @@ MINIFLAC_GEN_FUNC1(SEEKTABLE,seektable,sample_offset,uint64_t)
 MINIFLAC_GEN_FUNC1(SEEKTABLE,seektable,samples,uint16_t)
 
 MINIFLAC_GEN_FUNC1(APPLICATION,application,id,uint32_t)
+MINIFLAC_GEN_FUNC1(APPLICATION,application,length,uint32_t)
 MINIFLAC_GEN_FUNCSTR(APPLICATION,application,data,uint8_t)

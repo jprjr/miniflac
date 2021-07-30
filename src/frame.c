@@ -15,20 +15,20 @@ miniflac_frame_init(miniflac_frame_t* frame) {
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_frame_sync(miniflac_frame_t* frame, miniflac_bitreader_t* br, miniflac_streaminfo_private_t* info) {
+miniflac_frame_sync(miniflac_frame_t* frame, miniflac_bitreader_t* br, miniflac_streaminfo_t* info) {
     MINIFLAC_RESULT r;
     assert(frame->state == MINIFLAC_FRAME_HEADER);
     r = miniflac_frame_header_decode(&frame->header,br);
     if(r != MINIFLAC_OK) return r;
 
     if(frame->header.sample_rate == 0) {
-        if(info->info.sample_rate == 0) return MINIFLAC_FRAME_INVALID_SAMPLE_RATE;
-        frame->header.sample_rate = info->info.sample_rate;
+        if(info->sample_rate == 0) return MINIFLAC_FRAME_INVALID_SAMPLE_RATE;
+        frame->header.sample_rate = info->sample_rate;
     }
 
     if(frame->header.bps == 0) {
-        if(info->info.bps == 0) return MINIFLAC_FRAME_INVALID_SAMPLE_SIZE;
-        frame->header.bps = info->info.bps;
+        if(info->bps == 0) return MINIFLAC_FRAME_INVALID_SAMPLE_SIZE;
+        frame->header.bps = info->bps;
     }
 
     frame->state = MINIFLAC_FRAME_SUBFRAME;
@@ -39,7 +39,7 @@ miniflac_frame_sync(miniflac_frame_t* frame, miniflac_bitreader_t* br, miniflac_
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_frame_decode(miniflac_frame_t* frame, miniflac_bitreader_t* br, miniflac_streaminfo_private_t* info, int32_t** output) {
+miniflac_frame_decode(miniflac_frame_t* frame, miniflac_bitreader_t* br, miniflac_streaminfo_t* info, int32_t** output) {
     MINIFLAC_RESULT r;
     uint32_t bps;
     uint32_t i;

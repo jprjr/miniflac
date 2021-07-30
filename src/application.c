@@ -29,6 +29,27 @@ miniflac_application_read_id(miniflac_application_t* application, miniflac_bitre
     return MINIFLAC_ERROR;
 }
 
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_application_read_length(miniflac_application_t* application, miniflac_bitreader_t* br, uint32_t* length) {
+    MINIFLAC_RESULT r = MINIFLAC_ERROR;
+    switch(application->state) {
+        case MINIFLAC_APPLICATION_ID: {
+            r = miniflac_application_read_id(application,br,NULL);
+            if(r != MINIFLAC_OK) return r;
+        }
+        /* fall-through */
+        case MINIFLAC_APPLICATION_DATA: {
+            if(length != NULL) {
+                *length = application->len;
+            }
+            return MINIFLAC_OK;
+        }
+        default: break;
+    }
+    miniflac_abort();
+    return MINIFLAC_ERROR;
+}
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT

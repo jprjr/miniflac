@@ -26,7 +26,7 @@ struct miniflac_metadata_s {
     MINIFLAC_METADATA_STATE               state;
     uint32_t                                pos;
     miniflac_metadata_header_t           header;
-    miniflac_streaminfo_private_t    streaminfo;
+    miniflac_streaminfo_t            streaminfo;
     miniflac_vorbis_comment_t    vorbis_comment;
     miniflac_picture_t                  picture;
     miniflac_cuesheet_t                cuesheet;

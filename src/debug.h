@@ -87,7 +87,7 @@ void
 miniflac_dump_oggheader(miniflac_oggheader_t* oggheader, uint8_t indent);
 
 void
-miniflac_dump_streaminfo(miniflac_streaminfo_private_t* streaminfo, uint8_t indent);
+miniflac_dump_streaminfo(miniflac_streaminfo_t* streaminfo, uint8_t indent);
 
 void
 miniflac_dump_streammarker(miniflac_streammarker_t* streammarker, uint8_t indent);
