@@ -21,7 +21,6 @@ functions, does not allocate any memory.
 
 * Speed optimizations
 * Memory reduction
-* Metadata Support for (in priority order):
 
 ## Usage
 
