@@ -149,7 +149,6 @@ static const char* const miniflac_subframe_header_type_str[] = {
 };
 
 static const char* const miniflac_metadata_type_str[] = {
-    "MINIFLAC_METADATA_UNKNOWN",
     "MINIFLAC_METADATA_STREAMINFO",
     "MINIFLAC_METADATA_PADDING",
     "MINIFLAC_METADATA_APPLICATION"
@@ -158,6 +157,7 @@ static const char* const miniflac_metadata_type_str[] = {
     "MINIFLAC_METADATA_CUESHEET",
     "MINIFLAC_METADATA_PICTURE",
     "MINIFLAC_METADATA_INVALID",
+    "MINIFLAC_METADATA_UNKNOWN",
 };
 
 static const char* const miniflac_metadata_state_str[] = {
@@ -398,9 +398,24 @@ void miniflac_dump_streaminfo(miniflac_streaminfo_t* streaminfo, uint8_t indent)
 void miniflac_dump_metadata_header(miniflac_metadata_header_t* header, uint8_t indent) {
     dumpf(indent,"header (%lu bytes):\n",sizeof(miniflac_metadata_header_t));
     indent += 2;
+    const char* type_str = NULL;
+    switch(header->type) {
+        case 127: {
+            type_str = miniflac_metadata_type_str[7];
+            break;
+        }
+        case 128: {
+            type_str = miniflac_metadata_type_str[8];
+            break;
+        }
+        default: {
+            type_str = miniflac_metadata_type_str[header->type];
+            break;
+        }
+    }
     dumpf(indent,"is_last: %u\n",header->is_last);
     dumpf(indent,"type_raw: %u\n", header->type_raw);
-    dumpf(indent,"type: %s \n", miniflac_metadata_type_str[header->type]);
+    dumpf(indent,"type: %s \n", type_str);
     dumpf(indent,"length: %u\n",header->length);
 }
 

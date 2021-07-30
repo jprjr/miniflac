@@ -12,15 +12,15 @@ typedef enum MINIFLAC_METADATA_TYPE MINIFLAC_METADATA_TYPE;
 typedef enum MINIFLAC_METADATA_HEADER_STATE MINIFLAC_METADATA_HEADER_STATE;
 
 enum MINIFLAC_METADATA_TYPE {
-    MINIFLAC_METADATA_UNKNOWN,
-    MINIFLAC_METADATA_STREAMINFO,
-    MINIFLAC_METADATA_PADDING,
-    MINIFLAC_METADATA_APPLICATION,
-    MINIFLAC_METADATA_SEEKTABLE,
-    MINIFLAC_METADATA_VORBIS_COMMENT,
-    MINIFLAC_METADATA_CUESHEET,
-    MINIFLAC_METADATA_PICTURE,
-    MINIFLAC_METADATA_INVALID,
+    MINIFLAC_METADATA_STREAMINFO     = 0,
+    MINIFLAC_METADATA_PADDING        = 1,
+    MINIFLAC_METADATA_APPLICATION    = 2,
+    MINIFLAC_METADATA_SEEKTABLE      = 3,
+    MINIFLAC_METADATA_VORBIS_COMMENT = 4,
+    MINIFLAC_METADATA_CUESHEET       = 5,
+    MINIFLAC_METADATA_PICTURE        = 6,
+    MINIFLAC_METADATA_INVALID      = 127,
+    MINIFLAC_METADATA_UNKNOWN      = 128,
 };
 
 enum MINIFLAC_METADATA_HEADER_STATE {
@@ -31,10 +31,10 @@ enum MINIFLAC_METADATA_HEADER_STATE {
 
 struct miniflac_metadata_header_s {
     MINIFLAC_METADATA_HEADER_STATE    state;
-    uint8_t                        is_last;
-    uint8_t                       type_raw;
+    uint8_t                         is_last;
+    uint8_t                        type_raw;
     MINIFLAC_METADATA_TYPE             type;
-    uint32_t                        length;
+    uint32_t                         length;
 };
 
 #ifdef __cplusplus

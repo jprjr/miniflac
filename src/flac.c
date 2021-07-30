@@ -298,6 +298,120 @@ miniflac_sync(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t*
     return r;
 }
 
+MINIFLAC_API
+uint8_t
+miniflac_is_metadata(miniflac_t* pFlac) {
+    return pFlac->state == MINIFLAC_METADATA;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_is_frame(miniflac_t* pFlac) {
+    return pFlac->state == MINIFLAC_FRAME;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_metadata_is_last(miniflac_t* pFlac) {
+    return pFlac->metadata.header.is_last;
+}
+
+MINIFLAC_API
+MINIFLAC_METADATA_TYPE
+miniflac_metadata_type(miniflac_t* pFlac) {
+    return pFlac->metadata.header.type;
+}
+
+MINIFLAC_API
+uint32_t
+miniflac_metadata_length(miniflac_t* pFlac) {
+    return pFlac->metadata.header.length;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_metadata_is_streaminfo(miniflac_t* pFlac) {
+    return pFlac->metadata.header.type == MINIFLAC_METADATA_STREAMINFO;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_metadata_is_padding(miniflac_t* pFlac) {
+    return pFlac->metadata.header.type == MINIFLAC_METADATA_PADDING;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_metadata_is_application(miniflac_t* pFlac) {
+    return pFlac->metadata.header.type == MINIFLAC_METADATA_APPLICATION;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_metadata_is_seektable(miniflac_t* pFlac) {
+    return pFlac->metadata.header.type == MINIFLAC_METADATA_SEEKTABLE;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_metadata_is_vorbis_comment(miniflac_t* pFlac) {
+    return pFlac->metadata.header.type == MINIFLAC_METADATA_VORBIS_COMMENT;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_metadata_is_cuesheet(miniflac_t* pFlac) {
+    return pFlac->metadata.header.type == MINIFLAC_METADATA_CUESHEET;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_metadata_is_picture(miniflac_t* pFlac) {
+    return pFlac->metadata.header.type == MINIFLAC_METADATA_PICTURE;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_frame_blocking_strategy(miniflac_t* pFlac) {
+    return pFlac->frame.header.blocking_strategy;
+}
+
+MINIFLAC_API
+uint16_t
+miniflac_frame_block_size(miniflac_t* pFlac) {
+    return pFlac->frame.header.block_size;
+}
+
+MINIFLAC_API
+uint32_t
+miniflac_frame_sample_rate(miniflac_t* pFlac) {
+    return pFlac->frame.header.sample_rate;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_frame_channels(miniflac_t* pFlac) {
+    return pFlac->frame.header.channels;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_frame_bps(miniflac_t* pFlac) {
+    return pFlac->frame.header.bps;
+}
+
+MINIFLAC_API
+uint64_t
+miniflac_frame_sample_number(miniflac_t* pFlac) {
+    return pFlac->frame.header.sample_number;
+}
+
+MINIFLAC_API
+uint32_t
+miniflac_frame_frame_number(miniflac_t* pFlac) {
+    return pFlac->frame.header.frame_number;
+}
+
 #define MINIFLAC_SUBSYS(subsys) &pFlac->metadata.subsys
 
 #define MINIFLAC_GEN_NATIVE_FUNC1(mt,subsys,val,t) \

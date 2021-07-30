@@ -240,15 +240,15 @@ enum MINIFLAC_STREAMMARKER_STATE {
 };
 
 enum MINIFLAC_METADATA_TYPE {
-    MINIFLAC_METADATA_UNKNOWN,
-    MINIFLAC_METADATA_STREAMINFO,
-    MINIFLAC_METADATA_PADDING,
-    MINIFLAC_METADATA_APPLICATION,
-    MINIFLAC_METADATA_SEEKTABLE,
-    MINIFLAC_METADATA_VORBIS_COMMENT,
-    MINIFLAC_METADATA_CUESHEET,
-    MINIFLAC_METADATA_PICTURE,
-    MINIFLAC_METADATA_INVALID,
+    MINIFLAC_METADATA_STREAMINFO     = 0,
+    MINIFLAC_METADATA_PADDING        = 1,
+    MINIFLAC_METADATA_APPLICATION    = 2,
+    MINIFLAC_METADATA_SEEKTABLE      = 3,
+    MINIFLAC_METADATA_VORBIS_COMMENT = 4,
+    MINIFLAC_METADATA_CUESHEET       = 5,
+    MINIFLAC_METADATA_PICTURE        = 6,
+    MINIFLAC_METADATA_INVALID      = 127,
+    MINIFLAC_METADATA_UNKNOWN      = 128,
 };
 
 enum MINIFLAC_METADATA_HEADER_STATE {
@@ -449,10 +449,10 @@ struct miniflac_streammarker_s {
 
 struct miniflac_metadata_header_s {
     MINIFLAC_METADATA_HEADER_STATE    state;
-    uint8_t                        is_last;
-    uint8_t                       type_raw;
+    uint8_t                         is_last;
+    uint8_t                        type_raw;
     MINIFLAC_METADATA_TYPE             type;
-    uint32_t                        length;
+    uint32_t                         length;
 };
 
 /* public-facing streaminfo struct */
@@ -648,7 +648,85 @@ MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_decode(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, int32_t** samples);
 
-/* get the minimum block size */
+/* functions to query the state without inspecting structs,
+ * only valid to call after miniflac_sync returns MINIFLAC_OK */
+MINIFLAC_API
+uint8_t
+miniflac_is_metadata(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint8_t
+miniflac_is_frame(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint8_t
+miniflac_metadata_is_last(miniflac_t* pFlac);
+
+MINIFLAC_API
+MINIFLAC_METADATA_TYPE
+miniflac_metadata_type(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint32_t
+miniflac_metadata_length(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint8_t
+miniflac_metadata_is_streaminfo(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint8_t
+miniflac_metadata_is_padding(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint8_t
+miniflac_metadata_is_application(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint8_t
+miniflac_metadata_is_seektable(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint8_t
+miniflac_metadata_is_vorbis_comment(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint8_t
+miniflac_metadata_is_cuesheet(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint8_t
+miniflac_metadata_is_picture(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint8_t
+miniflac_frame_blocking_strategy(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint16_t
+miniflac_frame_block_size(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint32_t
+miniflac_frame_sample_rate(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint8_t
+miniflac_frame_channels(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint8_t
+miniflac_frame_bps(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint64_t
+miniflac_frame_sample_number(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint32_t
+miniflac_frame_frame_number(miniflac_t* pFlac);
+
+/* get the minimum block size from a streaminfo block */
 MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_streaminfo_min_block_size(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint16_t* min_block_size);
@@ -1570,6 +1648,120 @@ miniflac_sync(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t*
     }
 
     return r;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_is_metadata(miniflac_t* pFlac) {
+    return pFlac->state == MINIFLAC_METADATA;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_is_frame(miniflac_t* pFlac) {
+    return pFlac->state == MINIFLAC_FRAME;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_metadata_is_last(miniflac_t* pFlac) {
+    return pFlac->metadata.header.is_last;
+}
+
+MINIFLAC_API
+MINIFLAC_METADATA_TYPE
+miniflac_metadata_type(miniflac_t* pFlac) {
+    return pFlac->metadata.header.type;
+}
+
+MINIFLAC_API
+uint32_t
+miniflac_metadata_length(miniflac_t* pFlac) {
+    return pFlac->metadata.header.length;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_metadata_is_streaminfo(miniflac_t* pFlac) {
+    return pFlac->metadata.header.type == MINIFLAC_METADATA_STREAMINFO;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_metadata_is_padding(miniflac_t* pFlac) {
+    return pFlac->metadata.header.type == MINIFLAC_METADATA_PADDING;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_metadata_is_application(miniflac_t* pFlac) {
+    return pFlac->metadata.header.type == MINIFLAC_METADATA_APPLICATION;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_metadata_is_seektable(miniflac_t* pFlac) {
+    return pFlac->metadata.header.type == MINIFLAC_METADATA_SEEKTABLE;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_metadata_is_vorbis_comment(miniflac_t* pFlac) {
+    return pFlac->metadata.header.type == MINIFLAC_METADATA_VORBIS_COMMENT;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_metadata_is_cuesheet(miniflac_t* pFlac) {
+    return pFlac->metadata.header.type == MINIFLAC_METADATA_CUESHEET;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_metadata_is_picture(miniflac_t* pFlac) {
+    return pFlac->metadata.header.type == MINIFLAC_METADATA_PICTURE;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_frame_blocking_strategy(miniflac_t* pFlac) {
+    return pFlac->frame.header.blocking_strategy;
+}
+
+MINIFLAC_API
+uint16_t
+miniflac_frame_block_size(miniflac_t* pFlac) {
+    return pFlac->frame.header.block_size;
+}
+
+MINIFLAC_API
+uint32_t
+miniflac_frame_sample_rate(miniflac_t* pFlac) {
+    return pFlac->frame.header.sample_rate;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_frame_channels(miniflac_t* pFlac) {
+    return pFlac->frame.header.channels;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_frame_bps(miniflac_t* pFlac) {
+    return pFlac->frame.header.bps;
+}
+
+MINIFLAC_API
+uint64_t
+miniflac_frame_sample_number(miniflac_t* pFlac) {
+    return pFlac->frame.header.sample_number;
+}
+
+MINIFLAC_API
+uint32_t
+miniflac_frame_frame_number(miniflac_t* pFlac) {
+    return pFlac->frame.header.frame_number;
 }
 
 #define MINIFLAC_SUBSYS(subsys) &pFlac->metadata.subsys

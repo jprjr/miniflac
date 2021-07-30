@@ -87,6 +87,7 @@ dump_streaminfo(miniflac_t* decoder, membuffer_t* mem) {
       md5[ 4], md5[ 5], md5[ 6], md5[ 7],
       md5[ 8], md5[ 9], md5[10], md5[11],
       md5[12], md5[13], md5[14], md5[15]);
+    fflush(stdout);
 
 }
 
@@ -140,6 +141,7 @@ dump_vorbis_comment(miniflac_t* decoder, membuffer_t* mem) {
 
     if(res != MINIFLAC_METADATA_END) abort();
     free(string_buffer);
+    fflush(stdout);
 }
 
 static void
@@ -159,7 +161,6 @@ dump_picture(miniflac_t* decoder, membuffer_t* mem) {
     mem->len -= used;
     mem->pos += used;
     fprintf(stdout,"  mime string=[%u]",temp32);
-    fflush(stdout);
     if(temp32 > string_buffer_len) {
         string_buffer = realloc(string_buffer,temp32 + 1);
         if(string_buffer == NULL) abort();
@@ -175,7 +176,6 @@ dump_picture(miniflac_t* decoder, membuffer_t* mem) {
     mem->len -= used;
     mem->pos += used;
     fprintf(stdout,"  description string=[%u]",temp32);
-    fflush(stdout);
     if(temp32 > string_buffer_len) {
         string_buffer = realloc(string_buffer,temp32 + 1);
         if(string_buffer == NULL) abort();
@@ -217,6 +217,7 @@ dump_picture(miniflac_t* decoder, membuffer_t* mem) {
      * block whenever we like and call miniflac_sync to move ahead to the next
      * block boundary */
     free(string_buffer);
+    fflush(stdout);
 }
 
 static void
@@ -251,7 +252,7 @@ dump_cuesheet(miniflac_t* decoder, membuffer_t* mem) {
     mem->len -= used;
     mem->pos += used;
     string_buffer[temp32] = '\0';
-    fprintf(stdout,"  media catalogue number: "); fflush(stdout);
+    fprintf(stdout,"  media catalogue number: ");
     for(t=0;t<temp32;t++) {
         if(string_buffer[t] == '\0') break;
         fprintf(stdout,"%c",string_buffer[t]);
@@ -301,7 +302,7 @@ dump_cuesheet(miniflac_t* decoder, membuffer_t* mem) {
         mem->len -= used;
         mem->pos += used;
         string_buffer[temp32] = '\0';
-        fprintf(stdout,"    isrc: "); fflush(stdout);
+        fprintf(stdout,"    isrc: ");
         for(t=0;t<temp32;t++) {
             if(string_buffer[t] == '\0') break;
             fprintf(stdout,"%c",string_buffer[t]);
@@ -348,6 +349,7 @@ dump_cuesheet(miniflac_t* decoder, membuffer_t* mem) {
     if(res != MINIFLAC_METADATA_END) abort();
 
     free(string_buffer);
+    fflush(stdout);
 }
 
 static void
@@ -378,6 +380,7 @@ dump_seektable(miniflac_t* decoder, membuffer_t* mem) {
     }
     mem->len -= used;
     mem->pos += used;
+    fflush(stdout);
     if(res != MINIFLAC_METADATA_END) abort();
 }
 
@@ -396,6 +399,7 @@ dump_application(miniflac_t* decoder, membuffer_t* mem) {
     mem->len -= used;
     mem->pos += used;
     fprintf(stdout,"  length: %u bytes\n",temp32);
+    fflush(stdout);
 
     /* another example of skipping the decode */
 }
@@ -474,6 +478,7 @@ int main(int argc, const char *argv[]) {
           decoder->metadata.header.type_raw,
           decoder->metadata.header.is_last,
           decoder->metadata.header.length);
+        fflush(stdout);
         if(decoder->metadata.header.type == MINIFLAC_METADATA_STREAMINFO) {
             dump_streaminfo(decoder,&mem);
         }
@@ -497,7 +502,6 @@ int main(int argc, const char *argv[]) {
         mem.len -= used;
         mem.pos += used;
     }
-    printf("pos: %u\n",mem.pos);
 
     wav_header_create(output,decoder->frame.header.sample_rate,decoder->frame.header.channels,decoder->frame.header.bps);
 
