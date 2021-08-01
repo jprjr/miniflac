@@ -18,6 +18,7 @@ OBJS = \
   src/metadataheader.o \
   src/ogg.o \
   src/oggheader.o \
+  src/padding.o \
   src/picture.o \
   src/residual.o \
   src/seektable.o \
@@ -41,6 +42,7 @@ SOURCES = \
   src/frameheader.c \
   src/metadata.c \
   src/metadataheader.c \
+  src/padding.c \
   src/ogg.c \
   src/oggheader.c \
   src/picture.c \
@@ -72,6 +74,7 @@ HEADERS = \
   src/miniflac.h \
   src/ogg.h \
   src/oggheader.h \
+  src/padding.h \
   src/picture.h \
   src/residual.h \
   src/seektable.h \

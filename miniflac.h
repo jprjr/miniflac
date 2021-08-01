@@ -114,6 +114,7 @@ frame, or call miniflac_decode to continue on.
 #define MINIFLAC_METADATA_HEADER_H
 #define MINIFLAC_OGG_H
 #define MINIFLAC_OGGHEADER_H
+#define MINIFLAC_PADDING_H
 #define MINIFLAC_PICTURE_H
 #define MINIFLAC_RESIDUAL_H
 #define MINIFLAC_SEEKTABLE_H
@@ -143,6 +144,7 @@ typedef struct miniflac_picture_s miniflac_picture_t;
 typedef struct miniflac_cuesheet_s miniflac_cuesheet_t;
 typedef struct miniflac_seektable_s miniflac_seektable_t;
 typedef struct miniflac_application_s miniflac_application_t;
+typedef struct miniflac_padding_s miniflac_padding_t;
 typedef struct miniflac_metadata_s miniflac_metadata_t;
 typedef struct miniflac_residual_s miniflac_residual_t;
 typedef struct miniflac_subframe_fixed_s miniflac_subframe_fixed_t;
@@ -512,6 +514,11 @@ struct miniflac_application_s {
     uint32_t pos; /* current byte */
 };
 
+struct miniflac_padding_s {
+    uint32_t len; /* length of data */
+    uint32_t pos; /* current byte */
+};
+
 struct miniflac_metadata_s {
     MINIFLAC_METADATA_STATE               state;
     uint32_t                                pos;
@@ -522,6 +529,7 @@ struct miniflac_metadata_s {
     miniflac_cuesheet_t                cuesheet;
     miniflac_seektable_t              seektable;
     miniflac_application_t          application;
+    miniflac_padding_t                  padding;
 };
 
 struct miniflac_residual_s {
@@ -965,6 +973,16 @@ MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_application_data(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* buffer, uint32_t buffer_length, uint32_t* outlen);
 
+/* read a padding block's data length */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_padding_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* padding_length);
+
+/* read a padding block's data */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_padding_data(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* buffer, uint32_t buffer_length, uint32_t* outlen);
+
 
 #ifdef __cplusplus
 }
@@ -1277,6 +1295,18 @@ miniflac_application_read_length(miniflac_application_t* application, miniflac_b
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
 miniflac_application_read_data(miniflac_application_t* application, miniflac_bitreader_t* br, uint8_t* output, uint32_t length, uint32_t* outlen);
+
+MINIFLAC_PRIVATE
+void
+miniflac_padding_init(miniflac_padding_t* padding);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_padding_read_length(miniflac_padding_t* padding, miniflac_bitreader_t* br, uint32_t* length);
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_padding_read_data(miniflac_padding_t* padding, miniflac_bitreader_t* br, uint8_t* output, uint32_t length, uint32_t* outlen);
 
 MINIFLAC_PRIVATE
 void
@@ -1960,6 +1990,9 @@ MINIFLAC_GEN_FUNC1(SEEKTABLE,seektable,samples,uint16_t)
 MINIFLAC_GEN_FUNC1(APPLICATION,application,id,uint32_t)
 MINIFLAC_GEN_FUNC1(APPLICATION,application,length,uint32_t)
 MINIFLAC_GEN_FUNCSTR(APPLICATION,application,data,uint8_t)
+
+MINIFLAC_GEN_FUNC1(PADDING,padding,length,uint32_t)
+MINIFLAC_GEN_FUNCSTR(PADDING,padding,data,uint8_t)
 MINIFLAC_PRIVATE
 uint32_t
 miniflac_unpack_uint32le(uint8_t buffer[4]) {
@@ -4183,6 +4216,42 @@ miniflac_application_read_data(miniflac_application_t* application, miniflac_bit
 
 MINIFLAC_PRIVATE
 void
+miniflac_padding_init(miniflac_padding_t* padding) {
+    padding->len = 0;
+    padding->pos = 0;
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_padding_read_length(miniflac_padding_t* padding, miniflac_bitreader_t* br, uint32_t* length) {
+    (void)padding;
+    (void)br;
+    if(length != NULL) {
+        *length = padding->len;
+    }
+    return MINIFLAC_OK;
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_padding_read_data(miniflac_padding_t* padding, miniflac_bitreader_t* br, uint8_t* output, uint32_t length, uint32_t* outlen) {
+    uint8_t d;
+    while(padding->pos < padding->len) {
+        if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+        d = (uint8_t) miniflac_bitreader_read(br,8);
+        if(output != NULL && padding->pos < length) {
+            output[padding->pos] = d;
+        }
+        padding->pos++;
+    }
+    if(outlen != NULL) {
+        *outlen = padding->len <= length ? padding->len : length;
+    }
+    return MINIFLAC_OK;
+}
+
+MINIFLAC_PRIVATE
+void
 miniflac_metadata_init(miniflac_metadata_t* metadata) {
     metadata->state = MINIFLAC_METADATA_HEADER;
     metadata->pos = 0;
@@ -4227,6 +4296,11 @@ miniflac_metadata_sync(miniflac_metadata_t* metadata, miniflac_bitreader_t* br) 
         case MINIFLAC_METADATA_APPLICATION: {
             miniflac_application_init(&metadata->application);
             metadata->application.len = metadata->header.length - 4;
+            break;
+        }
+        case MINIFLAC_METADATA_PADDING: {
+            miniflac_padding_init(&metadata->padding);
+            metadata->padding.len = metadata->header.length;
             break;
         }
         default: break;
@@ -4288,6 +4362,10 @@ miniflac_metadata_decode(miniflac_metadata_t* metadata, miniflac_bitreader_t* br
                 }
                 case MINIFLAC_METADATA_APPLICATION: {
                     r = miniflac_application_read_data(&metadata->application,br,NULL,0,NULL);
+                    break;
+                }
+                case MINIFLAC_METADATA_PADDING: {
+                    r = miniflac_padding_read_data(&metadata->padding,br,NULL,0,NULL);
                     break;
                 }
                 default: {

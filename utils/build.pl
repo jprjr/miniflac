@@ -29,6 +29,7 @@ src/picture.c
 src/cuesheet.c
 src/seektable.c
 src/application.c
+src/padding.c
 src/metadata.c
 src/metadataheader.c
 src/residual.c
@@ -56,6 +57,7 @@ src/picture.h
 src/cuesheet.h
 src/seektable.h
 src/application.h
+src/padding.h
 src/metadata.h
 src/residual.h
 src/subframe_fixed.h

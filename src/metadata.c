@@ -51,6 +51,11 @@ miniflac_metadata_sync(miniflac_metadata_t* metadata, miniflac_bitreader_t* br) 
             metadata->application.len = metadata->header.length - 4;
             break;
         }
+        case MINIFLAC_METADATA_PADDING: {
+            miniflac_padding_init(&metadata->padding);
+            metadata->padding.len = metadata->header.length;
+            break;
+        }
         default: break;
     }
 
@@ -110,6 +115,10 @@ miniflac_metadata_decode(miniflac_metadata_t* metadata, miniflac_bitreader_t* br
                 }
                 case MINIFLAC_METADATA_APPLICATION: {
                     r = miniflac_application_read_data(&metadata->application,br,NULL,0,NULL);
+                    break;
+                }
+                case MINIFLAC_METADATA_PADDING: {
+                    r = miniflac_padding_read_data(&metadata->padding,br,NULL,0,NULL);
                     break;
                 }
                 default: {

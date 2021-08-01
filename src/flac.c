@@ -598,3 +598,6 @@ MINIFLAC_GEN_FUNC1(SEEKTABLE,seektable,samples,uint16_t)
 MINIFLAC_GEN_FUNC1(APPLICATION,application,id,uint32_t)
 MINIFLAC_GEN_FUNC1(APPLICATION,application,length,uint32_t)
 MINIFLAC_GEN_FUNCSTR(APPLICATION,application,data,uint8_t)
+
+MINIFLAC_GEN_FUNC1(PADDING,padding,length,uint32_t)
+MINIFLAC_GEN_FUNCSTR(PADDING,padding,data,uint8_t)

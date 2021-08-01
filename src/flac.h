@@ -390,6 +390,16 @@ MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_application_data(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* buffer, uint32_t buffer_length, uint32_t* outlen);
 
+/* read a padding block's data length */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_padding_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* padding_length);
+
+/* read a padding block's data */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_padding_data(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* buffer, uint32_t buffer_length, uint32_t* outlen);
+
 #ifdef __cplusplus
 }
 #endif

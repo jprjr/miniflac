@@ -13,6 +13,7 @@
 #include "cuesheet.h"
 #include "seektable.h"
 #include "application.h"
+#include "padding.h"
 
 typedef struct miniflac_metadata_s miniflac_metadata_t;
 typedef enum MINIFLAC_METADATA_STATE MINIFLAC_METADATA_STATE;
@@ -32,6 +33,7 @@ struct miniflac_metadata_s {
     miniflac_cuesheet_t                cuesheet;
     miniflac_seektable_t              seektable;
     miniflac_application_t          application;
+    miniflac_padding_t                  padding;
 };
 
 #ifdef __cplusplus
