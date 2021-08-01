@@ -930,6 +930,11 @@ MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_cuesheet_index_point_number(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* index_point_number);
 
+/* get the number of seekpoints */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_seektable_seekpoints(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* seekpoints);
+
 /* read the next seekpoint sample number */
 MINIFLAC_API
 MINIFLAC_RESULT
@@ -1239,6 +1244,11 @@ miniflac_cuesheet_read_index_point_number(miniflac_cuesheet_t* cuesheet, minifla
 MINIFLAC_PRIVATE
 void
 miniflac_seektable_init(miniflac_seektable_t* seektable);
+
+/* read the number of seekpoints */
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_seektable_read_seekpoints(miniflac_seektable_t* seektable, miniflac_bitreader_t* br, uint32_t* seekpoints);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
@@ -1942,6 +1952,7 @@ MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,track_indexpoints,uint8_t)
 MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,index_point_offset,uint64_t)
 MINIFLAC_GEN_FUNC1(CUESHEET,cuesheet,index_point_number,uint8_t)
 
+MINIFLAC_GEN_FUNC1(SEEKTABLE,seektable,seekpoints,uint32_t)
 MINIFLAC_GEN_FUNC1(SEEKTABLE,seektable,sample_number,uint64_t)
 MINIFLAC_GEN_FUNC1(SEEKTABLE,seektable,sample_offset,uint64_t)
 MINIFLAC_GEN_FUNC1(SEEKTABLE,seektable,samples,uint16_t)
@@ -3983,6 +3994,23 @@ miniflac_seektable_init(miniflac_seektable_t* seektable) {
     seektable->state = MINIFLAC_SEEKTABLE_SAMPLE_NUMBER;
     seektable->len = 0;
     seektable->pos = 0;
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_seektable_read_seekpoints(miniflac_seektable_t* seektable, miniflac_bitreader_t* br, uint32_t* seekpoints) {
+    (void)br;
+
+    switch(seektable->state) {
+        case MINIFLAC_SEEKTABLE_SAMPLE_NUMBER: {
+            if(seekpoints != NULL) {
+                *seekpoints = seektable->len;
+            }
+            return MINIFLAC_OK;
+        }
+        default: break;
+    }
+    return MINIFLAC_ERROR;
 }
 
 MINIFLAC_PRIVATE

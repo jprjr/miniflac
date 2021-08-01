@@ -355,6 +355,11 @@ MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_cuesheet_index_point_number(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* index_point_number);
 
+/* get the number of seekpoints */
+MINIFLAC_API
+MINIFLAC_RESULT
+miniflac_seektable_seekpoints(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* seekpoints);
+
 /* read the next seekpoint sample number */
 MINIFLAC_API
 MINIFLAC_RESULT

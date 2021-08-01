@@ -11,6 +11,23 @@ miniflac_seektable_init(miniflac_seektable_t* seektable) {
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
+miniflac_seektable_read_seekpoints(miniflac_seektable_t* seektable, miniflac_bitreader_t* br, uint32_t* seekpoints) {
+    (void)br;
+
+    switch(seektable->state) {
+        case MINIFLAC_SEEKTABLE_SAMPLE_NUMBER: {
+            if(seekpoints != NULL) {
+                *seekpoints = seektable->len;
+            }
+            return MINIFLAC_OK;
+        }
+        default: break;
+    }
+    return MINIFLAC_ERROR;
+}
+
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
 miniflac_seektable_read_sample_number(miniflac_seektable_t* seektable, miniflac_bitreader_t* br, uint64_t* sample_number) {
     uint64_t t = 0;
 

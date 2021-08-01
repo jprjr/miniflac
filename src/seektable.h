@@ -32,6 +32,11 @@ MINIFLAC_PRIVATE
 void
 miniflac_seektable_init(miniflac_seektable_t* seektable);
 
+/* read the number of seekpoints */
+MINIFLAC_PRIVATE
+MINIFLAC_RESULT
+miniflac_seektable_read_seekpoints(miniflac_seektable_t* seektable, miniflac_bitreader_t* br, uint32_t* seekpoints);
+
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
 miniflac_seektable_read_sample_number(miniflac_seektable_t* seektable, miniflac_bitreader_t* br, uint64_t* sample_number);
