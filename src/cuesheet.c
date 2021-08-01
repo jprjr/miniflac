@@ -12,12 +12,12 @@ miniflac_cuesheet_init(miniflac_cuesheet_t* cuesheet) {
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_cuesheet_read_catalogue_length(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, uint32_t* catalogue_length) {
+miniflac_cuesheet_read_catalog_length(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, uint32_t* catalog_length) {
     (void)br;
     switch(cuesheet->state) {
         case MINIFLAC_CUESHEET_CATALOG: {
-            if(catalogue_length != NULL) {
-                *catalogue_length = 128;
+            if(catalog_length != NULL) {
+                *catalog_length = 128;
             }
             return MINIFLAC_OK;
         }
@@ -28,7 +28,7 @@ miniflac_cuesheet_read_catalogue_length(miniflac_cuesheet_t* cuesheet, miniflac_
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_cuesheet_read_catalogue_string(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen) {
+miniflac_cuesheet_read_catalog_string(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_t* br, char* output, uint32_t length, uint32_t* outlen) {
     char c;
 
     switch(cuesheet->state) {
@@ -62,7 +62,7 @@ miniflac_cuesheet_read_leadin(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_
 
     switch(cuesheet->state) {
         case MINIFLAC_CUESHEET_CATALOG: {
-            r = miniflac_cuesheet_read_catalogue_string(cuesheet,br, NULL, 0, NULL);
+            r = miniflac_cuesheet_read_catalog_string(cuesheet,br, NULL, 0, NULL);
             if(r != MINIFLAC_OK) return r;
         }
         /* fall-through */

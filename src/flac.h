@@ -285,15 +285,15 @@ MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_picture_data(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* buffer, uint32_t buffer_length, uint32_t* buffer_used);
 
-/* read a cuesheet catalogue length (128 bytes_ */
+/* read a cuesheet catalog length (128 bytes) */
 MINIFLAC_API
 MINIFLAC_RESULT
-miniflac_cuesheet_catalogue_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* catalogue_length);
+miniflac_cuesheet_catalog_length(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint32_t* catalog_length);
 
-/* read a cuesheet catalogue number */
+/* read a cuesheet catalog number */
 MINIFLAC_API
 MINIFLAC_RESULT
-miniflac_cuesheet_catalogue_string(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* outlen);
+miniflac_cuesheet_catalog_string(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, char* buffer, uint32_t buffer_length, uint32_t* outlen);
 
 /* read a cuesheet leadin value */
 MINIFLAC_API

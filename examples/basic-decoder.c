@@ -235,10 +235,10 @@ dump_cuesheet(miniflac_t* decoder, membuffer_t* mem) {
 
     fprintf(stdout,"[cuesheet]\n");
 
-    /* the catalogue string is always a 128-byte string, the
+    /* the catalog string is always a 128-byte string, the
      * miniflac_cuesheet_catalogue_length function is for convenience, so
      * we can treat it the same as variable-length strings */
-    if(miniflac_cuesheet_catalogue_length(decoder,&mem->buffer[mem->pos],mem->len,&used,&temp32) != MINIFLAC_OK) abort();
+    if(miniflac_cuesheet_catalog_length(decoder,&mem->buffer[mem->pos],mem->len,&used,&temp32) != MINIFLAC_OK) abort();
     mem->len -= used;
     mem->pos += used;
 
@@ -248,11 +248,11 @@ dump_cuesheet(miniflac_t* decoder, membuffer_t* mem) {
         string_buffer_len = temp32;
     }
 
-    if(miniflac_cuesheet_catalogue_string(decoder,&mem->buffer[mem->pos],mem->len,&used,string_buffer,string_buffer_len+1,&temp32) != MINIFLAC_OK) abort();
+    if(miniflac_cuesheet_catalog_string(decoder,&mem->buffer[mem->pos],mem->len,&used,string_buffer,string_buffer_len+1,&temp32) != MINIFLAC_OK) abort();
     mem->len -= used;
     mem->pos += used;
     string_buffer[temp32] = '\0';
-    fprintf(stdout,"  media catalogue number: ");
+    fprintf(stdout,"  media catalog number: ");
     for(t=0;t<temp32;t++) {
         if(string_buffer[t] == '\0') break;
         fprintf(stdout,"%c",string_buffer[t]);
