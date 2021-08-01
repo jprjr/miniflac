@@ -3647,6 +3647,7 @@ miniflac_cuesheet_read_track_offset(miniflac_cuesheet_t* cuesheet, miniflac_bitr
         }
         /* fall-through */
         case MINIFLAC_CUESHEET_TRACKOFFSET: {
+            case_miniflac_cuesheet_trackoffset:
             if(cuesheet->track == cuesheet->tracks) return MINIFLAC_METADATA_END;
             if(miniflac_bitreader_fill(br,64)) return MINIFLAC_CONTINUE;
             t = miniflac_bitreader_read(br,64);
@@ -3655,6 +3656,14 @@ miniflac_cuesheet_read_track_offset(miniflac_cuesheet_t* cuesheet, miniflac_bitr
             }
             cuesheet->state = MINIFLAC_CUESHEET_TRACKNUMBER;
             return MINIFLAC_OK;
+        }
+        case MINIFLAC_CUESHEET_INDEX_OFFSET: /* fall-through */
+        case MINIFLAC_CUESHEET_INDEX_NUMBER: /* fall-through */
+        case MINIFLAC_CUESHEET_INDEX_RESERVE: {
+            r = miniflac_cuesheet_read_index_point_offset(cuesheet,br,NULL);
+            if(r != MINIFLAC_METADATA_END) return r;
+            /* cuesheet state was changed to TRACKOFFSET for us */
+            goto case_miniflac_cuesheet_trackoffset;
         }
         default: break;
     }
