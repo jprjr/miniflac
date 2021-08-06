@@ -2,6 +2,40 @@
 #include "flac.h"
 #include <stddef.h>
 
+#define MINIFLAC_VERSION_MAJOR 1
+#define MINIFLAC_VERSION_MINOR 0
+#define MINIFLAC_VERSION_PATCH 0
+
+#define MINIFLAC_STR(x) #x
+#define MINIFLAC_XSTR(x) MINIFLAC_STR(x)
+
+#define MINIFLAC_VERSION_STRING MINIFLAC_XSTR(MINIFLAC_VERSION_MAJOR) "." MINIFLAC_XSTR(MINIFLAC_VERSION_MINOR) "." MINIFLAC_XSTR(MINIFLAC_VERSION_PATCH)
+
+
+MINIFLAC_API
+unsigned int
+miniflac_version_major(void) {
+    return MINIFLAC_VERSION_MAJOR;
+}
+
+MINIFLAC_API
+unsigned int
+miniflac_version_minor(void) {
+    return MINIFLAC_VERSION_MINOR;
+}
+
+MINIFLAC_API
+unsigned int
+miniflac_version_patch(void) {
+    return MINIFLAC_VERSION_PATCH;
+}
+
+MINIFLAC_API
+const char*
+miniflac_version_string(void) {
+    return MINIFLAC_VERSION_STRING;
+}
+
 static
 void
 miniflac_oggreset(miniflac_t* pFlac) {

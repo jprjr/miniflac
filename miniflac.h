@@ -982,6 +982,22 @@ MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_padding_data(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* buffer, uint32_t buffer_length, uint32_t* outlen);
 
+MINIFLAC_API
+unsigned int
+miniflac_version_major(void);
+
+MINIFLAC_API
+unsigned int
+miniflac_version_minor(void);
+
+MINIFLAC_API
+unsigned int
+miniflac_version_patch(void);
+
+MINIFLAC_API
+const char*
+miniflac_version_string(void);
+
 
 #ifdef __cplusplus
 }
@@ -1392,6 +1408,40 @@ MINIFLAC_PRIVATE
 MINIFLAC_RESULT miniflac_frame_decode(miniflac_frame_t* frame, miniflac_bitreader_t* br, miniflac_streaminfo_t* info, int32_t** output);
 
 
+
+#define MINIFLAC_VERSION_MAJOR 1
+#define MINIFLAC_VERSION_MINOR 0
+#define MINIFLAC_VERSION_PATCH 0
+
+#define MINIFLAC_STR(x) #x
+#define MINIFLAC_XSTR(x) MINIFLAC_STR(x)
+
+#define MINIFLAC_VERSION_STRING MINIFLAC_XSTR(MINIFLAC_VERSION_MAJOR) "." MINIFLAC_XSTR(MINIFLAC_VERSION_MINOR) "." MINIFLAC_XSTR(MINIFLAC_VERSION_PATCH)
+
+
+MINIFLAC_API
+unsigned int
+miniflac_version_major(void) {
+    return MINIFLAC_VERSION_MAJOR;
+}
+
+MINIFLAC_API
+unsigned int
+miniflac_version_minor(void) {
+    return MINIFLAC_VERSION_MINOR;
+}
+
+MINIFLAC_API
+unsigned int
+miniflac_version_patch(void) {
+    return MINIFLAC_VERSION_PATCH;
+}
+
+MINIFLAC_API
+const char*
+miniflac_version_string(void) {
+    return MINIFLAC_VERSION_STRING;
+}
 
 static
 void

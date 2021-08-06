@@ -400,6 +400,22 @@ MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_padding_data(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* buffer, uint32_t buffer_length, uint32_t* outlen);
 
+MINIFLAC_API
+unsigned int
+miniflac_version_major(void);
+
+MINIFLAC_API
+unsigned int
+miniflac_version_minor(void);
+
+MINIFLAC_API
+unsigned int
+miniflac_version_patch(void);
+
+MINIFLAC_API
+const char*
+miniflac_version_string(void);
+
 #ifdef __cplusplus
 }
 #endif

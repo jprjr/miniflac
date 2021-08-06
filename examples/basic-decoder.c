@@ -425,6 +425,8 @@ int main(int argc, const char *argv[]) {
         goto cleanup;
     }
 
+    fprintf(stderr,"Built with miniflac version %s\n",miniflac_version_string());
+
     mem.buffer = slurp(argv[1],&mem.len);
     if(mem.buffer == NULL) goto cleanup;
     mem.pos = 0;
