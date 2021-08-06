@@ -14,12 +14,11 @@ miniflac_subframe_lpc_init(miniflac_subframe_lpc_t* l) {
         l->coefficients[i] = 0;
     }
     l->state = MINIFLAC_SUBFRAME_LPC_PRECISION;
-    miniflac_residual_init(&l->residual);
 }
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_subframe_lpc_decode(miniflac_subframe_lpc_t* l, miniflac_bitreader_t* br, int32_t* output, uint32_t block_size, uint8_t bps, uint8_t predictor_order) {
+miniflac_subframe_lpc_decode(miniflac_subframe_lpc_t* l, miniflac_bitreader_t* br, int32_t* output, uint32_t block_size, uint8_t bps, miniflac_residual_t* residual, uint8_t predictor_order) {
     int32_t sample;
     int64_t temp;
     int64_t prediction;
@@ -58,7 +57,7 @@ miniflac_subframe_lpc_decode(miniflac_subframe_lpc_t* l, miniflac_bitreader_t* b
         }
     }
 
-    r = miniflac_residual_decode(&l->residual,br,&l->pos,block_size,predictor_order,output);
+    r = miniflac_residual_decode(residual,br,&l->pos,block_size,predictor_order,output);
     if(r != MINIFLAC_OK) return r;
 
     if(output != NULL) {
@@ -75,7 +74,6 @@ miniflac_subframe_lpc_decode(miniflac_subframe_lpc_t* l, miniflac_bitreader_t* b
         }
     }
 
-    miniflac_subframe_lpc_init(l);
     return MINIFLAC_OK;
 }
 

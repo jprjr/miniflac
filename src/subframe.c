@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: 0BSD */
 #include "subframe.h"
+#include <stddef.h>
 
 MINIFLAC_PRIVATE
 void
@@ -11,6 +12,7 @@ miniflac_subframe_init(miniflac_subframe_t* subframe) {
     miniflac_subframe_verbatim_init(&subframe->verbatim);
     miniflac_subframe_fixed_init(&subframe->fixed);
     miniflac_subframe_lpc_init(&subframe->lpc);
+    miniflac_residual_init(&subframe->residual);
 }
 
 MINIFLAC_PRIVATE
@@ -28,18 +30,24 @@ miniflac_subframe_decode(miniflac_subframe_t* subframe, miniflac_bitreader_t* br
 
             switch(subframe->header.type) {
                 case MINIFLAC_SUBFRAME_TYPE_CONSTANT: {
+                    miniflac_subframe_constant_init(&subframe->constant);
                     subframe->state = MINIFLAC_SUBFRAME_CONSTANT;
                     goto miniflac_subframe_constant;
                 }
                 case MINIFLAC_SUBFRAME_TYPE_VERBATIM: {
+                    miniflac_subframe_verbatim_init(&subframe->verbatim);
                     subframe->state = MINIFLAC_SUBFRAME_VERBATIM;
                     goto miniflac_subframe_verbatim;
                 }
                 case MINIFLAC_SUBFRAME_TYPE_FIXED: {
+                    miniflac_residual_init(&subframe->residual);
+                    miniflac_subframe_fixed_init(&subframe->fixed);
                     subframe->state = MINIFLAC_SUBFRAME_FIXED;
                     goto miniflac_subframe_fixed;
                 }
                 case MINIFLAC_SUBFRAME_TYPE_LPC: {
+                    miniflac_residual_init(&subframe->residual);
+                    miniflac_subframe_lpc_init(&subframe->lpc);
                     subframe->state = MINIFLAC_SUBFRAME_LPC;
                     goto miniflac_subframe_lpc;
                 }
@@ -65,13 +73,13 @@ miniflac_subframe_decode(miniflac_subframe_t* subframe, miniflac_bitreader_t* br
         }
         case MINIFLAC_SUBFRAME_FIXED: {
             miniflac_subframe_fixed:
-            r = miniflac_subframe_fixed_decode(&subframe->fixed,br,output,block_size,subframe->bps,subframe->header.order);
+            r = miniflac_subframe_fixed_decode(&subframe->fixed,br,output,block_size,subframe->bps,&subframe->residual,subframe->header.order);
             if(r != MINIFLAC_OK) return r;
             break;
         }
         case MINIFLAC_SUBFRAME_LPC: {
             miniflac_subframe_lpc:
-            r = miniflac_subframe_lpc_decode(&subframe->lpc,br,output,block_size,subframe->bps,subframe->header.order);
+            r = miniflac_subframe_lpc_decode(&subframe->lpc,br,output,block_size,subframe->bps,&subframe->residual,subframe->header.order);
             if(r != MINIFLAC_OK) return r;
             break;
         }

@@ -342,7 +342,6 @@ miniflac_dump_subframe_fixed(miniflac_subframe_fixed_t* c, uint8_t indent) {
     indent += 2;
     dumpf(indent,"state: %s\n",miniflac_subframe_fixed_state_str[c->state]);
     dumpf(indent,"pos: %u\n",c->pos);
-    miniflac_dump_residual(&c->residual,indent);
 }
 
 void
@@ -358,7 +357,6 @@ miniflac_dump_subframe_lpc(miniflac_subframe_lpc_t* l, uint8_t indent) {
     for(i=0;i<32;i++) {
         dumpf(indent+1,"coefficients[%u]: %d\n",i,l->coefficients[i]);
     }
-    miniflac_dump_residual(&l->residual,indent);
 }
 
 void
@@ -372,6 +370,7 @@ miniflac_dump_subframe(miniflac_subframe_t* subframe, uint8_t indent) {
     miniflac_dump_subframe_verbatim(&subframe->verbatim,indent);
     miniflac_dump_subframe_fixed(&subframe->fixed,indent);
     miniflac_dump_subframe_lpc(&subframe->lpc,indent);
+    miniflac_dump_residual(&subframe->residual,indent);
 }
 
 

@@ -32,6 +32,7 @@ struct miniflac_subframe_s {
     miniflac_subframe_verbatim_t verbatim;
     miniflac_subframe_fixed_t fixed;
     miniflac_subframe_lpc_t lpc;
+    miniflac_residual_t residual;
 };
 
 #ifdef __cplusplus
