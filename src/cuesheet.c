@@ -8,6 +8,8 @@ miniflac_cuesheet_init(miniflac_cuesheet_t* cuesheet) {
     cuesheet->pos = 0;
     cuesheet->track = 0;
     cuesheet->tracks = 0;
+    cuesheet->point = 0;
+    cuesheet->points = 0;
 }
 
 MINIFLAC_PRIVATE
