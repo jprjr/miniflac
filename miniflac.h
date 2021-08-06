@@ -552,7 +552,6 @@ struct miniflac_residual_s {
 struct miniflac_subframe_fixed_s {
     MINIFLAC_SUBFRAME_FIXED_STATE state;
     uint32_t pos;
-    miniflac_residual_t residual;
 };
 
 struct miniflac_subframe_lpc_s {
@@ -562,7 +561,6 @@ struct miniflac_subframe_lpc_s {
     uint8_t shift;
     uint8_t coeff;
     int32_t coefficients[32];
-    miniflac_residual_t residual;
 };
 
 struct miniflac_subframe_constant_s {
@@ -590,6 +588,7 @@ struct miniflac_subframe_s {
     miniflac_subframe_verbatim_t verbatim;
     miniflac_subframe_fixed_t fixed;
     miniflac_subframe_lpc_t lpc;
+    miniflac_residual_t residual;
 };
 
 struct miniflac_frame_header_s {
@@ -1334,7 +1333,7 @@ miniflac_subframe_fixed_init(miniflac_subframe_fixed_t* c);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_subframe_fixed_decode(miniflac_subframe_fixed_t* c, miniflac_bitreader_t* br, int32_t* output, uint32_t block_size, uint8_t bps, uint8_t predictor_order);
+miniflac_subframe_fixed_decode(miniflac_subframe_fixed_t* c, miniflac_bitreader_t* br, int32_t* output, uint32_t block_size, uint8_t bps, miniflac_residual_t* residual, uint8_t predictor_order);
 
 MINIFLAC_PRIVATE
 void
@@ -1342,7 +1341,7 @@ miniflac_subframe_lpc_init(miniflac_subframe_lpc_t* l);
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_subframe_lpc_decode(miniflac_subframe_lpc_t* l, miniflac_bitreader_t* br, int32_t* output, uint32_t block_size, uint8_t bps, uint8_t predictor_order);
+miniflac_subframe_lpc_decode(miniflac_subframe_lpc_t* l, miniflac_bitreader_t* br, int32_t* output, uint32_t block_size, uint8_t bps, miniflac_residual_t* residual, uint8_t predictor_order);
 
 MINIFLAC_PRIVATE
 void miniflac_subframe_constant_init(miniflac_subframe_constant_t* c);
@@ -3524,6 +3523,8 @@ miniflac_cuesheet_init(miniflac_cuesheet_t* cuesheet) {
     cuesheet->pos = 0;
     cuesheet->track = 0;
     cuesheet->tracks = 0;
+    cuesheet->point = 0;
+    cuesheet->points = 0;
 }
 
 MINIFLAC_PRIVATE
@@ -4261,6 +4262,7 @@ miniflac_metadata_init(miniflac_metadata_t* metadata) {
     miniflac_picture_init(&metadata->picture);
     miniflac_seektable_init(&metadata->seektable);
     miniflac_application_init(&metadata->application);
+    miniflac_cuesheet_init(&metadata->cuesheet);
 }
 
 MINIFLAC_PRIVATE
@@ -4968,6 +4970,7 @@ miniflac_subframe_init(miniflac_subframe_t* subframe) {
     miniflac_subframe_verbatim_init(&subframe->verbatim);
     miniflac_subframe_fixed_init(&subframe->fixed);
     miniflac_subframe_lpc_init(&subframe->lpc);
+    miniflac_residual_init(&subframe->residual);
 }
 
 MINIFLAC_PRIVATE
@@ -4985,18 +4988,24 @@ miniflac_subframe_decode(miniflac_subframe_t* subframe, miniflac_bitreader_t* br
 
             switch(subframe->header.type) {
                 case MINIFLAC_SUBFRAME_TYPE_CONSTANT: {
+                    miniflac_subframe_constant_init(&subframe->constant);
                     subframe->state = MINIFLAC_SUBFRAME_CONSTANT;
                     goto miniflac_subframe_constant;
                 }
                 case MINIFLAC_SUBFRAME_TYPE_VERBATIM: {
+                    miniflac_subframe_verbatim_init(&subframe->verbatim);
                     subframe->state = MINIFLAC_SUBFRAME_VERBATIM;
                     goto miniflac_subframe_verbatim;
                 }
                 case MINIFLAC_SUBFRAME_TYPE_FIXED: {
+                    miniflac_residual_init(&subframe->residual);
+                    miniflac_subframe_fixed_init(&subframe->fixed);
                     subframe->state = MINIFLAC_SUBFRAME_FIXED;
                     goto miniflac_subframe_fixed;
                 }
                 case MINIFLAC_SUBFRAME_TYPE_LPC: {
+                    miniflac_residual_init(&subframe->residual);
+                    miniflac_subframe_lpc_init(&subframe->lpc);
                     subframe->state = MINIFLAC_SUBFRAME_LPC;
                     goto miniflac_subframe_lpc;
                 }
@@ -5022,13 +5031,13 @@ miniflac_subframe_decode(miniflac_subframe_t* subframe, miniflac_bitreader_t* br
         }
         case MINIFLAC_SUBFRAME_FIXED: {
             miniflac_subframe_fixed:
-            r = miniflac_subframe_fixed_decode(&subframe->fixed,br,output,block_size,subframe->bps,subframe->header.order);
+            r = miniflac_subframe_fixed_decode(&subframe->fixed,br,output,block_size,subframe->bps,&subframe->residual,subframe->header.order);
             if(r != MINIFLAC_OK) return r;
             break;
         }
         case MINIFLAC_SUBFRAME_LPC: {
             miniflac_subframe_lpc:
-            r = miniflac_subframe_lpc_decode(&subframe->lpc,br,output,block_size,subframe->bps,subframe->header.order);
+            r = miniflac_subframe_lpc_decode(&subframe->lpc,br,output,block_size,subframe->bps,&subframe->residual,subframe->header.order);
             if(r != MINIFLAC_OK) return r;
             break;
         }
@@ -5075,19 +5084,18 @@ void
 miniflac_subframe_fixed_init(miniflac_subframe_fixed_t* f) {
     f->pos   = 0;
     f->state = MINIFLAC_SUBFRAME_FIXED_DECODE;
-    miniflac_residual_init(&f->residual);
 }
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_subframe_fixed_decode(miniflac_subframe_fixed_t* f, miniflac_bitreader_t* br, int32_t* output, uint32_t block_size, uint8_t bps, uint8_t predictor_order) {
+miniflac_subframe_fixed_decode(miniflac_subframe_fixed_t* f, miniflac_bitreader_t* br, int32_t* output, uint32_t block_size, uint8_t bps, miniflac_residual_t* residual, uint8_t predictor_order) {
     int32_t sample;
 
     int64_t sample1;
     int64_t sample2;
     int64_t sample3;
     int64_t sample4;
-    int64_t residual;
+    int64_t current_residual;
 
     MINIFLAC_RESULT r;
     while(f->pos < predictor_order) {
@@ -5098,7 +5106,7 @@ miniflac_subframe_fixed_decode(miniflac_subframe_fixed_t* f, miniflac_bitreader_
         }
         f->pos++;
     }
-    r = miniflac_residual_decode(&f->residual,br,&f->pos,block_size,predictor_order,output);
+    r = miniflac_residual_decode(residual,br,&f->pos,block_size,predictor_order,output);
     if(r != MINIFLAC_OK) return r;
 
     if(output != NULL) {
@@ -5107,34 +5115,34 @@ miniflac_subframe_fixed_decode(miniflac_subframe_fixed_t* f, miniflac_bitreader_
 #if 0
                 /* this is here for reference but not actually needed */
                 for(f->pos = predictor_order; f->pos < block_size; f->pos++) {
-                    residual = output[f->pos];
-                    output[f->pos] = (int32_t)residual;
+                    current_residual = output[f->pos];
+                    output[f->pos] = (int32_t)current_residual;
                 }
 #endif
                 break;
             case 1: {
                 for(f->pos = predictor_order; f->pos < block_size; f->pos++) {
-                    residual = output[f->pos];
+                    current_residual = output[f->pos];
                     sample1  = output[f->pos-1];
-                    output[f->pos] = (int32_t)(sample1 + residual);
+                    output[f->pos] = (int32_t)(sample1 + current_residual);
                 }
                 break;
             }
             case 2: {
                 for(f->pos = predictor_order; f->pos < block_size; f->pos++) {
-                    residual = output[f->pos];
+                    current_residual = output[f->pos];
                     sample1  = output[f->pos-1];
                     sample2  = output[f->pos-2];
 
                     sample1 *= 2;
 
-                    output[f->pos] = (int32_t)(sample1 - sample2 + residual);
+                    output[f->pos] = (int32_t)(sample1 - sample2 + current_residual);
                 }
                 break;
             }
             case 3: {
                 for(f->pos = predictor_order; f->pos < block_size; f->pos++) {
-                    residual = output[f->pos];
+                    current_residual = output[f->pos];
                     sample1  = output[f->pos-1];
                     sample2  = output[f->pos-2];
                     sample3  = output[f->pos-3];
@@ -5142,13 +5150,13 @@ miniflac_subframe_fixed_decode(miniflac_subframe_fixed_t* f, miniflac_bitreader_
                     sample1 *= 3;
                     sample2 *= 3;
 
-                    output[f->pos] = (int32_t)(sample1 - sample2 + sample3 + residual);
+                    output[f->pos] = (int32_t)(sample1 - sample2 + sample3 + current_residual);
                 }
                 break;
             }
             case 4: {
                 for(f->pos = predictor_order; f->pos < block_size; f->pos++) {
-                    residual = output[f->pos];
+                    current_residual = output[f->pos];
                     sample1  = output[f->pos-1];
                     sample2  = output[f->pos-2];
                     sample3  = output[f->pos-3];
@@ -5158,7 +5166,7 @@ miniflac_subframe_fixed_decode(miniflac_subframe_fixed_t* f, miniflac_bitreader_
                     sample2 *= 6;
                     sample3 *= 4;
 
-                    output[f->pos] = (int32_t)(sample1  - sample2 + sample3 - sample4 + residual);
+                    output[f->pos] = (int32_t)(sample1  - sample2 + sample3 - sample4 + current_residual);
                 }
                 break;
             }
@@ -5166,7 +5174,6 @@ miniflac_subframe_fixed_decode(miniflac_subframe_fixed_t* f, miniflac_bitreader_
         }
     }
 
-    miniflac_subframe_fixed_init(f);
     return MINIFLAC_OK;
 
 }
@@ -5268,12 +5275,11 @@ miniflac_subframe_lpc_init(miniflac_subframe_lpc_t* l) {
         l->coefficients[i] = 0;
     }
     l->state = MINIFLAC_SUBFRAME_LPC_PRECISION;
-    miniflac_residual_init(&l->residual);
 }
 
 MINIFLAC_PRIVATE
 MINIFLAC_RESULT
-miniflac_subframe_lpc_decode(miniflac_subframe_lpc_t* l, miniflac_bitreader_t* br, int32_t* output, uint32_t block_size, uint8_t bps, uint8_t predictor_order) {
+miniflac_subframe_lpc_decode(miniflac_subframe_lpc_t* l, miniflac_bitreader_t* br, int32_t* output, uint32_t block_size, uint8_t bps, miniflac_residual_t* residual, uint8_t predictor_order) {
     int32_t sample;
     int64_t temp;
     int64_t prediction;
@@ -5312,7 +5318,7 @@ miniflac_subframe_lpc_decode(miniflac_subframe_lpc_t* l, miniflac_bitreader_t* b
         }
     }
 
-    r = miniflac_residual_decode(&l->residual,br,&l->pos,block_size,predictor_order,output);
+    r = miniflac_residual_decode(residual,br,&l->pos,block_size,predictor_order,output);
     if(r != MINIFLAC_OK) return r;
 
     if(output != NULL) {
@@ -5329,7 +5335,6 @@ miniflac_subframe_lpc_decode(miniflac_subframe_lpc_t* l, miniflac_bitreader_t* b
         }
     }
 
-    miniflac_subframe_lpc_init(l);
     return MINIFLAC_OK;
 }
 
