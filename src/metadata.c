@@ -14,6 +14,7 @@ miniflac_metadata_init(miniflac_metadata_t* metadata) {
     miniflac_picture_init(&metadata->picture);
     miniflac_seektable_init(&metadata->seektable);
     miniflac_application_init(&metadata->application);
+    miniflac_cuesheet_init(&metadata->cuesheet);
 }
 
 MINIFLAC_PRIVATE
