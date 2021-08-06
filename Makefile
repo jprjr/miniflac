@@ -152,7 +152,7 @@ clean:
 	rm -f examples/null-decoder examples/null-decoder.exe examples/null-decoder.o
 	rm -f examples/benchmark examples/benchmark.exe examples/benchmark.o
 	rm -f examples/just-decode examples/just-decode.exe examples/just-decode.o
-	rm -f examples/just-decode-singefile examples/just-decode-singefile.exe examples/just-decode-singefile.o
+	rm -f examples/just-decode-singlefile examples/just-decode-singlefile.exe examples/just-decode-singlefile.o
 	rm -f examples/wav.o examples/pack.o examples/slurp.o
 	rm -f utils/strip-headers utils/strip-headers.exe utils/strip-headers.o
 	rm -f src/debug.o
