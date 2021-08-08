@@ -3,9 +3,10 @@
 MISC_CFLAGS = -DMINIFLAC_ABORT_ON_ERROR
 
 OPTIMIZE = -O3
+LTO = -flto
 
-CFLAGS = -flto -Wall -Wextra -fPIC -g $(OPTIMIZE) $(MISC_CFLAGS)
-LDFLAGS = -flto
+CFLAGS = $(LTO) -Wall -Wextra -fPIC -g $(OPTIMIZE) $(MISC_CFLAGS)
+LDFLAGS = $(LTO)
 
 OBJS = \
   src/application.o \
@@ -87,7 +88,14 @@ HEADERS = \
   src/unpack.h \
   src/vorbiscomment.h
 
-all: libminiflac.a libminiflac.so miniflac.h examples/basic-decoder examples/single-byte-decoder utils/strip-headers examples/get-sizes examples/null-decoder examples/benchmark examples/just-decode examples/just-decode-singlefile
+all: libminiflac.a libminiflac.so miniflac.h \
+     examples/basic-decoder examples/single-byte-decoder \
+	 utils/strip-headers examples/get-sizes examples/null-decoder \
+	 examples/benchmark examples/just-decode \
+	 examples/just-decode-singlefile-0 \
+	 examples/just-decode-singlefile-1 \
+	 examples/just-decode-singlefile-2 \
+	 examples/just-decode-singlefile-3
 
 miniflac.h: $(SOURCES) $(HEADERS) utils/build.pl
 	./utils/build.pl > miniflac.h
@@ -116,8 +124,17 @@ examples/slurp.o: examples/slurp.c
 examples/just-decode.o: examples/just-decode.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-examples/just-decode-singlefile.o: examples/just-decode-singlefile.c miniflac.h
-	$(CC) $(CFLAGS) -c -o $@ $<
+examples/just-decode-singlefile-0.o: examples/just-decode-singlefile.c miniflac.h
+	$(CC) -Wall -Wextra $(LTO) -fPIC -O0 -c -o $@ $<
+
+examples/just-decode-singlefile-1.o: examples/just-decode-singlefile.c miniflac.h
+	$(CC) -Wall -Wextra $(LTO) -fPIC -O1 -c -o $@ $<
+
+examples/just-decode-singlefile-2.o: examples/just-decode-singlefile.c miniflac.h
+	$(CC) -Wall -Wextra $(LTO) -fPIC -O2 -c -o $@ $<
+
+examples/just-decode-singlefile-3.o: examples/just-decode-singlefile.c miniflac.h
+	$(CC) -Wall -Wextra $(LTO) -fPIC -O3 -c -o $@ $<
 
 examples/single-byte-decoder.o: examples/single-byte-decoder.c miniflac.h
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -131,8 +148,17 @@ examples/benchmark: examples/benchmark.o examples/slurp.o examples/tictoc.o
 examples/just-decode: examples/just-decode.o examples/slurp.o examples/tictoc.o libminiflac.a
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-examples/just-decode-singlefile: examples/just-decode-singlefile.o examples/slurp.o examples/tictoc.o
-	$(CC) -o $@ $^ $(LDFLAGS)
+examples/just-decode-singlefile-0: examples/just-decode-singlefile-0.o examples/slurp.o examples/tictoc.o
+	$(CC) -o $@ $^ $(LTO)
+
+examples/just-decode-singlefile-1: examples/just-decode-singlefile-1.o examples/slurp.o examples/tictoc.o
+	$(CC) -o $@ $^ $(LTO)
+
+examples/just-decode-singlefile-2: examples/just-decode-singlefile-2.o examples/slurp.o examples/tictoc.o
+	$(CC) -o $@ $^ $(LTO)
+
+examples/just-decode-singlefile-3: examples/just-decode-singlefile-3.o examples/slurp.o examples/tictoc.o
+	$(CC) -o $@ $^ $(LTO)
 
 examples/null-decoder: examples/null-decoder.o src/debug.o
 	$(CC) -o $@ $^ $(LDFLAGS)
@@ -153,6 +179,10 @@ clean:
 	rm -f examples/benchmark examples/benchmark.exe examples/benchmark.o
 	rm -f examples/just-decode examples/just-decode.exe examples/just-decode.o
 	rm -f examples/just-decode-singlefile examples/just-decode-singlefile.exe examples/just-decode-singlefile.o
+	rm -f examples/just-decode-singlefile-0 examples/just-decode-singlefile-0.exe examples/just-decode-singlefile-0.o
+	rm -f examples/just-decode-singlefile-1 examples/just-decode-singlefile-1.exe examples/just-decode-singlefile-1.o
+	rm -f examples/just-decode-singlefile-2 examples/just-decode-singlefile-2.exe examples/just-decode-singlefile-2.o
+	rm -f examples/just-decode-singlefile-3 examples/just-decode-singlefile-3.exe examples/just-decode-singlefile-3.o
 	rm -f examples/wav.o examples/pack.o examples/slurp.o
 	rm -f utils/strip-headers utils/strip-headers.exe utils/strip-headers.o
 	rm -f src/debug.o
