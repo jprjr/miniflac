@@ -57,7 +57,5 @@ miniflac_streammarker_decode(miniflac_streammarker_t* streammarker, miniflac_bit
         }
     }
 
-    miniflac_streammarker_init(streammarker);
-    miniflac_bitreader_reset_crc(br);
     return MINIFLAC_OK;
 }

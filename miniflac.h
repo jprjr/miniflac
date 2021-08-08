@@ -2681,6 +2681,7 @@ miniflac_frame_header_decode(miniflac_frame_header_t* header, miniflac_bitreader
 
     switch(header->state) {
         case MINIFLAC_FRAME_HEADER_SYNC: {
+            miniflac_bitreader_reset_crc(br);
             if(miniflac_bitreader_fill(br,14)) return MINIFLAC_CONTINUE;
             t = miniflac_bitreader_read(br,14);
             if(t != 0x3FFE) {
@@ -5005,8 +5006,6 @@ miniflac_streammarker_decode(miniflac_streammarker_t* streammarker, miniflac_bit
         }
     }
 
-    miniflac_streammarker_init(streammarker);
-    miniflac_bitreader_reset_crc(br);
     return MINIFLAC_OK;
 }
 
