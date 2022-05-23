@@ -101,6 +101,8 @@ int main(int argc, const char* argv[]) {
     }
     elapsed_miniflac = toc(&t);
 
+    assert(pos == flac_len);
+
     flac_decoder = FLAC__stream_decoder_new();
 
     k.flac_data = flac_data;
