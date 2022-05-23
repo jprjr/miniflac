@@ -5,8 +5,8 @@ MISC_CFLAGS = -DMINIFLAC_ABORT_ON_ERROR
 OPTIMIZE = -O3
 LTO = -flto
 
-CFLAGS = $(LTO) -Wall -Wextra -fPIC -g $(OPTIMIZE) $(MISC_CFLAGS)
-LDFLAGS = $(LTO)
+CFLAGS = $(LTO) -Wall -Wextra -fPIC -pg -g $(OPTIMIZE) $(MISC_CFLAGS)
+LDFLAGS = $(LTO) -pg
 
 OBJS = \
   src/application.o \
@@ -125,16 +125,16 @@ examples/just-decode.o: examples/just-decode.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 examples/just-decode-singlefile-0.o: examples/just-decode-singlefile.c miniflac.h
-	$(CC) -Wall -Wextra $(LTO) -fPIC -O0 -c -o $@ $<
+	$(CC) -Wall -Wextra $(LTO) -pg -g -fPIC -O0 -c -o $@ $<
 
 examples/just-decode-singlefile-1.o: examples/just-decode-singlefile.c miniflac.h
-	$(CC) -Wall -Wextra $(LTO) -fPIC -O1 -c -o $@ $<
+	$(CC) -Wall -Wextra $(LTO) -pg -g -fPIC -O1 -c -o $@ $<
 
 examples/just-decode-singlefile-2.o: examples/just-decode-singlefile.c miniflac.h
-	$(CC) -Wall -Wextra $(LTO) -fPIC -O2 -c -o $@ $<
+	$(CC) -Wall -Wextra $(LTO) -pg -g -fPIC -O2 -c -o $@ $<
 
 examples/just-decode-singlefile-3.o: examples/just-decode-singlefile.c miniflac.h
-	$(CC) -Wall -Wextra $(LTO) -fPIC -O3 -c -o $@ $<
+	$(CC) -Wall -Wextra $(LTO) -pg -g -fPIC -O3 -c -o $@ $<
 
 examples/single-byte-decoder.o: examples/single-byte-decoder.c miniflac.h
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -149,16 +149,16 @@ examples/just-decode: examples/just-decode.o examples/slurp.o examples/tictoc.o 
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 examples/just-decode-singlefile-0: examples/just-decode-singlefile-0.o examples/slurp.o examples/tictoc.o
-	$(CC) -o $@ $^ $(LTO)
+	$(CC) -o $@ $^ $(LTO) -pg
 
 examples/just-decode-singlefile-1: examples/just-decode-singlefile-1.o examples/slurp.o examples/tictoc.o
-	$(CC) -o $@ $^ $(LTO)
+	$(CC) -o $@ $^ $(LTO) -pg
 
 examples/just-decode-singlefile-2: examples/just-decode-singlefile-2.o examples/slurp.o examples/tictoc.o
-	$(CC) -o $@ $^ $(LTO)
+	$(CC) -o $@ $^ $(LTO) -pg
 
 examples/just-decode-singlefile-3: examples/just-decode-singlefile-3.o examples/slurp.o examples/tictoc.o
-	$(CC) -o $@ $^ $(LTO)
+	$(CC) -o $@ $^ $(LTO) -pg
 
 examples/null-decoder: examples/null-decoder.o src/debug.o
 	$(CC) -o $@ $^ $(LDFLAGS)
