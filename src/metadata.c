@@ -69,7 +69,7 @@ static
 MINIFLAC_RESULT
 miniflac_metadata_skip(miniflac_metadata_t* metadata, miniflac_bitreader_t* br) {
     while(metadata->pos < metadata->header.length) {
-        if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+        if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
         miniflac_bitreader_discard(br,8);
         metadata->pos++;
     }

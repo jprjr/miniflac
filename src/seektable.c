@@ -34,7 +34,7 @@ miniflac_seektable_read_sample_number(miniflac_seektable_t* seektable, miniflac_
     switch(seektable->state) {
         case MINIFLAC_SEEKTABLE_SAMPLE_NUMBER: {
             if(seektable->pos == seektable->len) return MINIFLAC_METADATA_END;
-            if(miniflac_bitreader_fill(br,64)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,64)) return MINIFLAC_CONTINUE;
             t = miniflac_bitreader_read(br,64);
             if(sample_number != NULL) {
                 *sample_number = t;
@@ -61,7 +61,7 @@ miniflac_seektable_read_sample_offset(miniflac_seektable_t* seektable, miniflac_
         }
         /* fall-through */
         case MINIFLAC_SEEKTABLE_SAMPLE_OFFSET: {
-            if(miniflac_bitreader_fill(br,64)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,64)) return MINIFLAC_CONTINUE;
             t = miniflac_bitreader_read(br,64);
             if(sample_offset != NULL) {
                 *sample_offset = t;
@@ -89,7 +89,7 @@ miniflac_seektable_read_samples(miniflac_seektable_t* seektable, miniflac_bitrea
         }
         /* fall-through */
         case MINIFLAC_SEEKTABLE_SAMPLES: {
-            if(miniflac_bitreader_fill(br,16)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,16)) return MINIFLAC_CONTINUE;
             t = (uint16_t)miniflac_bitreader_read(br,16);
             if(samples != NULL) {
                 *samples = t;

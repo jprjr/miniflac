@@ -24,7 +24,7 @@ MINIFLAC_RESULT
 miniflac_padding_read_data(miniflac_padding_t* padding, miniflac_bitreader_t* br, uint8_t* output, uint32_t length, uint32_t* outlen) {
     uint8_t d;
     while(padding->pos < padding->len) {
-        if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+        if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
         d = (uint8_t) miniflac_bitreader_read(br,8);
         if(output != NULL && padding->pos < length) {
             output[padding->pos] = d;

@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: 0BSD */
 #include "streammarker.h"
+#include <assert.h>
 
 MINIFLAC_PRIVATE
 void
@@ -13,7 +14,7 @@ miniflac_streammarker_decode(miniflac_streammarker_t* streammarker, miniflac_bit
     char t;
     switch(streammarker->state) {
         case MINIFLAC_STREAMMARKER_F: {
-            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             t = (char)miniflac_bitreader_read(br,8);
             if(t != 'f') {
                 miniflac_abort();
@@ -23,7 +24,7 @@ miniflac_streammarker_decode(miniflac_streammarker_t* streammarker, miniflac_bit
         }
         /* fall-through */
         case MINIFLAC_STREAMMARKER_L: {
-            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             t = (char)miniflac_bitreader_read(br,8);
             if(t != 'L') {
                 miniflac_abort();
@@ -33,7 +34,7 @@ miniflac_streammarker_decode(miniflac_streammarker_t* streammarker, miniflac_bit
         }
         /* fall-through */
         case MINIFLAC_STREAMMARKER_A: {
-            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             t = (char)miniflac_bitreader_read(br,8);
             if(t != 'a') {
                 miniflac_abort();
@@ -43,7 +44,7 @@ miniflac_streammarker_decode(miniflac_streammarker_t* streammarker, miniflac_bit
         }
         /* fall-through */
         case MINIFLAC_STREAMMARKER_C: {
-            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             t = (char)miniflac_bitreader_read(br,8);
             if(t != 'C') {
                 miniflac_abort();
@@ -56,6 +57,12 @@ miniflac_streammarker_decode(miniflac_streammarker_t* streammarker, miniflac_bit
             return MINIFLAC_ERROR;
         }
     }
+
+    miniflac_streammarker_init(streammarker);
+
+    assert(br->bits == 0);
+    br->crc8  = 0;
+    br->crc16 = 0;
 
     return MINIFLAC_OK;
 }

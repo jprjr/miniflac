@@ -36,7 +36,7 @@ miniflac_cuesheet_read_catalog_string(miniflac_cuesheet_t* cuesheet, miniflac_bi
     switch(cuesheet->state) {
         case MINIFLAC_CUESHEET_CATALOG: {
             while(cuesheet->pos < 128) {
-                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
                 c = (char)miniflac_bitreader_read(br,8);
                 if(output != NULL && cuesheet->pos < length) {
                     output[cuesheet->pos] = c;
@@ -69,7 +69,7 @@ miniflac_cuesheet_read_leadin(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_
         }
         /* fall-through */
         case MINIFLAC_CUESHEET_LEADIN: {
-            if(miniflac_bitreader_fill(br,64)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,64)) return MINIFLAC_CONTINUE;
             t = miniflac_bitreader_read(br,64);
             if(leadin != NULL) {
                 *leadin = t;
@@ -97,7 +97,7 @@ miniflac_cuesheet_read_cd_flag(miniflac_cuesheet_t* cuesheet, miniflac_bitreader
         }
         /* fall-through */
         case MINIFLAC_CUESHEET_CDFLAG: {
-            if(miniflac_bitreader_fill(br,1)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,1)) return MINIFLAC_CONTINUE;
             f = (uint8_t)miniflac_bitreader_read(br,1);
             if(flag != NULL) {
                 *flag = f;
@@ -126,7 +126,7 @@ miniflac_cuesheet_read_tracks(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_
         /* fall-through */
         case MINIFLAC_CUESHEET_SHEET_RESERVE: {
             while(cuesheet->pos < 258) {
-                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
                 miniflac_bitreader_discard(br,8);
                 cuesheet->pos++;
             }
@@ -135,7 +135,7 @@ miniflac_cuesheet_read_tracks(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_
         }
         /* fall-through */
         case MINIFLAC_CUESHEET_TRACKS: {
-            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             cuesheet->tracks = (uint8_t)miniflac_bitreader_read(br,8);
             if(tracks != NULL) {
                 *tracks = cuesheet->tracks;
@@ -168,7 +168,7 @@ miniflac_cuesheet_read_track_offset(miniflac_cuesheet_t* cuesheet, miniflac_bitr
         case MINIFLAC_CUESHEET_TRACKOFFSET: {
             case_miniflac_cuesheet_trackoffset:
             if(cuesheet->track == cuesheet->tracks) return MINIFLAC_METADATA_END;
-            if(miniflac_bitreader_fill(br,64)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,64)) return MINIFLAC_CONTINUE;
             t = miniflac_bitreader_read(br,64);
             if(track_offset != NULL) {
                 *track_offset = t;
@@ -207,7 +207,7 @@ miniflac_cuesheet_read_track_number(miniflac_cuesheet_t* cuesheet, miniflac_bitr
         }
         /* fall-through */
         case MINIFLAC_CUESHEET_TRACKNUMBER: {
-            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             t = (uint8_t)miniflac_bitreader_read(br,8);
             if(track_number != NULL) {
                 *track_number = t;
@@ -269,7 +269,7 @@ miniflac_cuesheet_read_track_isrc_string(miniflac_cuesheet_t* cuesheet, miniflac
         /* fall-through */
         case MINIFLAC_CUESHEET_TRACKISRC: {
             while(cuesheet->pos < 12) {
-                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
                 c = (char)miniflac_bitreader_read(br,8);
                 if(output != NULL && cuesheet->pos < length) {
                     output[cuesheet->pos] = c;
@@ -309,7 +309,7 @@ miniflac_cuesheet_read_track_audio_flag(miniflac_cuesheet_t* cuesheet, miniflac_
         }
         /* fall-through */
         case MINIFLAC_CUESHEET_TRACKTYPE: {
-            if(miniflac_bitreader_fill(br,1)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,1)) return MINIFLAC_CONTINUE;
             f = (uint8_t)miniflac_bitreader_read(br,1);
             if(track_audio_flag != NULL) {
                 *track_audio_flag = f;
@@ -344,7 +344,7 @@ miniflac_cuesheet_read_track_preemph_flag(miniflac_cuesheet_t* cuesheet, minifla
         }
         /* fall-through */
         case MINIFLAC_CUESHEET_TRACKPREEMPH: {
-            if(miniflac_bitreader_fill(br,1)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,1)) return MINIFLAC_CONTINUE;
             f = (uint8_t)miniflac_bitreader_read(br,1);
             if(track_preemph_flag != NULL) {
                 *track_preemph_flag = f;
@@ -393,7 +393,7 @@ miniflac_cuesheet_read_track_indexpoints(miniflac_cuesheet_t* cuesheet, miniflac
         /* fall-through */
         case MINIFLAC_CUESHEET_TRACK_RESERVE: {
             while(cuesheet->pos < 13) {
-                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
                 miniflac_bitreader_discard(br,8);
                 cuesheet->pos++;
             }
@@ -401,7 +401,7 @@ miniflac_cuesheet_read_track_indexpoints(miniflac_cuesheet_t* cuesheet, miniflac
         }
         /* fall-through */
         case MINIFLAC_CUESHEET_TRACKPOINTS: {
-            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             cuesheet->points = (uint8_t)miniflac_bitreader_read(br,8);
             if(track_indexpoints != NULL) {
                 *track_indexpoints = cuesheet->points;
@@ -430,7 +430,7 @@ miniflac_cuesheet_read_index_point_offset(miniflac_cuesheet_t* cuesheet, minifla
         /* fall-through */
         case MINIFLAC_CUESHEET_INDEX_RESERVE: {
             while(cuesheet->pos < 3) {
-                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
                 miniflac_bitreader_discard(br,8);
                 cuesheet->pos++;
             }
@@ -462,7 +462,7 @@ miniflac_cuesheet_read_index_point_offset(miniflac_cuesheet_t* cuesheet, minifla
                 cuesheet->state = MINIFLAC_CUESHEET_TRACKOFFSET;
                 return MINIFLAC_METADATA_END;
             }
-            if(miniflac_bitreader_fill(br,64)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,64)) return MINIFLAC_CONTINUE;
             t = miniflac_bitreader_read(br,64);
             if(index_point_offset != NULL) {
                 *index_point_offset = t;
@@ -501,7 +501,7 @@ miniflac_cuesheet_read_index_point_number(miniflac_cuesheet_t* cuesheet, minifla
         }
         /* fall-through */
         case MINIFLAC_CUESHEET_INDEX_NUMBER: {
-            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             t = miniflac_bitreader_read(br,8);
             if(index_point_number != NULL) {
                 *index_point_number = t;

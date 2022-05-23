@@ -19,7 +19,7 @@ miniflac_vorbis_comment_read_vendor_length(miniflac_vorbis_comment_t* vorbis_com
     uint8_t buffer[4];
     switch(vorbis_comment->state) {
         case MINIFLAC_VORBISCOMMENT_VENDOR_LENGTH: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
             buffer[0] = miniflac_bitreader_read(br,8);
             buffer[1] = miniflac_bitreader_read(br,8);
             buffer[2] = miniflac_bitreader_read(br,8);
@@ -49,7 +49,7 @@ miniflac_vorbis_comment_read_vendor_string(miniflac_vorbis_comment_t* vorbis_com
         /* fall-through */
         case MINIFLAC_VORBISCOMMENT_VENDOR_STRING: {
             while(vorbis_comment->pos < vorbis_comment->len) {
-                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
                 c = (char)miniflac_bitreader_read(br,8);
                 if(output != NULL && vorbis_comment->pos < length) {
                     output[vorbis_comment->pos] = c;
@@ -83,7 +83,7 @@ miniflac_vorbis_comment_read_total(miniflac_vorbis_comment_t* vorbis_comment, mi
         }
         /* fall-through */
         case MINIFLAC_VORBISCOMMENT_TOTAL_COMMENTS: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
             buffer[0] = miniflac_bitreader_read(br,8);
             buffer[1] = miniflac_bitreader_read(br,8);
             buffer[2] = miniflac_bitreader_read(br,8);
@@ -119,7 +119,7 @@ miniflac_vorbis_comment_read_length(miniflac_vorbis_comment_t* vorbis_comment, m
                 return MINIFLAC_METADATA_END;
             }
 
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
             buffer[0] = miniflac_bitreader_read(br,8);
             buffer[1] = miniflac_bitreader_read(br,8);
             buffer[2] = miniflac_bitreader_read(br,8);
@@ -158,7 +158,7 @@ miniflac_vorbis_comment_read_string(miniflac_vorbis_comment_t* vorbis_comment, m
         /* fall-through */
         case MINIFLAC_VORBISCOMMENT_COMMENT_STRING: {
             while(vorbis_comment->pos < vorbis_comment->len) {
-                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
                 c = (char)miniflac_bitreader_read(br,8);
                 if(output != NULL && vorbis_comment->pos < length) {
                     output[vorbis_comment->pos] = c;

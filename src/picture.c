@@ -15,7 +15,7 @@ miniflac_picture_read_type(miniflac_picture_t* picture, miniflac_bitreader_t* br
     uint32_t t = 0;
     switch(picture->state) {
         case MINIFLAC_PICTURE_TYPE: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
             t = miniflac_bitreader_read(br,32);
             if(type != NULL) *type = t;
             picture->state = MINIFLAC_PICTURE_MIME_LENGTH;
@@ -38,7 +38,7 @@ miniflac_picture_read_mime_length(miniflac_picture_t* picture, miniflac_bitreade
         }
         /* fall-through */
         case MINIFLAC_PICTURE_MIME_LENGTH: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
             picture->len = miniflac_bitreader_read(br,32);
             picture->pos = 0;
             if(length != NULL) *length = picture->len;
@@ -65,7 +65,7 @@ miniflac_picture_read_mime_string(miniflac_picture_t* picture, miniflac_bitreade
         /* fall-through */
         case MINIFLAC_PICTURE_MIME_STRING: {
             while(picture->pos < picture->len) {
-                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
                 c = (char)miniflac_bitreader_read(br,8);
                 if(output != NULL && picture->pos < length) {
                     output[picture->pos] = c;
@@ -97,7 +97,7 @@ miniflac_picture_read_description_length(miniflac_picture_t* picture, miniflac_b
         }
         /* fall-through */
         case MINIFLAC_PICTURE_DESCRIPTION_LENGTH: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
             picture->len = miniflac_bitreader_read(br,32);
             picture->pos = 0;
             if(length != NULL) *length = picture->len;
@@ -126,7 +126,7 @@ miniflac_picture_read_description_string(miniflac_picture_t* picture, miniflac_b
         /* fall-through */
         case MINIFLAC_PICTURE_DESCRIPTION_STRING: {
             while(picture->pos < picture->len) {
-                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
                 c = (char)miniflac_bitreader_read(br,8);
                 if(output != NULL && picture->pos < length) {
                     output[picture->pos] = c;
@@ -161,7 +161,7 @@ miniflac_picture_read_width(miniflac_picture_t* picture, miniflac_bitreader_t* b
         }
         /* fall-through */
         case MINIFLAC_PICTURE_WIDTH: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
             t = miniflac_bitreader_read(br,32);
             if(width != NULL) *width = t;
             picture->state = MINIFLAC_PICTURE_HEIGHT;
@@ -190,7 +190,7 @@ miniflac_picture_read_height(miniflac_picture_t* picture, miniflac_bitreader_t* 
         }
         /* fall-through */
         case MINIFLAC_PICTURE_HEIGHT: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
             t = miniflac_bitreader_read(br,32);
             if(height != NULL) *height = t;
             picture->state = MINIFLAC_PICTURE_COLORDEPTH;
@@ -220,7 +220,7 @@ miniflac_picture_read_colordepth(miniflac_picture_t* picture, miniflac_bitreader
         }
         /* fall-through */
         case MINIFLAC_PICTURE_COLORDEPTH: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
             t = miniflac_bitreader_read(br,32);
             if(colordepth != NULL) *colordepth = t;
             picture->state = MINIFLAC_PICTURE_TOTALCOLORS;
@@ -251,7 +251,7 @@ miniflac_picture_read_totalcolors(miniflac_picture_t* picture, miniflac_bitreade
         }
         /* fall-through */
         case MINIFLAC_PICTURE_TOTALCOLORS: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
             t = miniflac_bitreader_read(br,32);
             if(totalcolors != NULL) *totalcolors = t;
             picture->state = MINIFLAC_PICTURE_PICTURE_LENGTH;
@@ -282,7 +282,7 @@ miniflac_picture_read_length(miniflac_picture_t* picture, miniflac_bitreader_t* 
         }
         /* fall-through */
         case MINIFLAC_PICTURE_PICTURE_LENGTH: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
             picture->len = miniflac_bitreader_read(br,32);
             picture->pos = 0;
             if(length != NULL) *length = picture->len;
@@ -318,7 +318,7 @@ miniflac_picture_read_data(miniflac_picture_t* picture, miniflac_bitreader_t* br
         case MINIFLAC_PICTURE_PICTURE_DATA: {
             if(picture->pos == picture->len) return MINIFLAC_METADATA_END;
             while(picture->pos < picture->len) {
-                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
                 c = (uint8_t)miniflac_bitreader_read(br,8);
                 if(output != NULL && picture->pos < length) {
                     output[picture->pos] = c;

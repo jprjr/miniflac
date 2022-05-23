@@ -15,7 +15,7 @@ miniflac_application_read_id(miniflac_application_t* application, miniflac_bitre
     uint32_t t;
     switch(application->state) {
         case MINIFLAC_APPLICATION_ID: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
             t = (uint32_t)miniflac_bitreader_read(br,32);
             if(id != NULL) {
                 *id = t;
@@ -64,7 +64,7 @@ miniflac_application_read_data(miniflac_application_t* application, miniflac_bit
         /* fall-through */
         case MINIFLAC_APPLICATION_DATA: {
             while(application->pos < application->len) {
-                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
                 d = (uint8_t) miniflac_bitreader_read(br,8);
                 if(output != NULL && application->pos < length) {
                     output[application->pos] = d;

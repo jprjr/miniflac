@@ -17,7 +17,7 @@ miniflac_streaminfo_read_min_block_size(miniflac_streaminfo_t* streaminfo, minif
     uint16_t t;
     switch(streaminfo->state) {
         case MINIFLAC_STREAMINFO_MINBLOCKSIZE: {
-            if(miniflac_bitreader_fill(br,16)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,16)) return MINIFLAC_CONTINUE;
             t = (uint16_t) miniflac_bitreader_read(br,16);
             if(min_block_size != NULL) {
                 *min_block_size = t;
@@ -44,7 +44,7 @@ miniflac_streaminfo_read_max_block_size(miniflac_streaminfo_t* streaminfo, minif
         }
         /* fall-through */
         case MINIFLAC_STREAMINFO_MAXBLOCKSIZE: {
-            if(miniflac_bitreader_fill(br,16)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,16)) return MINIFLAC_CONTINUE;
             t = (uint16_t) miniflac_bitreader_read(br,16);
             if(max_block_size != NULL) {
                 *max_block_size = t;
@@ -73,7 +73,7 @@ miniflac_streaminfo_read_min_frame_size(miniflac_streaminfo_t* streaminfo, minif
         }
         /* fall-through */
         case MINIFLAC_STREAMINFO_MINFRAMESIZE: {
-            if(miniflac_bitreader_fill(br,24)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,24)) return MINIFLAC_CONTINUE;
             t = (uint32_t) miniflac_bitreader_read(br,24);
             if(min_frame_size != NULL) {
                 *min_frame_size = t;
@@ -102,7 +102,7 @@ miniflac_streaminfo_read_max_frame_size(miniflac_streaminfo_t* streaminfo, minif
         }
         /* fall-through */
         case MINIFLAC_STREAMINFO_MAXFRAMESIZE: {
-            if(miniflac_bitreader_fill(br,24)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,24)) return MINIFLAC_CONTINUE;
             t = (uint32_t) miniflac_bitreader_read(br,24);
             if(max_frame_size != NULL) {
                 *max_frame_size = t;
@@ -131,7 +131,7 @@ miniflac_streaminfo_read_sample_rate(miniflac_streaminfo_t* streaminfo, miniflac
         }
         /* fall-through */
         case MINIFLAC_STREAMINFO_SAMPLERATE: {
-            if(miniflac_bitreader_fill(br,20)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,20)) return MINIFLAC_CONTINUE;
             streaminfo->sample_rate = (uint32_t) miniflac_bitreader_read(br,20);
             if(sample_rate != NULL) {
                 *sample_rate = streaminfo->sample_rate;
@@ -162,7 +162,7 @@ miniflac_streaminfo_read_channels(miniflac_streaminfo_t* streaminfo, miniflac_bi
         }
         /* fall-through */
         case MINIFLAC_STREAMINFO_CHANNELS: {
-            if(miniflac_bitreader_fill(br,3)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,3)) return MINIFLAC_CONTINUE;
             t = (uint8_t) miniflac_bitreader_read(br,3) + 1;
             if(channels != NULL) {
                 *channels = t;
@@ -193,7 +193,7 @@ miniflac_streaminfo_read_bps(miniflac_streaminfo_t* streaminfo, miniflac_bitread
         }
         /* fall-through */
         case MINIFLAC_STREAMINFO_BPS: {
-            if(miniflac_bitreader_fill(br,5)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,5)) return MINIFLAC_CONTINUE;
             streaminfo->bps = (uint8_t) miniflac_bitreader_read(br,5) + 1;
             if(bps != NULL) {
                 *bps = streaminfo->bps;
@@ -226,7 +226,7 @@ miniflac_streaminfo_read_total_samples(miniflac_streaminfo_t* streaminfo, minifl
         }
         /* fall-through */
         case MINIFLAC_STREAMINFO_TOTALSAMPLES: {
-            if(miniflac_bitreader_fill(br,36)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,36)) return MINIFLAC_CONTINUE;
             t = (uint64_t) miniflac_bitreader_read(br,36);
             if(total_samples != NULL) {
                 *total_samples = t;
@@ -287,7 +287,7 @@ miniflac_streaminfo_read_md5_data(miniflac_streaminfo_t* streaminfo, miniflac_bi
         case MINIFLAC_STREAMINFO_MD5: {
             if(streaminfo->pos == 16) return MINIFLAC_METADATA_END;
             while(streaminfo->pos < 16) {
-                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
                 t = (uint8_t)miniflac_bitreader_read(br,8);
                 if(output != NULL && streaminfo->pos < length) {
                     output[streaminfo->pos] = t;
