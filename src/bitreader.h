@@ -54,17 +54,8 @@ MINIFLAC_PRIVATE
 void
 miniflac_bitreader_align(miniflac_bitreader_t* br);
 
-MINIFLAC_PRIVATE
-void
-miniflac_bitreader_reset_crc(miniflac_bitreader_t* br);
-
 #ifdef __cplusplus
 }
 #endif
 
 #endif
-
-
-
-
-
