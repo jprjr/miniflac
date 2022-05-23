@@ -1064,10 +1064,6 @@ miniflac_bitreader_align(miniflac_bitreader_t* br);
 
 MINIFLAC_PRIVATE
 void
-miniflac_bitreader_reset_crc(miniflac_bitreader_t* br);
-
-MINIFLAC_PRIVATE
-void
 miniflac_oggheader_init(miniflac_oggheader_t* oggheader);
 
 MINIFLAC_PRIVATE
@@ -2272,37 +2268,6 @@ miniflac_bitreader_align(miniflac_bitreader_t* br) {
 
 MINIFLAC_PRIVATE
 void
-miniflac_bitreader_reset_crc(miniflac_bitreader_t* br) {
-    uint64_t val = br->val;
-    uint8_t bits = br->bits;
-
-    uint8_t byte;
-    uint64_t mask;
-    uint64_t imask;
-
-    br->crc8 = 0;
-    br->crc16 = 0;
-
-    while(bits > 0) {
-        mask = -1LL;
-        imask = -1LL;
-
-        mask >>= (64 - 8);
-        bits -= 8;
-        byte = val >> bits & mask;
-        if(bits == 0) {
-            imask = 0;
-        } else {
-            imask >>= (64 - bits);
-        }
-        val &=  imask;
-        br->crc8 = miniflac_crc8_table[br->crc8 ^ byte];
-        br->crc16 = miniflac_crc16_table[ (br->crc16 >> 8) ^ byte ] ^ (( br->crc16 & 0x00FF ) << 8);
-    }
-}
-
-MINIFLAC_PRIVATE
-void
 miniflac_oggheader_init(miniflac_oggheader_t* oggheader) {
     oggheader->state = MINIFLAC_OGGHEADER_PACKETTYPE;
 }
@@ -2312,7 +2277,7 @@ MINIFLAC_RESULT
 miniflac_oggheader_decode(miniflac_oggheader_t* oggheader, miniflac_bitreader_t* br) {
     switch(oggheader->state) {
         case MINIFLAC_OGGHEADER_PACKETTYPE: {
-            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             if((uint8_t)miniflac_bitreader_read(br,8) != 0x7F) {
                 miniflac_abort();
                 return MINIFLAC_ERROR;
@@ -2321,7 +2286,7 @@ miniflac_oggheader_decode(miniflac_oggheader_t* oggheader, miniflac_bitreader_t*
         }
         /* fall-through */
         case MINIFLAC_OGGHEADER_F: {
-            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             if((char)miniflac_bitreader_read(br,8) != 'F') {
                 miniflac_abort();
                 return MINIFLAC_ERROR;
@@ -2330,7 +2295,7 @@ miniflac_oggheader_decode(miniflac_oggheader_t* oggheader, miniflac_bitreader_t*
         }
         /* fall-through */
         case MINIFLAC_OGGHEADER_L: {
-            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             if((char)miniflac_bitreader_read(br,8) != 'L') {
                 miniflac_abort();
                 return MINIFLAC_ERROR;
@@ -2339,7 +2304,7 @@ miniflac_oggheader_decode(miniflac_oggheader_t* oggheader, miniflac_bitreader_t*
         }
         /* fall-through */
         case MINIFLAC_OGGHEADER_A: {
-            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             if((char)miniflac_bitreader_read(br,8) != 'A') {
                 miniflac_abort();
                 return MINIFLAC_ERROR;
@@ -2348,7 +2313,7 @@ miniflac_oggheader_decode(miniflac_oggheader_t* oggheader, miniflac_bitreader_t*
         }
         /* fall-through */
         case MINIFLAC_OGGHEADER_C: {
-            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             if((char)miniflac_bitreader_read(br,8) != 'C') {
                 miniflac_abort();
                 return MINIFLAC_ERROR;
@@ -2357,7 +2322,7 @@ miniflac_oggheader_decode(miniflac_oggheader_t* oggheader, miniflac_bitreader_t*
         }
         /* fall-through */
         case MINIFLAC_OGGHEADER_MAJOR: {
-            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             if((uint8_t)miniflac_bitreader_read(br,8) != 0x01) {
                 miniflac_abort();
                 return MINIFLAC_ERROR;
@@ -2366,7 +2331,7 @@ miniflac_oggheader_decode(miniflac_oggheader_t* oggheader, miniflac_bitreader_t*
         }
         /* fall-through */
         case MINIFLAC_OGGHEADER_MINOR: {
-            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             if((uint8_t)miniflac_bitreader_read(br,8) != 0x00) {
                 miniflac_abort();
                 return MINIFLAC_ERROR;
@@ -2375,7 +2340,7 @@ miniflac_oggheader_decode(miniflac_oggheader_t* oggheader, miniflac_bitreader_t*
         }
         /* fall-through */
         case MINIFLAC_OGGHEADER_HEADERPACKETS: {
-            if(miniflac_bitreader_fill(br,16)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,16)) return MINIFLAC_CONTINUE;
             miniflac_bitreader_discard(br,16);
             oggheader->state = MINIFLAC_OGGHEADER_PACKETTYPE;
         }
@@ -3073,7 +3038,7 @@ miniflac_vorbis_comment_read_vendor_length(miniflac_vorbis_comment_t* vorbis_com
     uint8_t buffer[4];
     switch(vorbis_comment->state) {
         case MINIFLAC_VORBISCOMMENT_VENDOR_LENGTH: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
             buffer[0] = miniflac_bitreader_read(br,8);
             buffer[1] = miniflac_bitreader_read(br,8);
             buffer[2] = miniflac_bitreader_read(br,8);
@@ -3103,7 +3068,7 @@ miniflac_vorbis_comment_read_vendor_string(miniflac_vorbis_comment_t* vorbis_com
         /* fall-through */
         case MINIFLAC_VORBISCOMMENT_VENDOR_STRING: {
             while(vorbis_comment->pos < vorbis_comment->len) {
-                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
                 c = (char)miniflac_bitreader_read(br,8);
                 if(output != NULL && vorbis_comment->pos < length) {
                     output[vorbis_comment->pos] = c;
@@ -3137,7 +3102,7 @@ miniflac_vorbis_comment_read_total(miniflac_vorbis_comment_t* vorbis_comment, mi
         }
         /* fall-through */
         case MINIFLAC_VORBISCOMMENT_TOTAL_COMMENTS: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
             buffer[0] = miniflac_bitreader_read(br,8);
             buffer[1] = miniflac_bitreader_read(br,8);
             buffer[2] = miniflac_bitreader_read(br,8);
@@ -3173,7 +3138,7 @@ miniflac_vorbis_comment_read_length(miniflac_vorbis_comment_t* vorbis_comment, m
                 return MINIFLAC_METADATA_END;
             }
 
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
             buffer[0] = miniflac_bitreader_read(br,8);
             buffer[1] = miniflac_bitreader_read(br,8);
             buffer[2] = miniflac_bitreader_read(br,8);
@@ -3212,7 +3177,7 @@ miniflac_vorbis_comment_read_string(miniflac_vorbis_comment_t* vorbis_comment, m
         /* fall-through */
         case MINIFLAC_VORBISCOMMENT_COMMENT_STRING: {
             while(vorbis_comment->pos < vorbis_comment->len) {
-                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
                 c = (char)miniflac_bitreader_read(br,8);
                 if(output != NULL && vorbis_comment->pos < length) {
                     output[vorbis_comment->pos] = c;
@@ -3246,7 +3211,7 @@ miniflac_picture_read_type(miniflac_picture_t* picture, miniflac_bitreader_t* br
     uint32_t t = 0;
     switch(picture->state) {
         case MINIFLAC_PICTURE_TYPE: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
             t = miniflac_bitreader_read(br,32);
             if(type != NULL) *type = t;
             picture->state = MINIFLAC_PICTURE_MIME_LENGTH;
@@ -3269,7 +3234,7 @@ miniflac_picture_read_mime_length(miniflac_picture_t* picture, miniflac_bitreade
         }
         /* fall-through */
         case MINIFLAC_PICTURE_MIME_LENGTH: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
             picture->len = miniflac_bitreader_read(br,32);
             picture->pos = 0;
             if(length != NULL) *length = picture->len;
@@ -3296,7 +3261,7 @@ miniflac_picture_read_mime_string(miniflac_picture_t* picture, miniflac_bitreade
         /* fall-through */
         case MINIFLAC_PICTURE_MIME_STRING: {
             while(picture->pos < picture->len) {
-                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
                 c = (char)miniflac_bitreader_read(br,8);
                 if(output != NULL && picture->pos < length) {
                     output[picture->pos] = c;
@@ -3328,7 +3293,7 @@ miniflac_picture_read_description_length(miniflac_picture_t* picture, miniflac_b
         }
         /* fall-through */
         case MINIFLAC_PICTURE_DESCRIPTION_LENGTH: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
             picture->len = miniflac_bitreader_read(br,32);
             picture->pos = 0;
             if(length != NULL) *length = picture->len;
@@ -3357,7 +3322,7 @@ miniflac_picture_read_description_string(miniflac_picture_t* picture, miniflac_b
         /* fall-through */
         case MINIFLAC_PICTURE_DESCRIPTION_STRING: {
             while(picture->pos < picture->len) {
-                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
                 c = (char)miniflac_bitreader_read(br,8);
                 if(output != NULL && picture->pos < length) {
                     output[picture->pos] = c;
@@ -3392,7 +3357,7 @@ miniflac_picture_read_width(miniflac_picture_t* picture, miniflac_bitreader_t* b
         }
         /* fall-through */
         case MINIFLAC_PICTURE_WIDTH: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
             t = miniflac_bitreader_read(br,32);
             if(width != NULL) *width = t;
             picture->state = MINIFLAC_PICTURE_HEIGHT;
@@ -3421,7 +3386,7 @@ miniflac_picture_read_height(miniflac_picture_t* picture, miniflac_bitreader_t* 
         }
         /* fall-through */
         case MINIFLAC_PICTURE_HEIGHT: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
             t = miniflac_bitreader_read(br,32);
             if(height != NULL) *height = t;
             picture->state = MINIFLAC_PICTURE_COLORDEPTH;
@@ -3451,7 +3416,7 @@ miniflac_picture_read_colordepth(miniflac_picture_t* picture, miniflac_bitreader
         }
         /* fall-through */
         case MINIFLAC_PICTURE_COLORDEPTH: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
             t = miniflac_bitreader_read(br,32);
             if(colordepth != NULL) *colordepth = t;
             picture->state = MINIFLAC_PICTURE_TOTALCOLORS;
@@ -3482,7 +3447,7 @@ miniflac_picture_read_totalcolors(miniflac_picture_t* picture, miniflac_bitreade
         }
         /* fall-through */
         case MINIFLAC_PICTURE_TOTALCOLORS: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
             t = miniflac_bitreader_read(br,32);
             if(totalcolors != NULL) *totalcolors = t;
             picture->state = MINIFLAC_PICTURE_PICTURE_LENGTH;
@@ -3513,7 +3478,7 @@ miniflac_picture_read_length(miniflac_picture_t* picture, miniflac_bitreader_t* 
         }
         /* fall-through */
         case MINIFLAC_PICTURE_PICTURE_LENGTH: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
             picture->len = miniflac_bitreader_read(br,32);
             picture->pos = 0;
             if(length != NULL) *length = picture->len;
@@ -3549,7 +3514,7 @@ miniflac_picture_read_data(miniflac_picture_t* picture, miniflac_bitreader_t* br
         case MINIFLAC_PICTURE_PICTURE_DATA: {
             if(picture->pos == picture->len) return MINIFLAC_METADATA_END;
             while(picture->pos < picture->len) {
-                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
                 c = (uint8_t)miniflac_bitreader_read(br,8);
                 if(output != NULL && picture->pos < length) {
                     output[picture->pos] = c;
@@ -3602,7 +3567,7 @@ miniflac_cuesheet_read_catalog_string(miniflac_cuesheet_t* cuesheet, miniflac_bi
     switch(cuesheet->state) {
         case MINIFLAC_CUESHEET_CATALOG: {
             while(cuesheet->pos < 128) {
-                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
                 c = (char)miniflac_bitreader_read(br,8);
                 if(output != NULL && cuesheet->pos < length) {
                     output[cuesheet->pos] = c;
@@ -3635,7 +3600,7 @@ miniflac_cuesheet_read_leadin(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_
         }
         /* fall-through */
         case MINIFLAC_CUESHEET_LEADIN: {
-            if(miniflac_bitreader_fill(br,64)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,64)) return MINIFLAC_CONTINUE;
             t = miniflac_bitreader_read(br,64);
             if(leadin != NULL) {
                 *leadin = t;
@@ -3663,7 +3628,7 @@ miniflac_cuesheet_read_cd_flag(miniflac_cuesheet_t* cuesheet, miniflac_bitreader
         }
         /* fall-through */
         case MINIFLAC_CUESHEET_CDFLAG: {
-            if(miniflac_bitreader_fill(br,1)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,1)) return MINIFLAC_CONTINUE;
             f = (uint8_t)miniflac_bitreader_read(br,1);
             if(flag != NULL) {
                 *flag = f;
@@ -3692,7 +3657,7 @@ miniflac_cuesheet_read_tracks(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_
         /* fall-through */
         case MINIFLAC_CUESHEET_SHEET_RESERVE: {
             while(cuesheet->pos < 258) {
-                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
                 miniflac_bitreader_discard(br,8);
                 cuesheet->pos++;
             }
@@ -3701,7 +3666,7 @@ miniflac_cuesheet_read_tracks(miniflac_cuesheet_t* cuesheet, miniflac_bitreader_
         }
         /* fall-through */
         case MINIFLAC_CUESHEET_TRACKS: {
-            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             cuesheet->tracks = (uint8_t)miniflac_bitreader_read(br,8);
             if(tracks != NULL) {
                 *tracks = cuesheet->tracks;
@@ -3734,7 +3699,7 @@ miniflac_cuesheet_read_track_offset(miniflac_cuesheet_t* cuesheet, miniflac_bitr
         case MINIFLAC_CUESHEET_TRACKOFFSET: {
             case_miniflac_cuesheet_trackoffset:
             if(cuesheet->track == cuesheet->tracks) return MINIFLAC_METADATA_END;
-            if(miniflac_bitreader_fill(br,64)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,64)) return MINIFLAC_CONTINUE;
             t = miniflac_bitreader_read(br,64);
             if(track_offset != NULL) {
                 *track_offset = t;
@@ -3773,7 +3738,7 @@ miniflac_cuesheet_read_track_number(miniflac_cuesheet_t* cuesheet, miniflac_bitr
         }
         /* fall-through */
         case MINIFLAC_CUESHEET_TRACKNUMBER: {
-            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             t = (uint8_t)miniflac_bitreader_read(br,8);
             if(track_number != NULL) {
                 *track_number = t;
@@ -3835,7 +3800,7 @@ miniflac_cuesheet_read_track_isrc_string(miniflac_cuesheet_t* cuesheet, miniflac
         /* fall-through */
         case MINIFLAC_CUESHEET_TRACKISRC: {
             while(cuesheet->pos < 12) {
-                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
                 c = (char)miniflac_bitreader_read(br,8);
                 if(output != NULL && cuesheet->pos < length) {
                     output[cuesheet->pos] = c;
@@ -3875,7 +3840,7 @@ miniflac_cuesheet_read_track_audio_flag(miniflac_cuesheet_t* cuesheet, miniflac_
         }
         /* fall-through */
         case MINIFLAC_CUESHEET_TRACKTYPE: {
-            if(miniflac_bitreader_fill(br,1)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,1)) return MINIFLAC_CONTINUE;
             f = (uint8_t)miniflac_bitreader_read(br,1);
             if(track_audio_flag != NULL) {
                 *track_audio_flag = f;
@@ -3910,7 +3875,7 @@ miniflac_cuesheet_read_track_preemph_flag(miniflac_cuesheet_t* cuesheet, minifla
         }
         /* fall-through */
         case MINIFLAC_CUESHEET_TRACKPREEMPH: {
-            if(miniflac_bitreader_fill(br,1)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,1)) return MINIFLAC_CONTINUE;
             f = (uint8_t)miniflac_bitreader_read(br,1);
             if(track_preemph_flag != NULL) {
                 *track_preemph_flag = f;
@@ -3959,7 +3924,7 @@ miniflac_cuesheet_read_track_indexpoints(miniflac_cuesheet_t* cuesheet, miniflac
         /* fall-through */
         case MINIFLAC_CUESHEET_TRACK_RESERVE: {
             while(cuesheet->pos < 13) {
-                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
                 miniflac_bitreader_discard(br,8);
                 cuesheet->pos++;
             }
@@ -3967,7 +3932,7 @@ miniflac_cuesheet_read_track_indexpoints(miniflac_cuesheet_t* cuesheet, miniflac
         }
         /* fall-through */
         case MINIFLAC_CUESHEET_TRACKPOINTS: {
-            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             cuesheet->points = (uint8_t)miniflac_bitreader_read(br,8);
             if(track_indexpoints != NULL) {
                 *track_indexpoints = cuesheet->points;
@@ -3996,7 +3961,7 @@ miniflac_cuesheet_read_index_point_offset(miniflac_cuesheet_t* cuesheet, minifla
         /* fall-through */
         case MINIFLAC_CUESHEET_INDEX_RESERVE: {
             while(cuesheet->pos < 3) {
-                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
                 miniflac_bitreader_discard(br,8);
                 cuesheet->pos++;
             }
@@ -4028,7 +3993,7 @@ miniflac_cuesheet_read_index_point_offset(miniflac_cuesheet_t* cuesheet, minifla
                 cuesheet->state = MINIFLAC_CUESHEET_TRACKOFFSET;
                 return MINIFLAC_METADATA_END;
             }
-            if(miniflac_bitreader_fill(br,64)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,64)) return MINIFLAC_CONTINUE;
             t = miniflac_bitreader_read(br,64);
             if(index_point_offset != NULL) {
                 *index_point_offset = t;
@@ -4067,7 +4032,7 @@ miniflac_cuesheet_read_index_point_number(miniflac_cuesheet_t* cuesheet, minifla
         }
         /* fall-through */
         case MINIFLAC_CUESHEET_INDEX_NUMBER: {
-            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             t = miniflac_bitreader_read(br,8);
             if(index_point_number != NULL) {
                 *index_point_number = t;
@@ -4115,7 +4080,7 @@ miniflac_seektable_read_sample_number(miniflac_seektable_t* seektable, miniflac_
     switch(seektable->state) {
         case MINIFLAC_SEEKTABLE_SAMPLE_NUMBER: {
             if(seektable->pos == seektable->len) return MINIFLAC_METADATA_END;
-            if(miniflac_bitreader_fill(br,64)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,64)) return MINIFLAC_CONTINUE;
             t = miniflac_bitreader_read(br,64);
             if(sample_number != NULL) {
                 *sample_number = t;
@@ -4142,7 +4107,7 @@ miniflac_seektable_read_sample_offset(miniflac_seektable_t* seektable, miniflac_
         }
         /* fall-through */
         case MINIFLAC_SEEKTABLE_SAMPLE_OFFSET: {
-            if(miniflac_bitreader_fill(br,64)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,64)) return MINIFLAC_CONTINUE;
             t = miniflac_bitreader_read(br,64);
             if(sample_offset != NULL) {
                 *sample_offset = t;
@@ -4170,7 +4135,7 @@ miniflac_seektable_read_samples(miniflac_seektable_t* seektable, miniflac_bitrea
         }
         /* fall-through */
         case MINIFLAC_SEEKTABLE_SAMPLES: {
-            if(miniflac_bitreader_fill(br,16)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,16)) return MINIFLAC_CONTINUE;
             t = (uint16_t)miniflac_bitreader_read(br,16);
             if(samples != NULL) {
                 *samples = t;
@@ -4199,7 +4164,7 @@ miniflac_application_read_id(miniflac_application_t* application, miniflac_bitre
     uint32_t t;
     switch(application->state) {
         case MINIFLAC_APPLICATION_ID: {
-            if(miniflac_bitreader_fill(br,32)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,32)) return MINIFLAC_CONTINUE;
             t = (uint32_t)miniflac_bitreader_read(br,32);
             if(id != NULL) {
                 *id = t;
@@ -4248,7 +4213,7 @@ miniflac_application_read_data(miniflac_application_t* application, miniflac_bit
         /* fall-through */
         case MINIFLAC_APPLICATION_DATA: {
             while(application->pos < application->len) {
-                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
                 d = (uint8_t) miniflac_bitreader_read(br,8);
                 if(output != NULL && application->pos < length) {
                     output[application->pos] = d;
@@ -4289,7 +4254,7 @@ MINIFLAC_RESULT
 miniflac_padding_read_data(miniflac_padding_t* padding, miniflac_bitreader_t* br, uint8_t* output, uint32_t length, uint32_t* outlen) {
     uint8_t d;
     while(padding->pos < padding->len) {
-        if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+        if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
         d = (uint8_t) miniflac_bitreader_read(br,8);
         if(output != NULL && padding->pos < length) {
             output[padding->pos] = d;
@@ -4368,7 +4333,7 @@ static
 MINIFLAC_RESULT
 miniflac_metadata_skip(miniflac_metadata_t* metadata, miniflac_bitreader_t* br) {
     while(metadata->pos < metadata->header.length) {
-        if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+        if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
         miniflac_bitreader_discard(br,8);
         metadata->pos++;
     }
@@ -4661,7 +4626,7 @@ miniflac_streaminfo_read_min_block_size(miniflac_streaminfo_t* streaminfo, minif
     uint16_t t;
     switch(streaminfo->state) {
         case MINIFLAC_STREAMINFO_MINBLOCKSIZE: {
-            if(miniflac_bitreader_fill(br,16)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,16)) return MINIFLAC_CONTINUE;
             t = (uint16_t) miniflac_bitreader_read(br,16);
             if(min_block_size != NULL) {
                 *min_block_size = t;
@@ -4688,7 +4653,7 @@ miniflac_streaminfo_read_max_block_size(miniflac_streaminfo_t* streaminfo, minif
         }
         /* fall-through */
         case MINIFLAC_STREAMINFO_MAXBLOCKSIZE: {
-            if(miniflac_bitreader_fill(br,16)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,16)) return MINIFLAC_CONTINUE;
             t = (uint16_t) miniflac_bitreader_read(br,16);
             if(max_block_size != NULL) {
                 *max_block_size = t;
@@ -4717,7 +4682,7 @@ miniflac_streaminfo_read_min_frame_size(miniflac_streaminfo_t* streaminfo, minif
         }
         /* fall-through */
         case MINIFLAC_STREAMINFO_MINFRAMESIZE: {
-            if(miniflac_bitreader_fill(br,24)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,24)) return MINIFLAC_CONTINUE;
             t = (uint32_t) miniflac_bitreader_read(br,24);
             if(min_frame_size != NULL) {
                 *min_frame_size = t;
@@ -4746,7 +4711,7 @@ miniflac_streaminfo_read_max_frame_size(miniflac_streaminfo_t* streaminfo, minif
         }
         /* fall-through */
         case MINIFLAC_STREAMINFO_MAXFRAMESIZE: {
-            if(miniflac_bitreader_fill(br,24)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,24)) return MINIFLAC_CONTINUE;
             t = (uint32_t) miniflac_bitreader_read(br,24);
             if(max_frame_size != NULL) {
                 *max_frame_size = t;
@@ -4775,7 +4740,7 @@ miniflac_streaminfo_read_sample_rate(miniflac_streaminfo_t* streaminfo, miniflac
         }
         /* fall-through */
         case MINIFLAC_STREAMINFO_SAMPLERATE: {
-            if(miniflac_bitreader_fill(br,20)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,20)) return MINIFLAC_CONTINUE;
             streaminfo->sample_rate = (uint32_t) miniflac_bitreader_read(br,20);
             if(sample_rate != NULL) {
                 *sample_rate = streaminfo->sample_rate;
@@ -4806,7 +4771,7 @@ miniflac_streaminfo_read_channels(miniflac_streaminfo_t* streaminfo, miniflac_bi
         }
         /* fall-through */
         case MINIFLAC_STREAMINFO_CHANNELS: {
-            if(miniflac_bitreader_fill(br,3)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,3)) return MINIFLAC_CONTINUE;
             t = (uint8_t) miniflac_bitreader_read(br,3) + 1;
             if(channels != NULL) {
                 *channels = t;
@@ -4837,7 +4802,7 @@ miniflac_streaminfo_read_bps(miniflac_streaminfo_t* streaminfo, miniflac_bitread
         }
         /* fall-through */
         case MINIFLAC_STREAMINFO_BPS: {
-            if(miniflac_bitreader_fill(br,5)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,5)) return MINIFLAC_CONTINUE;
             streaminfo->bps = (uint8_t) miniflac_bitreader_read(br,5) + 1;
             if(bps != NULL) {
                 *bps = streaminfo->bps;
@@ -4870,7 +4835,7 @@ miniflac_streaminfo_read_total_samples(miniflac_streaminfo_t* streaminfo, minifl
         }
         /* fall-through */
         case MINIFLAC_STREAMINFO_TOTALSAMPLES: {
-            if(miniflac_bitreader_fill(br,36)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,36)) return MINIFLAC_CONTINUE;
             t = (uint64_t) miniflac_bitreader_read(br,36);
             if(total_samples != NULL) {
                 *total_samples = t;
@@ -4931,7 +4896,7 @@ miniflac_streaminfo_read_md5_data(miniflac_streaminfo_t* streaminfo, miniflac_bi
         case MINIFLAC_STREAMINFO_MD5: {
             if(streaminfo->pos == 16) return MINIFLAC_METADATA_END;
             while(streaminfo->pos < 16) {
-                if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+                if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
                 t = (uint8_t)miniflac_bitreader_read(br,8);
                 if(output != NULL && streaminfo->pos < length) {
                     output[streaminfo->pos] = t;
@@ -4962,7 +4927,7 @@ miniflac_streammarker_decode(miniflac_streammarker_t* streammarker, miniflac_bit
     char t;
     switch(streammarker->state) {
         case MINIFLAC_STREAMMARKER_F: {
-            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             t = (char)miniflac_bitreader_read(br,8);
             if(t != 'f') {
                 miniflac_abort();
@@ -4972,7 +4937,7 @@ miniflac_streammarker_decode(miniflac_streammarker_t* streammarker, miniflac_bit
         }
         /* fall-through */
         case MINIFLAC_STREAMMARKER_L: {
-            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             t = (char)miniflac_bitreader_read(br,8);
             if(t != 'L') {
                 miniflac_abort();
@@ -4982,7 +4947,7 @@ miniflac_streammarker_decode(miniflac_streammarker_t* streammarker, miniflac_bit
         }
         /* fall-through */
         case MINIFLAC_STREAMMARKER_A: {
-            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             t = (char)miniflac_bitreader_read(br,8);
             if(t != 'a') {
                 miniflac_abort();
@@ -4992,7 +4957,7 @@ miniflac_streammarker_decode(miniflac_streammarker_t* streammarker, miniflac_bit
         }
         /* fall-through */
         case MINIFLAC_STREAMMARKER_C: {
-            if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
+            if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             t = (char)miniflac_bitreader_read(br,8);
             if(t != 'C') {
                 miniflac_abort();
@@ -5005,6 +4970,12 @@ miniflac_streammarker_decode(miniflac_streammarker_t* streammarker, miniflac_bit
             return MINIFLAC_ERROR;
         }
     }
+
+    miniflac_streammarker_init(streammarker);
+
+    assert(br->bits == 0);
+    br->crc8  = 0;
+    br->crc16 = 0;
 
     return MINIFLAC_OK;
 }
