@@ -1064,6 +1064,10 @@ miniflac_bitreader_align(miniflac_bitreader_t* br);
 
 MINIFLAC_PRIVATE
 void
+miniflac_bitreader_reset_crc(miniflac_bitreader_t* br);
+
+MINIFLAC_PRIVATE
+void
 miniflac_oggheader_init(miniflac_oggheader_t* oggheader);
 
 MINIFLAC_PRIVATE
@@ -2264,6 +2268,37 @@ miniflac_bitreader_align(miniflac_bitreader_t* br) {
     assert(br->bits < 8);
     br->bits = 0;
     br->val = 0;
+}
+
+MINIFLAC_PRIVATE
+void
+miniflac_bitreader_reset_crc(miniflac_bitreader_t* br) {
+    uint64_t val = br->val;
+    uint8_t bits = br->bits;
+
+    uint8_t byte;
+    uint64_t mask;
+    uint64_t imask;
+
+    br->crc8 = 0;
+    br->crc16 = 0;
+
+    while(bits > 0) {
+        mask = -1LL;
+        imask = -1LL;
+
+        mask >>= (64 - 8);
+        bits -= 8;
+        byte = val >> bits & mask;
+        if(bits == 0) {
+            imask = 0;
+        } else {
+            imask >>= (64 - bits);
+        }
+        val &=  imask;
+        br->crc8 = miniflac_crc8_table[br->crc8 ^ byte];
+        br->crc16 = miniflac_crc16_table[ (br->crc16 >> 8) ^ byte ] ^ (( br->crc16 & 0x00FF ) << 8);
+    }
 }
 
 MINIFLAC_PRIVATE
