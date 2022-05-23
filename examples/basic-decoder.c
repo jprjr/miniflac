@@ -411,6 +411,7 @@ int main(int argc, const char *argv[]) {
     FILE* output = NULL;
     uint32_t used = 0;
     uint32_t sampSize = 0;
+    uint8_t shift = 0;
     uint32_t len = 0;
     uint32_t frameTotal = 0;
     miniflac_t* decoder = NULL;
@@ -515,19 +516,24 @@ int main(int argc, const char *argv[]) {
         len = 0;
         sampSize = 0;
         packer pack = NULL;
+        shift = 0;
 
-        switch(decoder->frame.header.bps) {
-            case 8:  sampSize = 1; pack = uint8_packer; break;
-            case 16: sampSize = 2; pack = int16_packer; break;
-            case 24: sampSize = 3; pack = int24_packer; break;
-            case 32: sampSize = 4; pack = int32_packer; break;
-            default: abort();
+        if(decoder->frame.header.bps <= 8) {
+            sampSize = 1; pack = uint8_packer; shift = 8 - decoder->frame.header.bps;
+        } else if(decoder->frame.header.bps <= 16) {
+            sampSize = 2; pack = int16_packer; shift = 16 - decoder->frame.header.bps;
+        } else if(decoder->frame.header.bps <= 24) {
+            sampSize = 3; pack = int24_packer; shift = 24 - decoder->frame.header.bps;
+        } else if(decoder->frame.header.bps <= 32) {
+            sampSize = 4; pack = int32_packer; shift = 32 - decoder->frame.header.bps;
+        } else  {
+            abort();
         }
 
         len = sampSize * decoder->frame.header.channels * decoder->frame.header.block_size;
 
         /* samples is planar, convert into an interleaved format, and pack into little-endian */
-        pack(outSamples,samples,decoder->frame.header.channels,decoder->frame.header.block_size);
+        pack(outSamples,samples,decoder->frame.header.channels,decoder->frame.header.block_size,shift);
         fwrite(outSamples,1,len,output);
         frameTotal++;
         if(frameTotal % 10 == 0) {

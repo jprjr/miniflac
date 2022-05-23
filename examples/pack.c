@@ -37,42 +37,54 @@ pack_int16le(uint8_t* output, int16_t n) {
     pack_uint16le(output,(uint16_t)n);
 }
 
-void uint8_packer(uint8_t *outSamples, int32_t* samples[8], uint32_t channels, uint32_t frame_size) {
+void uint8_packer(uint8_t *outSamples, int32_t* samples[8], uint32_t channels, uint32_t frame_size, uint8_t shift) {
     uint32_t i = 0;
     uint32_t j = 0;
+    uint32_t usample;
     for(i=0;i<frame_size;i++) {
         for(j=0;j<channels;j++) {
-            outSamples[1 * ((i*channels) + j)] = (uint8_t)samples[j][i];
+            usample = (uint32_t)samples[j][i];
+            usample <<= shift;
+            outSamples[1 * ((i*channels) + j)] = (uint8_t)usample;
         }
     }
 }
 
-void int16_packer(uint8_t *outSamples, int32_t* samples[8], uint32_t channels, uint32_t frame_size) {
+void int16_packer(uint8_t *outSamples, int32_t* samples[8], uint32_t channels, uint32_t frame_size, uint8_t shift) {
     uint32_t i = 0;
     uint32_t j = 0;
+    uint32_t usample;
     for(i=0;i<frame_size;i++) {
         for(j=0;j<channels;j++) {
-            pack_int16le(&outSamples[2 * ((i*channels) + j)],samples[j][i]);
+            usample = (uint32_t)samples[j][i];
+            usample <<= shift;
+            pack_int16le(&outSamples[2 * ((i*channels) + j)],(int16_t)usample);
         }
     }
 }
 
-void int24_packer(uint8_t *outSamples, int32_t* samples[8], uint32_t channels, uint32_t frame_size) {
+void int24_packer(uint8_t *outSamples, int32_t* samples[8], uint32_t channels, uint32_t frame_size, uint8_t shift) {
     uint32_t i = 0;
     uint32_t j = 0;
+    uint32_t usample;
     for(i=0;i<frame_size;i++) {
         for(j=0;j<channels;j++) {
-            pack_int24le(&outSamples[3 * ((i*channels) + j)],samples[j][i]);
+            usample = (uint32_t)samples[j][i];
+            usample <<= shift;
+            pack_int24le(&outSamples[3 * ((i*channels) + j)],(int32_t)usample);
         }
     }
 }
 
-void int32_packer(uint8_t *outSamples, int32_t* samples[8], uint32_t channels, uint32_t frame_size) {
+void int32_packer(uint8_t *outSamples, int32_t* samples[8], uint32_t channels, uint32_t frame_size, uint8_t shift) {
     uint32_t i = 0;
     uint32_t j = 0;
+    uint32_t usample;
     for(i=0;i<frame_size;i++) {
         for(j=0;j<channels;j++) {
-            pack_int32le(&outSamples[4 * ((i*channels) + j)],samples[j][i]);
+            usample = (uint32_t)samples[j][i];
+            usample <<= shift;
+            pack_int32le(&outSamples[4 * ((i*channels) + j)],(int32_t)usample);
         }
     }
 }

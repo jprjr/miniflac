@@ -93,7 +93,7 @@ int main(int argc, const char *argv[]) {
                     default: abort();
                 }
                 len = sampSize * decoder.frame.header.channels * decoder.frame.header.block_size;
-                pack(outSamples,samples,decoder.frame.header.channels,decoder.frame.header.block_size);
+                pack(outSamples,samples,decoder.frame.header.channels,decoder.frame.header.block_size,0);
                 fwrite(outSamples,1,len,output);
                 frameTotal++;
                 if(frameTotal % 10 == 0) {
