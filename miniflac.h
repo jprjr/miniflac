@@ -185,6 +185,7 @@ typedef enum MINIFLAC_STATE MINIFLAC_STATE;
 typedef enum MINIFLAC_CONTAINER MINIFLAC_CONTAINER;
 
 enum MINIFLAC_RESULT {
+    MINIFLAC_OGG_HEADER_NOTFLAC                = -18, /* attempted to read an Ogg header packet that isn't a FLAC-in-Ogg packet */
     MINIFLAC_SUBFRAME_RESERVED_TYPE            = -17, /* subframe header specified a reserved type */
     MINIFLAC_SUBFRAME_RESERVED_BIT             = -16, /* subframe header found a non-zero value in the reserved bit */
     MINIFLAC_STREAMMARKER_INVALID              = -15, /* encountered an illegal value while parsing the fLaC stream marker */
@@ -232,6 +233,7 @@ enum MINIFLAC_OGG_STATE {
     MINIFLAC_OGG_PAGESEGMENTS,
     MINIFLAC_OGG_SEGMENTTABLE,
     MINIFLAC_OGG_DATA,
+    MINIFLAC_OGG_SKIP,
 };
 
 enum MINIFLAC_STREAMMARKER_STATE {
@@ -626,6 +628,8 @@ struct miniflac_s {
     miniflac_streammarker_t streammarker;
     miniflac_metadata_t metadata;
     miniflac_frame_t frame;
+    int32_t oggserial;
+    uint8_t oggserial_set;
 };
 
 
@@ -1458,19 +1462,26 @@ static
 MINIFLAC_RESULT
 miniflac_oggfunction_start(miniflac_t* pFlac, const uint8_t* data, const uint8_t** packet, uint32_t* packet_length) {
     MINIFLAC_RESULT r;
-    if(pFlac->ogg.state != MINIFLAC_OGG_DATA) {
+
+    while(pFlac->ogg.state != MINIFLAC_OGG_DATA) {
         r = miniflac_ogg_sync(&pFlac->ogg,&pFlac->ogg.br);
         if(r != MINIFLAC_OK) return r;
 
-        if(pFlac->ogg.headertype & 0x02) {
-            miniflac_oggreset(pFlac);
+        if(pFlac->oggserial_set == 0) {
+            if(pFlac->ogg.headertype & 0x02) {
+                miniflac_oggreset(pFlac);
+            }
+        } else {
+            if(pFlac->oggserial != pFlac->ogg.serialno) pFlac->ogg.state = MINIFLAC_OGG_SKIP;
         }
     }
+
     *packet = &data[pFlac->ogg.br.pos];
     *packet_length = pFlac->ogg.br.len - pFlac->ogg.br.pos;
     if(*packet_length > (uint32_t)(pFlac->ogg.length - pFlac->ogg.pos)) {
         *packet_length = (uint32_t)pFlac->ogg.length - pFlac->ogg.pos;
     }
+
     return MINIFLAC_OK;
 }
 
@@ -1482,6 +1493,12 @@ miniflac_oggfunction_end(miniflac_t* pFlac, uint32_t packet_used) {
 
     if(pFlac->ogg.pos == pFlac->ogg.length) {
         pFlac->ogg.state = MINIFLAC_OGG_CAPTUREPATTERN_O;
+        if(pFlac->ogg.headertype & 0x04) {
+            if(pFlac->oggserial_set == 1 && pFlac->oggserial == pFlac->ogg.serialno) {
+                pFlac->oggserial_set = 0;
+                pFlac->oggserial = 0;
+            }
+        }
     }
 }
 
@@ -1502,6 +1519,8 @@ miniflac_init(miniflac_t* pFlac, MINIFLAC_CONTAINER container) {
     miniflac_metadata_init(&pFlac->metadata);
     miniflac_frame_init(&pFlac->frame);
     pFlac->container = container;
+    pFlac->oggserial = -1;
+    pFlac->oggserial_set = 0;
 
     switch(pFlac->container) {
         case MINIFLAC_CONTAINER_NATIVE: {
@@ -1529,6 +1548,8 @@ miniflac_sync_internal(miniflac_t* pFlac, miniflac_bitreader_t* br) {
         case MINIFLAC_OGGHEADER: {
             r = miniflac_oggheader_decode(&pFlac->oggheader,br);
             if (r != MINIFLAC_OK) return r;
+            pFlac->oggserial_set = 1;
+            pFlac->oggserial = pFlac->ogg.serialno;
             pFlac->state = MINIFLAC_STREAMMARKER;
             goto miniflac_sync_streammarker;
         }
@@ -1645,10 +1666,16 @@ miniflac_sync_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint3
 
     do {
         r = miniflac_oggfunction_start(pFlac,data,&packet,&packet_length);
-        if(r  != MINIFLAC_OK) break;
+        if(r != MINIFLAC_OK) break;
 
         r = miniflac_sync_native(pFlac,packet,packet_length,&packet_used);
         miniflac_oggfunction_end(pFlac,packet_used);
+
+        if(r == MINIFLAC_OGG_HEADER_NOTFLAC) {
+            /* try reading more data */
+            pFlac->ogg.state = MINIFLAC_OGG_SKIP;
+            r = MINIFLAC_CONTINUE;
+        }
     } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
 
     *out_length = pFlac->ogg.br.pos;
@@ -2314,8 +2341,7 @@ miniflac_oggheader_decode(miniflac_oggheader_t* oggheader, miniflac_bitreader_t*
         case MINIFLAC_OGGHEADER_PACKETTYPE: {
             if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             if((uint8_t)miniflac_bitreader_read(br,8) != 0x7F) {
-                miniflac_abort();
-                return MINIFLAC_ERROR;
+                return MINIFLAC_OGG_HEADER_NOTFLAC;
             }
             oggheader->state = MINIFLAC_OGGHEADER_F;
         }
@@ -2408,6 +2434,7 @@ miniflac_ogg_sync(miniflac_ogg_t* ogg,miniflac_bitreader_t* br) {
     uint8_t buffer[8];
 
     switch(ogg->state) {
+        case MINIFLAC_OGG_SKIP: /* fall-through */
         case MINIFLAC_OGG_DATA: {
             while(ogg->pos < ogg->length) {
                 if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;

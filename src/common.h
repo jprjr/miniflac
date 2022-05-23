@@ -5,6 +5,7 @@
 typedef enum MINIFLAC_RESULT MINIFLAC_RESULT;
 
 enum MINIFLAC_RESULT {
+    MINIFLAC_OGG_HEADER_NOTFLAC                = -18, /* attempted to read an Ogg header packet that isn't a FLAC-in-Ogg packet */
     MINIFLAC_SUBFRAME_RESERVED_TYPE            = -17, /* subframe header specified a reserved type */
     MINIFLAC_SUBFRAME_RESERVED_BIT             = -16, /* subframe header found a non-zero value in the reserved bit */
     MINIFLAC_STREAMMARKER_INVALID              = -15, /* encountered an illegal value while parsing the fLaC stream marker */

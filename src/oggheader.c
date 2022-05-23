@@ -13,8 +13,7 @@ miniflac_oggheader_decode(miniflac_oggheader_t* oggheader, miniflac_bitreader_t*
         case MINIFLAC_OGGHEADER_PACKETTYPE: {
             if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
             if((uint8_t)miniflac_bitreader_read(br,8) != 0x7F) {
-                miniflac_abort();
-                return MINIFLAC_ERROR;
+                return MINIFLAC_OGG_HEADER_NOTFLAC;
             }
             oggheader->state = MINIFLAC_OGGHEADER_F;
         }

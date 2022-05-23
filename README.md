@@ -8,6 +8,8 @@ functions, does not allocate any memory.
 * push-style API
 * does not allocate memory or use any c library functions
 * handles native FLAC as well as Ogg FLAC
+* supports Ogg files with multiple bitstreams (only decodes the first FLAC bitstream)
+* supports chained ogg files, including chained multi-bitstream files
 * single C file
 * metadata decoding for:
   * [`STREAMINFO`](https://xiph.org/flac/format.html#metadata_block_streaminfo)
@@ -26,8 +28,12 @@ functions, does not allocate any memory.
 
 In one C file define `MINIFLAC_IMPLEMENTATION` before including `miniflac.h`.
 
-Then allocate a `miniflac_t` struct, and call `miniflac_init` to initialize
-the struct.
+```c
+#define MINIFLAC_IMPLEMENTATION
+#include "miniflac.h"
+```
+
+Then allocate a `miniflac_t` struct, and call `miniflac_init` to initialize the struct.
 
 All functions follow a similar paradigm - you provide a buffer of data,
 the length of the buffer, and an out-variable to record the amount of data
@@ -43,6 +49,25 @@ metadata block or audio frame, and respond accordingly.
 check the size of the audio frame by inspecting the `frame.header` struct.
 
 See the example programs under the `examples` directory.
+
+## Tips
+
+It's possible to build the library using the individual sources
+and headers under the `/src` directory. Essentially, `flac.h` functions
+similarly as `miniflac.h`.
+
+Because of this, some functions aren't inlined, you can get a
+considerable speed improvement by overriding the `MINIFLAC_API` and `MINIFLAC_PRIVATE` defines, and set `MINIFLAC_PRIVATE` to `static inline`:
+
+```c
+#define MINIFLAC_IMPLEMENTATION
+#define MINIFLAC_API
+#define MINIFLAC_PRIVATE static inline
+#include "miniflac.h"
+```
+
+On my tests, this results in about a 4x speed improvement.
+
 
 ## Details
 

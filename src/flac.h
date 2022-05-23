@@ -42,6 +42,8 @@ struct miniflac_s {
     miniflac_streammarker_t streammarker;
     miniflac_metadata_t metadata;
     miniflac_frame_t frame;
+    int32_t oggserial;
+    uint8_t oggserial_set;
 };
 
 

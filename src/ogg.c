@@ -24,6 +24,7 @@ miniflac_ogg_sync(miniflac_ogg_t* ogg,miniflac_bitreader_t* br) {
     uint8_t buffer[8];
 
     switch(ogg->state) {
+        case MINIFLAC_OGG_SKIP: /* fall-through */
         case MINIFLAC_OGG_DATA: {
             while(ogg->pos < ogg->length) {
                 if(miniflac_bitreader_fill_nocrc(br,8)) return MINIFLAC_CONTINUE;
