@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: 0BSD
-Copyright (C) 2021 John Regan <john@jrjrtech.com>
+Copyright (C) 2022 John Regan <john@jrjrtech.com>
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted.
