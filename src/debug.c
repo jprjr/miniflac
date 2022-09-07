@@ -57,7 +57,8 @@ static const char* const miniflac_vorbis_comment_state_str[] = {
 };
 
 static const char* const miniflac_state_str[] = {
-    "MINIFLAC_UNKNOWN",
+    "MINIFLAC_OGGHEADER",
+    "MINIFLAC_STREAMMARKER_OR_FRAME",
     "MINIFLAC_STREAMMARKER",
     "MINIFLAC_METADATA_OR_FRAME",
     "MINIFLAC_METADATA",
