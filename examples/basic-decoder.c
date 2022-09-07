@@ -422,7 +422,7 @@ int main(int argc, const char *argv[]) {
     membuffer_t mem;
 
     if(argc < 3) {
-        fprintf(stderr,"Usage: %s /path/to/flac /path/to/pcm\n",argv[0]);
+        fprintf(stderr,"Usage: %s /path/to/flac /path/to/wav\n",argv[0]);
         goto cleanup;
     }
 
@@ -465,7 +465,7 @@ int main(int argc, const char *argv[]) {
     /* allocate max buffer for packed samples */
     outSamples = (uint8_t*)malloc(sizeof(int32_t) * 8 * 65535);
     if(outSamples == NULL) {
-        fprintf(stderr,"Failed to allocated pcm buffer\n");
+        fprintf(stderr,"Failed to allocate pcm buffer\n");
         goto cleanup;
     }
 
