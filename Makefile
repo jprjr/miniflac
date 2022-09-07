@@ -17,6 +17,7 @@ OBJS = \
   src/frameheader.o \
   src/metadata.o \
   src/metadataheader.o \
+  src/mflac.o \
   src/ogg.o \
   src/oggheader.o \
   src/padding.o \
@@ -43,6 +44,7 @@ SOURCES = \
   src/frameheader.c \
   src/metadata.c \
   src/metadataheader.c \
+  src/mflac.c \
   src/padding.c \
   src/ogg.c \
   src/oggheader.c \
@@ -66,6 +68,7 @@ HEADERS = \
   src/bitreader.h \
   src/cuesheet.h \
   src/flac.h \
+  src/mflac.h \
   src/frame.h \
   src/frameheader.h \
   src/streammarker.h \
@@ -89,6 +92,7 @@ HEADERS = \
   src/vorbiscomment.h
 
 all: libminiflac.a libminiflac.so miniflac.h \
+     examples/basic-decoder-mflac \
      examples/basic-decoder examples/single-byte-decoder \
 	 utils/strip-headers examples/get-sizes examples/null-decoder \
 	 examples/benchmark examples/just-decode \
@@ -113,6 +117,9 @@ examples/benchmark.o: examples/benchmark.c miniflac.h
 	$(CC) $(CFLAGS) $(shell pkg-config --cflags flac) -c -o $@ $<
 
 examples/basic-decoder.o: examples/basic-decoder.c miniflac.h
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+examples/basic-decoder-mflac.o: examples/basic-decoder-mflac.c miniflac.h mflac.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 examples/null-decoder.o: examples/null-decoder.c miniflac.h
@@ -140,6 +147,9 @@ examples/single-byte-decoder.o: examples/single-byte-decoder.c miniflac.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 examples/basic-decoder: examples/basic-decoder.o examples/wav.o examples/pack.o examples/slurp.o src/debug.o
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+examples/basic-decoder-mflac: examples/basic-decoder-mflac.o examples/wav.o examples/pack.o src/debug.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 examples/benchmark: examples/benchmark.o examples/slurp.o examples/tictoc.o

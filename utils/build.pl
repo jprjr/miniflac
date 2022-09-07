@@ -8,6 +8,7 @@ use Data::Dumper;
 
 my @typedef_structs;
 my @typedef_enums;
+my @typedef_other;
 my @structs;
 my @enums;
 my @function_declarations;
@@ -17,6 +18,7 @@ my @public_function_declarations;
 my @code;
 
 my @sources = qw[
+src/mflac.c
 src/flac.c
 src/unpack.c
 src/bitreader.c
@@ -69,6 +71,7 @@ src/subframe.h
 src/frameheader.h
 src/frame.h
 src/flac.h
+src/mflac.h
 ];
 
 sub trim_end {
@@ -146,6 +149,9 @@ foreach my $header (@headers) {
 
     push(@typedef_enums, grep { $_ =~ m/typedef enum/ } @lines);
     @lines = grep { $_ !~ m/typedef enum/ } @lines;
+
+    push(@typedef_other, grep { $_ =~ m/typedef/ } @lines);
+    @lines = grep { $_ !~ m/typedef/ } @lines;
 
     my $state = 0;
     my $cpp_counter = 0;
@@ -248,6 +254,8 @@ while(<$fh>) {
         push(@unified,@typedef_structs);
     } elsif($line =~ m/^\#inject typedef_enums/) {
         push(@unified,@typedef_enums);
+    } elsif($line =~ m/^\#inject typedef_other/) {
+        push(@unified,@typedef_other);
     } elsif($line =~ m/^\#inject enums/) {
         foreach my $enum (@enums) {
             push(@unified,@$enum);

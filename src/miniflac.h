@@ -128,12 +128,15 @@ frame, or call miniflac_decode to continue on.
 #define MINIFLAC_SUBFRAME_VERBATIM_H
 #define MINIFLAC_UNPACK_H
 #define MINIFLAC_VORBIS_COMMENT_H
+#define MFLAC_H
 
 #ifndef MINIFLAC_PURE
 #define MINIFLAC_PURE
 #endif
 
 #inject enums
+
+#inject typedef_other
 
 #inject structs
 

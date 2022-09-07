@@ -4,6 +4,7 @@
 *.exe
 *.a
 /examples/basic-decoder
+/examples/basic-decoder-mflac
 /examples/single-byte-decoder
 /examples/get-sizes
 /examples/null-decoder

@@ -128,61 +128,11 @@ frame, or call miniflac_decode to continue on.
 #define MINIFLAC_SUBFRAME_VERBATIM_H
 #define MINIFLAC_UNPACK_H
 #define MINIFLAC_VORBIS_COMMENT_H
+#define MFLAC_H
 
 #ifndef MINIFLAC_PURE
 #define MINIFLAC_PURE
 #endif
-
-typedef struct miniflac_bitreader_s miniflac_bitreader_t;
-typedef struct miniflac_oggheader_s miniflac_oggheader_t;
-typedef struct miniflac_ogg_s miniflac_ogg_t;
-typedef struct miniflac_streammarker_s miniflac_streammarker_t;
-typedef struct miniflac_metadata_header_s miniflac_metadata_header_t;
-typedef struct miniflac_streaminfo_s miniflac_streaminfo_t;
-typedef struct miniflac_vorbis_comment_s miniflac_vorbis_comment_t;
-typedef struct miniflac_picture_s miniflac_picture_t;
-typedef struct miniflac_cuesheet_s miniflac_cuesheet_t;
-typedef struct miniflac_seektable_s miniflac_seektable_t;
-typedef struct miniflac_application_s miniflac_application_t;
-typedef struct miniflac_padding_s miniflac_padding_t;
-typedef struct miniflac_metadata_s miniflac_metadata_t;
-typedef struct miniflac_residual_s miniflac_residual_t;
-typedef struct miniflac_subframe_fixed_s miniflac_subframe_fixed_t;
-typedef struct miniflac_subframe_lpc_s miniflac_subframe_lpc_t;
-typedef struct miniflac_subframe_constant_s miniflac_subframe_constant_t;
-typedef struct miniflac_subframe_verbatim_s miniflac_subframe_verbatim_t;
-typedef struct miniflac_subframe_header_s miniflac_subframe_header_t;
-typedef struct miniflac_subframe_s miniflac_subframe_t;
-typedef struct miniflac_frame_header_s miniflac_frame_header_t;
-typedef struct miniflac_frame_s miniflac_frame_t;
-typedef struct miniflac_s miniflac_t;
-
-typedef enum MINIFLAC_RESULT MINIFLAC_RESULT;
-typedef enum MINIFLAC_OGGHEADER_STATE MINIFLAC_OGGHEADER_STATE;
-typedef enum MINIFLAC_OGG_STATE MINIFLAC_OGG_STATE;
-typedef enum MINIFLAC_STREAMMARKER_STATE MINIFLAC_STREAMMARKER_STATE;
-typedef enum MINIFLAC_METADATA_TYPE MINIFLAC_METADATA_TYPE;
-typedef enum MINIFLAC_METADATA_HEADER_STATE MINIFLAC_METADATA_HEADER_STATE;
-typedef enum MINIFLAC_STREAMINFO_STATE MINIFLAC_STREAMINFO_STATE;
-typedef enum MINIFLAC_VORBISCOMMENT_STATE MINIFLAC_VORBISCOMMENT_STATE;
-typedef enum MINIFLAC_PICTURE_STATE MINIFLAC_PICTURE_STATE;
-typedef enum MINIFLAC_CUESHEET_STATE MINIFLAC_CUESHEET_STATE;
-typedef enum MINIFLAC_SEEKTABLE_STATE MINIFLAC_SEEKTABLE_STATE;
-typedef enum MINIFLAC_APPLICATION_STATE MINIFLAC_APPLICATION_STATE;
-typedef enum MINIFLAC_METADATA_STATE MINIFLAC_METADATA_STATE;
-typedef enum MINIFLAC_RESIDUAL_STATE MINIFLAC_RESIDUAL_STATE;
-typedef enum MINIFLAC_SUBFRAME_FIXED_STATE MINIFLAC_SUBFRAME_FIXED_STATE;
-typedef enum MINIFLAC_SUBFRAME_LPC_STATE MINIFLAC_SUBFRAME_LPC_STATE;
-typedef enum MINIFLAC_SUBFRAME_CONSTANT_STATE MINIFLAC_SUBFRAME_CONSTANT_STATE;
-typedef enum MINIFLAC_SUBFRAME_VERBATIM_STATE MINIFLAC_SUBFRAME_VERBATIM_STATE;
-typedef enum MINIFLAC_SUBFRAME_TYPE MINIFLAC_SUBFRAME_TYPE;
-typedef enum MINIFLAC_SUBFRAME_HEADER_STATE MINIFLAC_SUBFRAME_HEADER_STATE;
-typedef enum MINIFLAC_SUBFRAME_STATE MINIFLAC_SUBFRAME_STATE;
-typedef enum MINIFLAC_CHASSGN MINIFLAC_CHASSGN;
-typedef enum MINIFLAC_FRAME_HEADER_STATE MINIFLAC_FRAME_HEADER_STATE;
-typedef enum MINIFLAC_FRAME_STATE MINIFLAC_FRAME_STATE;
-typedef enum MINIFLAC_STATE MINIFLAC_STATE;
-typedef enum MINIFLAC_CONTAINER MINIFLAC_CONTAINER;
 
 enum MINIFLAC_RESULT {
     MINIFLAC_OGG_HEADER_NOTFLAC                = -18, /* attempted to read an Ogg header packet that isn't a FLAC-in-Ogg packet */
@@ -259,6 +209,18 @@ enum MINIFLAC_METADATA_HEADER_STATE {
     MINIFLAC_METADATA_LAST_FLAG,
     MINIFLAC_METADATA_BLOCK_TYPE,
     MINIFLAC_METADATA_LENGTH,
+};
+
+enum MINIFLAC_STREAMINFO_STATE {
+    MINIFLAC_STREAMINFO_MINBLOCKSIZE,
+    MINIFLAC_STREAMINFO_MAXBLOCKSIZE,
+    MINIFLAC_STREAMINFO_MINFRAMESIZE,
+    MINIFLAC_STREAMINFO_MAXFRAMESIZE,
+    MINIFLAC_STREAMINFO_SAMPLERATE,
+    MINIFLAC_STREAMINFO_CHANNELS,
+    MINIFLAC_STREAMINFO_BPS,
+    MINIFLAC_STREAMINFO_TOTALSAMPLES,
+    MINIFLAC_STREAMINFO_MD5,
 };
 
 enum MINIFLAC_VORBISCOMMENT_STATE {
@@ -418,6 +380,14 @@ enum MINIFLAC_CONTAINER {
     MINIFLAC_CONTAINER_OGG,
 };
 
+enum MFLAC_RESULT {
+    MFLAC_EOF          = 0,
+    MFLAC_OK           = 1,
+    MFLAC_METADATA_END = 2,
+};
+
+
+typedef size_t (*mflac_readcb)(uint8_t* buffer, size_t bytes, void* userdata);
 
 struct miniflac_bitreader_s {
     uint64_t val;
@@ -430,12 +400,12 @@ struct miniflac_bitreader_s {
 };
 
 struct miniflac_oggheader_s {
-    MINIFLAC_OGGHEADER_STATE state;
+    enum MINIFLAC_OGGHEADER_STATE state;
 };
 
 struct miniflac_ogg_s {
-    MINIFLAC_OGG_STATE state;
-    miniflac_bitreader_t br; /* maintain our own bitreader */
+    enum MINIFLAC_OGG_STATE state;
+    struct miniflac_bitreader_s br; /* maintain our own bitreader */
     uint8_t version;
     uint8_t headertype;
     int64_t granulepos;
@@ -448,41 +418,26 @@ struct miniflac_ogg_s {
 };
 
 struct miniflac_streammarker_s {
-    MINIFLAC_STREAMMARKER_STATE state;
+    enum MINIFLAC_STREAMMARKER_STATE state;
 };
 
 struct miniflac_metadata_header_s {
-    MINIFLAC_METADATA_HEADER_STATE    state;
+    enum MINIFLAC_METADATA_HEADER_STATE    state;
     uint8_t                         is_last;
     uint8_t                        type_raw;
-    MINIFLAC_METADATA_TYPE             type;
+    enum MINIFLAC_METADATA_TYPE             type;
     uint32_t                         length;
 };
 
-/* public-facing streaminfo struct */
-
-
-enum MINIFLAC_STREAMINFO_STATE {
-    MINIFLAC_STREAMINFO_MINBLOCKSIZE,
-    MINIFLAC_STREAMINFO_MAXBLOCKSIZE,
-    MINIFLAC_STREAMINFO_MINFRAMESIZE,
-    MINIFLAC_STREAMINFO_MAXFRAMESIZE,
-    MINIFLAC_STREAMINFO_SAMPLERATE,
-    MINIFLAC_STREAMINFO_CHANNELS,
-    MINIFLAC_STREAMINFO_BPS,
-    MINIFLAC_STREAMINFO_TOTALSAMPLES,
-    MINIFLAC_STREAMINFO_MD5,
-};
-
 struct miniflac_streaminfo_s {
-    MINIFLAC_STREAMINFO_STATE state;
+    enum MINIFLAC_STREAMINFO_STATE state;
     uint8_t                     pos;
     uint32_t            sample_rate;
     uint8_t                     bps;
 };
 
 struct miniflac_vorbis_comment_s {
-    MINIFLAC_VORBISCOMMENT_STATE    state;
+    enum MINIFLAC_VORBISCOMMENT_STATE    state;
     uint32_t len; /* length of the current string we're decoding */
     uint32_t pos; /* position within current string */
     uint32_t tot; /* total comments */
@@ -490,13 +445,13 @@ struct miniflac_vorbis_comment_s {
 };
 
 struct miniflac_picture_s {
-    MINIFLAC_PICTURE_STATE    state;
+    enum MINIFLAC_PICTURE_STATE    state;
     uint32_t len; /* length of the current string/data we're decoding */
     uint32_t pos; /* position within current string */
 };
 
 struct miniflac_cuesheet_s {
-    MINIFLAC_CUESHEET_STATE state;
+    enum MINIFLAC_CUESHEET_STATE state;
     uint32_t pos;
     uint8_t track;
     uint8_t tracks;
@@ -505,13 +460,13 @@ struct miniflac_cuesheet_s {
 };
 
 struct miniflac_seektable_s {
-    MINIFLAC_SEEKTABLE_STATE    state;
+    enum MINIFLAC_SEEKTABLE_STATE    state;
     uint32_t len; /* number of seekpoints */
     uint32_t pos; /* current seekpoint */
 };
 
 struct miniflac_application_s {
-    MINIFLAC_APPLICATION_STATE    state;
+    enum MINIFLAC_APPLICATION_STATE state;
     uint32_t len; /* length of data */
     uint32_t pos; /* current byte */
 };
@@ -522,20 +477,20 @@ struct miniflac_padding_s {
 };
 
 struct miniflac_metadata_s {
-    MINIFLAC_METADATA_STATE               state;
-    uint32_t                                pos;
-    miniflac_metadata_header_t           header;
-    miniflac_streaminfo_t            streaminfo;
-    miniflac_vorbis_comment_t    vorbis_comment;
-    miniflac_picture_t                  picture;
-    miniflac_cuesheet_t                cuesheet;
-    miniflac_seektable_t              seektable;
-    miniflac_application_t          application;
-    miniflac_padding_t                  padding;
+    enum MINIFLAC_METADATA_STATE               state;
+    uint32_t                                     pos;
+    struct miniflac_metadata_header_s         header;
+    struct miniflac_streaminfo_s          streaminfo;
+    struct miniflac_vorbis_comment_s  vorbis_comment;
+    struct miniflac_picture_s                picture;
+    struct miniflac_cuesheet_s              cuesheet;
+    struct miniflac_seektable_s            seektable;
+    struct miniflac_application_s        application;
+    struct miniflac_padding_s                padding;
 };
 
 struct miniflac_residual_s {
-    MINIFLAC_RESIDUAL_STATE state;
+    enum MINIFLAC_RESIDUAL_STATE state;
     uint8_t coding_method;
     uint8_t partition_order;
     uint8_t rice_parameter;
@@ -552,12 +507,12 @@ struct miniflac_residual_s {
 };
 
 struct miniflac_subframe_fixed_s {
-    MINIFLAC_SUBFRAME_FIXED_STATE state;
+    enum MINIFLAC_SUBFRAME_FIXED_STATE state;
     uint32_t pos;
 };
 
 struct miniflac_subframe_lpc_s {
-    MINIFLAC_SUBFRAME_LPC_STATE state;
+    enum MINIFLAC_SUBFRAME_LPC_STATE state;
     uint32_t pos;
     uint8_t precision;
     uint8_t shift;
@@ -566,31 +521,31 @@ struct miniflac_subframe_lpc_s {
 };
 
 struct miniflac_subframe_constant_s {
-    MINIFLAC_SUBFRAME_CONSTANT_STATE state;
+    enum MINIFLAC_SUBFRAME_CONSTANT_STATE state;
 };
 
 struct miniflac_subframe_verbatim_s {
-    MINIFLAC_SUBFRAME_VERBATIM_STATE state;
+    enum MINIFLAC_SUBFRAME_VERBATIM_STATE state;
     uint32_t pos;
 };
 
 struct miniflac_subframe_header_s {
-    MINIFLAC_SUBFRAME_HEADER_STATE state;
-    MINIFLAC_SUBFRAME_TYPE type;
+    enum MINIFLAC_SUBFRAME_HEADER_STATE state;
+    enum MINIFLAC_SUBFRAME_TYPE type;
     uint8_t order;
     uint8_t wasted_bits;
     uint8_t type_raw;
 };
 
 struct miniflac_subframe_s {
-    MINIFLAC_SUBFRAME_STATE state;
+    enum MINIFLAC_SUBFRAME_STATE state;
     uint8_t bps; /* effective bps for this subframe */
-    miniflac_subframe_header_t header;
-    miniflac_subframe_constant_t constant;
-    miniflac_subframe_verbatim_t verbatim;
-    miniflac_subframe_fixed_t fixed;
-    miniflac_subframe_lpc_t lpc;
-    miniflac_residual_t residual;
+    struct miniflac_subframe_header_s header;
+    struct miniflac_subframe_constant_s constant;
+    struct miniflac_subframe_verbatim_s verbatim;
+    struct miniflac_subframe_fixed_s fixed;
+    struct miniflac_subframe_lpc_s lpc;
+    struct miniflac_residual_s residual;
 };
 
 struct miniflac_frame_header_s {
@@ -600,7 +555,7 @@ struct miniflac_frame_header_s {
     uint8_t  blocking_strategy;
     uint16_t block_size; /* calculated/parsed block size */
     uint32_t sample_rate; /* calculated/parsed sample rate */
-    MINIFLAC_CHASSGN channel_assignment;
+    enum MINIFLAC_CHASSGN channel_assignment;
     uint8_t  channels;
     uint8_t  bps;
     union {
@@ -608,30 +563,95 @@ struct miniflac_frame_header_s {
         uint32_t frame_number;
     };
     uint8_t crc8;
-    MINIFLAC_FRAME_HEADER_STATE state;
+    enum MINIFLAC_FRAME_HEADER_STATE state;
 };
 
 struct miniflac_frame_s {
-    MINIFLAC_FRAME_STATE state;
+    enum MINIFLAC_FRAME_STATE state;
     uint8_t cur_subframe;
     uint16_t crc16;
-    miniflac_frame_header_t header;
-    miniflac_subframe_t subframe;
+    struct miniflac_frame_header_s header;
+    struct miniflac_subframe_s subframe;
 };
 
 struct miniflac_s {
-    MINIFLAC_STATE state;
-    MINIFLAC_CONTAINER container;
-    miniflac_bitreader_t br;
-    miniflac_ogg_t ogg;
-    miniflac_oggheader_t oggheader;
-    miniflac_streammarker_t streammarker;
-    miniflac_metadata_t metadata;
-    miniflac_frame_t frame;
+    enum MINIFLAC_STATE state;
+    enum MINIFLAC_CONTAINER container;
+    struct miniflac_bitreader_s br;
+    struct miniflac_ogg_s ogg;
+    struct miniflac_oggheader_s oggheader;
+    struct miniflac_streammarker_s streammarker;
+    struct miniflac_metadata_s metadata;
+    struct miniflac_frame_s frame;
     int32_t oggserial;
     uint8_t oggserial_set;
 };
 
+struct mflac_s {
+    struct miniflac_s decoder;
+    mflac_readcb read;
+    void* userdata;
+    size_t bufpos;
+    size_t buflen;
+#ifndef MFLAC_BUFFER_SIZE
+#define MFLAC_BUFFER_SIZE 16384
+#endif
+    uint8_t buffer[MFLAC_BUFFER_SIZE];
+};
+
+
+typedef struct miniflac_bitreader_s miniflac_bitreader_t;
+typedef struct miniflac_oggheader_s miniflac_oggheader_t;
+typedef struct miniflac_ogg_s miniflac_ogg_t;
+typedef struct miniflac_streammarker_s miniflac_streammarker_t;
+typedef struct miniflac_metadata_header_s miniflac_metadata_header_t;
+typedef struct miniflac_streaminfo_s miniflac_streaminfo_t;
+typedef struct miniflac_vorbis_comment_s miniflac_vorbis_comment_t;
+typedef struct miniflac_picture_s miniflac_picture_t;
+typedef struct miniflac_cuesheet_s miniflac_cuesheet_t;
+typedef struct miniflac_seektable_s miniflac_seektable_t;
+typedef struct miniflac_application_s miniflac_application_t;
+typedef struct miniflac_padding_s miniflac_padding_t;
+typedef struct miniflac_metadata_s miniflac_metadata_t;
+typedef struct miniflac_residual_s miniflac_residual_t;
+typedef struct miniflac_subframe_fixed_s miniflac_subframe_fixed_t;
+typedef struct miniflac_subframe_lpc_s miniflac_subframe_lpc_t;
+typedef struct miniflac_subframe_constant_s miniflac_subframe_constant_t;
+typedef struct miniflac_subframe_verbatim_s miniflac_subframe_verbatim_t;
+typedef struct miniflac_subframe_header_s miniflac_subframe_header_t;
+typedef struct miniflac_subframe_s miniflac_subframe_t;
+typedef struct miniflac_frame_header_s miniflac_frame_header_t;
+typedef struct miniflac_frame_s miniflac_frame_t;
+typedef struct miniflac_s miniflac_t;
+typedef struct mflac_s mflac_t;
+
+typedef enum MINIFLAC_RESULT MINIFLAC_RESULT;
+typedef enum MINIFLAC_OGGHEADER_STATE MINIFLAC_OGGHEADER_STATE;
+typedef enum MINIFLAC_OGG_STATE MINIFLAC_OGG_STATE;
+typedef enum MINIFLAC_STREAMMARKER_STATE MINIFLAC_STREAMMARKER_STATE;
+typedef enum MINIFLAC_METADATA_TYPE MINIFLAC_METADATA_TYPE;
+typedef enum MINIFLAC_METADATA_HEADER_STATE MINIFLAC_METADATA_HEADER_STATE;
+typedef enum MINIFLAC_STREAMINFO_STATE MINIFLAC_STREAMINFO_STATE;
+typedef enum MINIFLAC_VORBISCOMMENT_STATE MINIFLAC_VORBISCOMMENT_STATE;
+typedef enum MINIFLAC_PICTURE_STATE MINIFLAC_PICTURE_STATE;
+typedef enum MINIFLAC_CUESHEET_STATE MINIFLAC_CUESHEET_STATE;
+typedef enum MINIFLAC_SEEKTABLE_STATE MINIFLAC_SEEKTABLE_STATE;
+typedef enum MINIFLAC_APPLICATION_STATE MINIFLAC_APPLICATION_STATE;
+typedef enum MINIFLAC_METADATA_STATE MINIFLAC_METADATA_STATE;
+typedef enum MINIFLAC_RESIDUAL_STATE MINIFLAC_RESIDUAL_STATE;
+typedef enum MINIFLAC_SUBFRAME_FIXED_STATE MINIFLAC_SUBFRAME_FIXED_STATE;
+typedef enum MINIFLAC_SUBFRAME_LPC_STATE MINIFLAC_SUBFRAME_LPC_STATE;
+typedef enum MINIFLAC_SUBFRAME_CONSTANT_STATE MINIFLAC_SUBFRAME_CONSTANT_STATE;
+typedef enum MINIFLAC_SUBFRAME_VERBATIM_STATE MINIFLAC_SUBFRAME_VERBATIM_STATE;
+typedef enum MINIFLAC_SUBFRAME_TYPE MINIFLAC_SUBFRAME_TYPE;
+typedef enum MINIFLAC_SUBFRAME_HEADER_STATE MINIFLAC_SUBFRAME_HEADER_STATE;
+typedef enum MINIFLAC_SUBFRAME_STATE MINIFLAC_SUBFRAME_STATE;
+typedef enum MINIFLAC_CHASSGN MINIFLAC_CHASSGN;
+typedef enum MINIFLAC_FRAME_HEADER_STATE MINIFLAC_FRAME_HEADER_STATE;
+typedef enum MINIFLAC_FRAME_STATE MINIFLAC_FRAME_STATE;
+typedef enum MINIFLAC_STATE MINIFLAC_STATE;
+typedef enum MINIFLAC_CONTAINER MINIFLAC_CONTAINER;
+typedef enum MFLAC_RESULT MFLAC_RESULT;
 
 #ifdef __cplusplus
 extern "C" {
@@ -1001,6 +1021,360 @@ miniflac_version_patch(void);
 MINIFLAC_API
 const char*
 miniflac_version_string(void);
+
+MINIFLAC_API
+MINIFLAC_PURE
+size_t
+mflac_size(void);
+
+MINIFLAC_API
+void
+mflac_init(mflac_t* m, MINIFLAC_CONTAINER container, mflac_readcb read, void* userdata);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_sync(mflac_t* m);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_decode(mflac_t* m, int32_t** samples);
+
+/* functions to query the state without inspecting structs,
+ * only valid to call after mflac_sync returns MFLAC_OK */
+MINIFLAC_API
+uint8_t
+mflac_is_frame(mflac_t* m);
+
+MINIFLAC_API
+uint8_t
+mflac_is_metadata(mflac_t* m);
+
+MINIFLAC_API
+uint8_t
+mflac_metadata_is_last(mflac_t* m);
+
+MINIFLAC_API
+MINIFLAC_METADATA_TYPE
+miniflac_metadata_type(miniflac_t* m);
+
+MINIFLAC_API
+uint8_t
+mflac_metadata_is_streaminfo(mflac_t* m);
+
+MINIFLAC_API
+uint8_t
+mflac_metadata_is_padding(mflac_t* m);
+
+MINIFLAC_API
+uint8_t
+mflac_metadata_is_application(mflac_t* m);
+
+MINIFLAC_API
+uint8_t
+mflac_metadata_is_seektable(mflac_t* m);
+
+MINIFLAC_API
+uint8_t
+mflac_metadata_is_vorbis_comment(mflac_t* m);
+
+MINIFLAC_API
+uint8_t
+mflac_metadata_is_cuesheet(mflac_t* m);
+
+MINIFLAC_API
+uint8_t
+mflac_metadata_is_picture(mflac_t* m);
+
+/*
+ * METADATA FUNCTIONS
+ * ==================
+ *
+ * The below metadata-related functions are grouped based on metadata blocks,
+ * for conveience I've listed the miniflac enum label and value for each type */
+/*
+ * MINIFLAC_METADATA_STREAMINFO (0)
+ * ================================
+ *
+ * Functions are listed in the order they should be called, but you can skip
+ * ones you don't need. For example, you don't have to call
+ * mflac_streaminfo_min_block_size, but - if you do, you have to call it before
+ * mflac_streaminfo_max_block_size.
+ */
+MINIFLAC_API
+MFLAC_RESULT
+mflac_streaminfo_min_block_size(mflac_t* m, uint16_t* min_block_size);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_streaminfo_max_block_size(mflac_t* m, uint16_t* max_block_size);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_streaminfo_min_frame_size(mflac_t* m, uint32_t* min_frame_size);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_streaminfo_max_frame_size(mflac_t* m, uint32_t* max_frame_size);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_streaminfo_sample_rate(mflac_t* m, uint32_t* sample_rate);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_streaminfo_channels(mflac_t* m, uint8_t* channels);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_streaminfo_bps(mflac_t* m, uint8_t* bps);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_streaminfo_total_samples(mflac_t* m, uint64_t* total_samples);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_streaminfo_md5_length(mflac_t* m, uint32_t* md5_length);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_streaminfo_md5_data(mflac_t* m, uint8_t* buffer, uint32_t buffer_length, uint32_t* buffer_used);
+
+/*
+ * MINIFLAC_METADATA_PADDING (1)
+ * =============================
+ *
+ * Functions are listed in the order they should be called, but you can skip
+ * ones you don't need. For example, you don't have to call
+ * mflac_padding_length, but - if you do, you have to call it before
+ * mflac_padding_data.
+ */
+/* gets the length of the PADDING block */
+MINIFLAC_API
+MFLAC_RESULT
+mflac_padding_length(mflac_t* m, uint32_t* length);
+
+/* gets the data of the PADDING block */
+MINIFLAC_API
+MFLAC_RESULT
+mflac_padding_data(mflac_t* m, uint8_t*buffer, uint32_t buffer_length, uint32_t* buffer_used);
+
+/*
+ * MINIFLAC_METADATA_APPLICATION (2)
+ * =================================
+ *
+ * Functions are listed in the order they should be called, but you can skip
+ * ones you don't need. For example, you don't have to call
+ * mflac_application_id, but - if you do, you have to call it before
+ * mflac_application_length and mflac_application_data.
+ */
+/* gets the id of the APPLICATION block */
+MINIFLAC_API
+MFLAC_RESULT
+mflac_application_id(mflac_t* m, uint32_t* id);
+
+/* gets the length of the APPLICATION block */
+MINIFLAC_API
+MFLAC_RESULT
+mflac_application_length(mflac_t* m, uint32_t* length);
+
+/* gets the data of the APPLICATION block */
+MINIFLAC_API
+MFLAC_RESULT
+mflac_application_data(mflac_t* m, uint8_t*buffer, uint32_t buffer_length, uint32_t* buffer_used);
+
+/*
+ * MINIFLAC_METADATA_SEEKTABLE (3)
+ * ===============================
+ *
+ * Functions are listed in the order they should be called, but you can skip
+ * ones you don't need. For example, you don't have to call
+ * mflac_seektable_seekpoints, but - if you do, you have to call it before
+ * mflac_seektable_sample_number.
+ */
+MINIFLAC_API
+MFLAC_RESULT
+mflac_seektable_seekpoints(mflac_t* m, uint32_t* seekpoints);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_seektable_sample_number(mflac_t* m, uint64_t* sample_number);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_seektable_sample_offset(mflac_t* m, uint64_t* sample_offset);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_seektable_samples(mflac_t* m, uint16_t* samples);
+
+/*
+ * MINIFLAC_METADATA_VORBIS_COMMENT (4)
+ * ===================================
+ *
+ * Functions are listed in the order they should be called, but you can skip
+ * ones you don't need. For example, you don't have to call
+ * mflac_vorbis_comment_vendor_length, but - if you do, you have to call it before
+ * mflac_vorbis_comment_vendor_string
+ */
+/* gets the length of the vendor string - excludes the null terminator */
+MINIFLAC_API
+MFLAC_RESULT
+mflac_vorbis_comment_vendor_length(mflac_t* m, uint32_t* length);
+
+/* gets the vendor string - will not be terminated */
+MINIFLAC_API
+MFLAC_RESULT
+mflac_vorbis_comment_vendor_string(mflac_t* m, char* buffer, uint32_t buffer_length, uint32_t* buffer_used);
+
+/* gets the total number of comments */
+MINIFLAC_API
+MFLAC_RESULT
+mflac_vorbis_comment_total(mflac_t* m, uint32_t* total);
+
+/* gets the length number of the next comment - does not include null terminator */
+MINIFLAC_API
+MFLAC_RESULT
+mflac_vorbis_comment_length(mflac_t* m, uint32_t* length);
+
+/* gets the next comment  - will not be null-terminated! */
+MINIFLAC_API
+MFLAC_RESULT
+mflac_vorbis_comment_string(mflac_t* m, char* buffer, uint32_t buffer_length, uint32_t* buffer_used);
+
+/*
+ * MINIFLAC_METADATA_CUESHEET (5)
+ * ==============================
+ *
+ * Functions are listed in the order they should be called, but you can skip
+ * ones you don't need. For example, you don't have to call
+ * mflac_cuesheet_catalog_length, but - if you do, you have to call it before
+ * mflac_cuesheet_catalog_string.
+ */
+MINIFLAC_API
+MFLAC_RESULT
+mflac_cuesheet_catalog_length(mflac_t* m, uint32_t* length);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_cuesheet_catalog_string(mflac_t* m, char* buffer, uint32_t buffer_length, uint32_t* buffer_used);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_cuesheet_leadin(mflac_t* m, uint64_t* leadin);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_cuesheet_cd_flag(mflac_t* m, uint8_t* cd_flag);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_cuesheet_tracks(mflac_t* m, uint8_t* tracks);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_cuesheet_track_offset(mflac_t* m, uint64_t* track_offset);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_cuesheet_track_number(mflac_t* m, uint8_t* track_number);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_cuesheet_track_isrc_length(mflac_t* m, uint32_t* length);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_cuesheet_track_isrc_string(mflac_t* m, char* buffer, uint32_t buffer_length, uint32_t* buffer_used);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_cuesheet_track_audio_flag(mflac_t* m, uint8_t* track_audio_flag);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_cuesheet_track_preemph_flag(mflac_t* m, uint8_t* track_preemph_flag);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_cuesheet_track_indexpoints(mflac_t* m, uint8_t* track_indexpoints);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_cuesheet_index_point_offset(mflac_t* m, uint64_t* index_point_offset);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_cuesheet_index_point_number(mflac_t* m, uint8_t* index_point_number);
+
+/*
+ * MINIFLAC_METADATA_PICTURE (6)
+ * ==============================
+ *
+ * Functions are listed in the order they should be called, but you can skip
+ * ones you don't need. For example, you don't have to call
+ * mflac_picture_type, but - if you do, you have to call it before
+ * mflac_pictue_mime_length.
+ */
+MINIFLAC_API
+MFLAC_RESULT
+mflac_picture_type(mflac_t* m, uint32_t* picture_type);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_picture_mime_length(mflac_t* m, uint32_t* picture_mime_length);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_picture_mime_string(mflac_t* m, char* buffer, uint32_t buffer_length, uint32_t* buffer_used);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_picture_description_length(mflac_t* m, uint32_t* picture_description_length);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_picture_description_string(mflac_t* m, char* buffer, uint32_t buffer_length, uint32_t* buffer_used);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_picture_width(mflac_t* m, uint32_t* picture_width);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_picture_height(mflac_t* m, uint32_t* picture_height);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_picture_colordepth(mflac_t* m, uint32_t* picture_colordepth);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_picture_totalcolors(mflac_t* m, uint32_t* picture_totalcolors);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_picture_length(mflac_t* m, uint32_t* picture_length);
+
+MINIFLAC_API
+MFLAC_RESULT
+mflac_picture_data(mflac_t* m, uint8_t* buffer, uint32_t buffer_length, uint32_t* buffer_used);
+
+MINIFLAC_API
+unsigned int
+mflac_version_major(void);
+
+MINIFLAC_API
+unsigned int
+mflac_version_minor(void);
+
+MINIFLAC_API
+unsigned int
+mflac_version_patch(void);
+
+MINIFLAC_API
+const char*
+mflac_version_string(void);
 
 
 #ifdef __cplusplus
@@ -1412,6 +1786,266 @@ MINIFLAC_PRIVATE
 MINIFLAC_RESULT miniflac_frame_decode(miniflac_frame_t* frame, miniflac_bitreader_t* br, miniflac_streaminfo_t* info, int32_t** output);
 
 
+
+#define MFLAC_PASTE(a,b) a ## b
+
+#define MFLAC_FUNC_BODY(a) \
+    while( (res = a) == MINIFLAC_CONTINUE ) { \
+        received = m->read(m->buffer, MFLAC_BUFFER_SIZE, m->userdata); \
+        if(received == 0) return MFLAC_EOF; \
+        m->buflen = received; \
+        m->bufpos = 0; \
+    } \
+    if(res < MINIFLAC_OK) { \
+        return (MFLAC_RESULT)res; \
+    } \
+    m->bufpos += used; \
+    m->buflen -= used;
+
+
+#define MFLAC_GET0_BODY(var) MFLAC_FUNC_BODY(miniflac_ ## var (&m->decoder, &m->buffer[m->bufpos], m->buflen, &used) )
+#define MFLAC_GET1_BODY(var, a) MFLAC_FUNC_BODY(miniflac_ ## var(&m->decoder, &m->buffer[m->bufpos], m->buflen, &used, a) )
+#define MFLAC_GET3_BODY(var, a, b, c) MFLAC_FUNC_BODY(miniflac_ ## var(&m->decoder, &m->buffer[m->bufpos], m->buflen, &used, a, b, c) )
+
+#define MFLAC_FUNC(sig,body) \
+MINIFLAC_API \
+MFLAC_RESULT \
+sig { \
+    MINIFLAC_RESULT res; \
+    uint32_t used; \
+    size_t received; \
+    body \
+    return (MFLAC_RESULT)res; \
+}
+
+#define MFLAC_GET0_FUNC(var) MFLAC_FUNC(MFLAC_PASTE(mflac_,var)(mflac_t* m),MFLAC_GET0_BODY(var))
+#define MFLAC_GET1_FUNC(var, typ) MFLAC_FUNC(MFLAC_PASTE(mflac_,var)(mflac_t* m, typ p1),MFLAC_GET1_BODY(var, p1))
+#define MFLAC_GET3_FUNC(var, typ) MFLAC_FUNC(MFLAC_PASTE(mflac_,var)(mflac_t* m, typ p1, uint32_t p2, uint32_t* p3),MFLAC_GET3_BODY(var, p1, p2, p3))
+
+MINIFLAC_API
+MINIFLAC_PURE
+size_t
+mflac_size(void) {
+    return sizeof(mflac_t);
+}
+
+MINIFLAC_API
+void
+mflac_init(mflac_t* m, MINIFLAC_CONTAINER container, mflac_readcb read, void *userdata) {
+    miniflac_init(&m->decoder, container);
+    m->read = read;
+    m->userdata = userdata;
+    m->bufpos = 0;
+    m->buflen = 0;
+}
+
+MFLAC_GET0_FUNC(sync)
+
+MFLAC_GET1_FUNC(decode,int32_t**)
+
+MFLAC_GET1_FUNC(streaminfo_min_block_size, uint16_t*)
+MFLAC_GET1_FUNC(streaminfo_max_block_size, uint16_t*)
+MFLAC_GET1_FUNC(streaminfo_min_frame_size, uint32_t*)
+MFLAC_GET1_FUNC(streaminfo_max_frame_size, uint32_t*)
+MFLAC_GET1_FUNC(streaminfo_sample_rate, uint32_t*)
+MFLAC_GET1_FUNC(streaminfo_channels, uint8_t*)
+MFLAC_GET1_FUNC(streaminfo_bps, uint8_t*)
+MFLAC_GET1_FUNC(streaminfo_total_samples, uint64_t*)
+MFLAC_GET1_FUNC(streaminfo_md5_length, uint32_t*)
+MFLAC_GET3_FUNC(streaminfo_md5_data, uint8_t*)
+
+MFLAC_GET1_FUNC(vorbis_comment_vendor_length, uint32_t*)
+MFLAC_GET3_FUNC(vorbis_comment_vendor_string, char*)
+MFLAC_GET1_FUNC(vorbis_comment_total, uint32_t*)
+MFLAC_GET1_FUNC(vorbis_comment_length, uint32_t*)
+MFLAC_GET3_FUNC(vorbis_comment_string, char*)
+
+MFLAC_GET1_FUNC(padding_length, uint32_t*)
+MFLAC_GET3_FUNC(padding_data, uint8_t*)
+
+MFLAC_GET1_FUNC(application_id, uint32_t*)
+MFLAC_GET1_FUNC(application_length, uint32_t*)
+MFLAC_GET3_FUNC(application_data, uint8_t*)
+
+MFLAC_GET1_FUNC(seektable_seekpoints, uint32_t*)
+MFLAC_GET1_FUNC(seektable_sample_number, uint64_t*)
+MFLAC_GET1_FUNC(seektable_sample_offset, uint64_t*)
+MFLAC_GET1_FUNC(seektable_samples, uint16_t*)
+
+MFLAC_GET1_FUNC(cuesheet_catalog_length, uint32_t*)
+MFLAC_GET3_FUNC(cuesheet_catalog_string, char*)
+MFLAC_GET1_FUNC(cuesheet_leadin, uint64_t*)
+MFLAC_GET1_FUNC(cuesheet_cd_flag, uint8_t*)
+MFLAC_GET1_FUNC(cuesheet_tracks, uint8_t*)
+MFLAC_GET1_FUNC(cuesheet_track_offset, uint64_t*)
+MFLAC_GET1_FUNC(cuesheet_track_number, uint8_t*)
+MFLAC_GET1_FUNC(cuesheet_track_isrc_length, uint32_t*)
+MFLAC_GET3_FUNC(cuesheet_track_isrc_string, char*)
+MFLAC_GET1_FUNC(cuesheet_track_audio_flag, uint8_t*)
+MFLAC_GET1_FUNC(cuesheet_track_preemph_flag, uint8_t*)
+MFLAC_GET1_FUNC(cuesheet_track_indexpoints, uint8_t*)
+MFLAC_GET1_FUNC(cuesheet_index_point_offset, uint64_t*)
+MFLAC_GET1_FUNC(cuesheet_index_point_number, uint8_t*)
+
+MFLAC_GET1_FUNC(picture_type, uint32_t*)
+MFLAC_GET1_FUNC(picture_mime_length, uint32_t*)
+MFLAC_GET3_FUNC(picture_mime_string, char*)
+MFLAC_GET1_FUNC(picture_description_length, uint32_t*)
+MFLAC_GET3_FUNC(picture_description_string, char*)
+MFLAC_GET1_FUNC(picture_width, uint32_t*)
+MFLAC_GET1_FUNC(picture_height, uint32_t*)
+MFLAC_GET1_FUNC(picture_colordepth, uint32_t*)
+MFLAC_GET1_FUNC(picture_totalcolors, uint32_t*)
+MFLAC_GET1_FUNC(picture_length, uint32_t*)
+MFLAC_GET3_FUNC(picture_data, uint8_t*)
+
+MINIFLAC_API
+uint8_t
+mflac_is_frame(mflac_t* m) {
+    return m->decoder.state == MINIFLAC_FRAME;
+}
+
+MINIFLAC_API
+uint8_t
+mflac_is_metadata(mflac_t* m) {
+    return m->decoder.state == MINIFLAC_METADATA;
+}
+
+MINIFLAC_API
+uint8_t
+mflac_metadata_is_last(mflac_t* m) {
+    return m->decoder.metadata.header.is_last;
+}
+
+MINIFLAC_API
+MINIFLAC_METADATA_TYPE
+mflac_metadata_type(mflac_t* m) {
+    return m->decoder.metadata.header.type;
+}
+
+MINIFLAC_API
+uint32_t
+mflac_metadata_length(mflac_t* m) {
+    return m->decoder.metadata.header.length;
+}
+
+MINIFLAC_API
+uint8_t
+mflac_metadata_is_streaminfo(mflac_t* m) {
+    return m->decoder.metadata.header.type == MINIFLAC_METADATA_STREAMINFO;
+}
+
+MINIFLAC_API
+uint8_t
+mflac_metadata_is_padding(mflac_t* m) {
+    return m->decoder.metadata.header.type == MINIFLAC_METADATA_PADDING;
+}
+
+MINIFLAC_API
+uint8_t
+mflac_metadata_is_application(mflac_t* m) {
+    return m->decoder.metadata.header.type == MINIFLAC_METADATA_APPLICATION;
+}
+
+MINIFLAC_API
+uint8_t
+mflac_metadata_is_seektable(mflac_t* m) {
+    return m->decoder.metadata.header.type == MINIFLAC_METADATA_SEEKTABLE;
+}
+
+MINIFLAC_API
+uint8_t
+mflac_metadata_is_vorbis_comment(mflac_t* m) {
+    return m->decoder.metadata.header.type == MINIFLAC_METADATA_VORBIS_COMMENT;
+}
+
+MINIFLAC_API
+uint8_t
+mflac_metadata_is_cuesheet(mflac_t* m) {
+    return m->decoder.metadata.header.type == MINIFLAC_METADATA_CUESHEET;
+}
+
+MINIFLAC_API
+uint8_t
+mflac_metadata_is_picture(mflac_t* m) {
+    return m->decoder.metadata.header.type == MINIFLAC_METADATA_PICTURE;
+}
+
+MINIFLAC_API
+uint8_t
+mflac_frame_blocking_strategy(mflac_t* m) {
+    return m->decoder.frame.header.blocking_strategy;
+}
+
+MINIFLAC_API
+uint16_t
+mflac_frame_block_size(mflac_t* m) {
+    return m->decoder.frame.header.block_size;
+}
+
+MINIFLAC_API
+uint32_t
+mflac_frame_sample_rate(mflac_t* m) {
+    return m->decoder.frame.header.sample_rate;
+}
+
+MINIFLAC_API
+uint8_t
+mflac_frame_channels(mflac_t* m) {
+    return m->decoder.frame.header.channels;
+}
+
+MINIFLAC_API
+uint8_t
+mflac_frame_bps(mflac_t* m) {
+    return m->decoder.frame.header.bps;
+}
+
+MINIFLAC_API
+uint64_t
+mflac_frame_sample_number(mflac_t* m) {
+    return m->decoder.frame.header.sample_number;
+}
+
+MINIFLAC_API
+uint32_t
+mflac_frame_frame_number(mflac_t* m) {
+    return m->decoder.frame.header.frame_number;
+}
+
+MINIFLAC_API
+unsigned int
+mflac_version_major(void) {
+    return miniflac_version_major();
+}
+
+MINIFLAC_API
+unsigned int
+mflac_version_minor(void) {
+    return miniflac_version_minor();
+}
+
+MINIFLAC_API
+unsigned int
+mflac_version_patch(void) {
+    return miniflac_version_patch();
+}
+
+MINIFLAC_API
+const char*
+mflac_version_string(void) {
+    return miniflac_version_string();
+}
+
+#undef MFLAC_PASTE
+#undef MFLAC_FUNC_BODY
+#undef MFLAC_GET0_BODY
+#undef MFLAC_GET1_BODY
+#undef MFLAC_GET3_BODY
+#undef MFLAC_FUNC
+#undef MFLAC_GET0_FUNC
+#undef MFLAC_GET1_FUNC
+#undef MFLAC_GET3_FUNC
 
 #define MINIFLAC_VERSION_MAJOR 1
 #define MINIFLAC_VERSION_MINOR 0

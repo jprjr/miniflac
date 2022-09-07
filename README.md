@@ -5,7 +5,7 @@ functions, does not allocate any memory.
 
 ## Features
 
-* push-style API
+* push-style API or pull-style API
 * does not allocate memory or use any c library functions
 * handles native FLAC as well as Ogg FLAC
 * supports Ogg files with multiple bitstreams (only decodes the first FLAC bitstream)
@@ -33,7 +33,11 @@ In one C file define `MINIFLAC_IMPLEMENTATION` before including `miniflac.h`.
 #include "miniflac.h"
 ```
 
-Then allocate a `miniflac_t` struct, and call `miniflac_init` to initialize the struct.
+### Push-style API
+
+To use the push-style API, allocate a `miniflac_t` struct, call
+`miniflac_init` to initialize the struct, and use functions prefixed
+with `miniflac_`.
 
 All functions follow a similar paradigm - you provide a buffer of data,
 the length of the buffer, and an out-variable to record the amount of data
@@ -49,6 +53,27 @@ metadata block or audio frame, and respond accordingly.
 check the size of the audio frame by inspecting the `frame.header` struct.
 
 See the example programs under the `examples` directory.
+
+### Pull-style API
+
+To use the pull-style API, allocate a `mflac_t` struct, call `mflac_init`
+with your data-reading callback and userdata, then use functions
+prefixed with `mflac_t`
+
+All the pull-style functions follow a similar style - you call the
+function with any needed out-variables. If you're out of data, the
+functions will return `MFLAC_EOF`, otherwise they should return
+`MFLAC_OK` or `MFLAC_METADATA_END` (in the case of an iterator-type
+function). Any other result can be cast into a `MINIFLAC_RESULT`
+enum.
+
+Using the pull-style API is similar to the push - you call
+`mflac_sync`, which will read data using your callback until
+it parses a metadata header or audio frame header. You inspect
+the struct to determine the kind of block, or use the convenience
+status functions (`mflac_is_metadata`, `mflac_is_frame`, etc).
+
+See the example program `basic-decoder-mflac` in the `examples` directory.
 
 ## Tips
 
