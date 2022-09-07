@@ -133,13 +133,13 @@ frame, or call miniflac_decode to continue on.
 #define MINIFLAC_PURE
 #endif
 
-#inject typedef_structs
-
-#inject typedef_enums
-
 #inject enums
 
 #inject structs
+
+#inject typedef_structs
+
+#inject typedef_enums
 
 #ifdef __cplusplus
 extern "C" {

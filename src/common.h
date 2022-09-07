@@ -2,8 +2,6 @@
 #ifndef MINIFLAC_COMMON_H
 #define MINIFLAC_COMMON_H
 
-typedef enum MINIFLAC_RESULT MINIFLAC_RESULT;
-
 enum MINIFLAC_RESULT {
     MINIFLAC_OGG_HEADER_NOTFLAC                = -18, /* attempted to read an Ogg header packet that isn't a FLAC-in-Ogg packet */
     MINIFLAC_SUBFRAME_RESERVED_TYPE            = -17, /* subframe header specified a reserved type */
@@ -27,6 +25,9 @@ enum MINIFLAC_RESULT {
     MINIFLAC_OK                                =   1, /* generic "OK" */
     MINIFLAC_METADATA_END                      =   2, /* used to signify end-of-data in a metadata block */
 };
+
+typedef enum MINIFLAC_RESULT MINIFLAC_RESULT;
+
 
 #if defined(__GNUC__) && __GNUC__ >= 2 && __GNUC_MINOR__ >= 5
 #define MINIFLAC_PURE __attribute__((const))

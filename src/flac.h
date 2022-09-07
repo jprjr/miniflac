@@ -13,10 +13,6 @@
 #include "metadata.h"
 #include "frame.h"
 
-typedef struct miniflac_s miniflac_t;
-typedef enum MINIFLAC_STATE MINIFLAC_STATE;
-typedef enum MINIFLAC_CONTAINER MINIFLAC_CONTAINER;
-
 enum MINIFLAC_STATE {
     MINIFLAC_OGGHEADER, /* will try to find an ogg header */
     MINIFLAC_STREAMMARKER_OR_FRAME, /* poke for a stream marker or audio frame 
@@ -34,18 +30,21 @@ enum MINIFLAC_CONTAINER {
 };
 
 struct miniflac_s {
-    MINIFLAC_STATE state;
-    MINIFLAC_CONTAINER container;
-    miniflac_bitreader_t br;
-    miniflac_ogg_t ogg;
-    miniflac_oggheader_t oggheader;
-    miniflac_streammarker_t streammarker;
-    miniflac_metadata_t metadata;
-    miniflac_frame_t frame;
+    enum MINIFLAC_STATE state;
+    enum MINIFLAC_CONTAINER container;
+    struct miniflac_bitreader_s br;
+    struct miniflac_ogg_s ogg;
+    struct miniflac_oggheader_s oggheader;
+    struct miniflac_streammarker_s streammarker;
+    struct miniflac_metadata_s metadata;
+    struct miniflac_frame_s frame;
     int32_t oggserial;
     uint8_t oggserial_set;
 };
 
+typedef struct miniflac_s miniflac_t;
+typedef enum MINIFLAC_STATE MINIFLAC_STATE;
+typedef enum MINIFLAC_CONTAINER MINIFLAC_CONTAINER;
 
 #ifdef __cplusplus
 extern "C" {

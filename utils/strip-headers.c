@@ -55,7 +55,7 @@ int main(int argc, const char* argv[]) {
         goto cleanup;
     }
 
-    buffer = malloc((size_t)length);
+    buffer = (uint8_t*)malloc((size_t)length);
     if(buffer == NULL) {
         fprintf(stderr,"Unable to allocate buffer\n");
         goto cleanup;

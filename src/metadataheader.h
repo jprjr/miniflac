@@ -7,10 +7,6 @@
 #include "common.h"
 #include "bitreader.h"
 
-typedef struct miniflac_metadata_header_s miniflac_metadata_header_t;
-typedef enum MINIFLAC_METADATA_TYPE MINIFLAC_METADATA_TYPE;
-typedef enum MINIFLAC_METADATA_HEADER_STATE MINIFLAC_METADATA_HEADER_STATE;
-
 enum MINIFLAC_METADATA_TYPE {
     MINIFLAC_METADATA_STREAMINFO     = 0,
     MINIFLAC_METADATA_PADDING        = 1,
@@ -30,12 +26,17 @@ enum MINIFLAC_METADATA_HEADER_STATE {
 };
 
 struct miniflac_metadata_header_s {
-    MINIFLAC_METADATA_HEADER_STATE    state;
+    enum MINIFLAC_METADATA_HEADER_STATE    state;
     uint8_t                         is_last;
     uint8_t                        type_raw;
-    MINIFLAC_METADATA_TYPE             type;
+    enum MINIFLAC_METADATA_TYPE             type;
     uint32_t                         length;
 };
+
+typedef struct miniflac_metadata_header_s miniflac_metadata_header_t;
+typedef enum MINIFLAC_METADATA_TYPE MINIFLAC_METADATA_TYPE;
+typedef enum MINIFLAC_METADATA_HEADER_STATE MINIFLAC_METADATA_HEADER_STATE;
+
 
 #ifdef __cplusplus
 extern "C" {

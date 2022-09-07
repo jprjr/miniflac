@@ -11,9 +11,6 @@
 #include "frameheader.h"
 #include "subframe.h"
 
-typedef struct miniflac_frame_s miniflac_frame_t;
-typedef enum MINIFLAC_FRAME_STATE MINIFLAC_FRAME_STATE;
-
 enum MINIFLAC_FRAME_STATE {
     MINIFLAC_FRAME_HEADER,
     MINIFLAC_FRAME_SUBFRAME,
@@ -22,12 +19,15 @@ enum MINIFLAC_FRAME_STATE {
 
 /* represents an audio frame including parsed header */
 struct miniflac_frame_s {
-    MINIFLAC_FRAME_STATE state;
+    enum MINIFLAC_FRAME_STATE state;
     uint8_t cur_subframe;
     uint16_t crc16;
-    miniflac_frame_header_t header;
-    miniflac_subframe_t subframe;
+    struct miniflac_frame_header_s header;
+    struct miniflac_subframe_s subframe;
 };
+
+typedef struct miniflac_frame_s miniflac_frame_t;
+typedef enum MINIFLAC_FRAME_STATE MINIFLAC_FRAME_STATE;
 
 #ifdef __cplusplus
 extern "C" {

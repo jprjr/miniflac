@@ -7,10 +7,6 @@
 #include "common.h"
 #include "bitreader.h"
 
-typedef struct miniflac_subframe_header_s miniflac_subframe_header_t;
-typedef enum MINIFLAC_SUBFRAME_TYPE MINIFLAC_SUBFRAME_TYPE;
-typedef enum MINIFLAC_SUBFRAME_HEADER_STATE MINIFLAC_SUBFRAME_HEADER_STATE;
-
 enum MINIFLAC_SUBFRAME_TYPE {
     MINIFLAC_SUBFRAME_TYPE_UNKNOWN,
     MINIFLAC_SUBFRAME_TYPE_CONSTANT,
@@ -27,12 +23,16 @@ enum MINIFLAC_SUBFRAME_HEADER_STATE {
 };
 
 struct miniflac_subframe_header_s {
-    MINIFLAC_SUBFRAME_HEADER_STATE state;
-    MINIFLAC_SUBFRAME_TYPE type;
+    enum MINIFLAC_SUBFRAME_HEADER_STATE state;
+    enum MINIFLAC_SUBFRAME_TYPE type;
     uint8_t order;
     uint8_t wasted_bits;
     uint8_t type_raw;
 };
+
+typedef struct miniflac_subframe_header_s miniflac_subframe_header_t;
+typedef enum MINIFLAC_SUBFRAME_TYPE MINIFLAC_SUBFRAME_TYPE;
+typedef enum MINIFLAC_SUBFRAME_HEADER_STATE MINIFLAC_SUBFRAME_HEADER_STATE;
 
 #ifdef __cplusplus
 extern "C" {

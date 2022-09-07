@@ -7,9 +7,6 @@
 #include "common.h"
 #include "bitreader.h"
 
-typedef struct miniflac_cuesheet_s miniflac_cuesheet_t;
-typedef enum MINIFLAC_CUESHEET_STATE MINIFLAC_CUESHEET_STATE;
-
 enum MINIFLAC_CUESHEET_STATE {
     MINIFLAC_CUESHEET_CATALOG,
     MINIFLAC_CUESHEET_LEADIN,
@@ -29,13 +26,16 @@ enum MINIFLAC_CUESHEET_STATE {
 };
 
 struct miniflac_cuesheet_s {
-    MINIFLAC_CUESHEET_STATE state;
+    enum MINIFLAC_CUESHEET_STATE state;
     uint32_t pos;
     uint8_t track;
     uint8_t tracks;
     uint8_t point;
     uint8_t points;
 };
+
+typedef struct miniflac_cuesheet_s miniflac_cuesheet_t;
+typedef enum MINIFLAC_CUESHEET_STATE MINIFLAC_CUESHEET_STATE;
 
 #ifdef __cplusplus
 extern "C" {

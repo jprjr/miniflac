@@ -7,18 +7,17 @@
 #include "common.h"
 #include "bitreader.h"
 
-typedef struct miniflac_subframe_verbatim_s miniflac_subframe_verbatim_t;
-typedef enum MINIFLAC_SUBFRAME_VERBATIM_STATE MINIFLAC_SUBFRAME_VERBATIM_STATE;
-
 enum MINIFLAC_SUBFRAME_VERBATIM_STATE {
     MINIFLAC_SUBFRAME_VERBATIM_DECODE,
 };
 
 struct miniflac_subframe_verbatim_s {
-    MINIFLAC_SUBFRAME_VERBATIM_STATE state;
+    enum MINIFLAC_SUBFRAME_VERBATIM_STATE state;
     uint32_t pos;
 };
 
+typedef struct miniflac_subframe_verbatim_s miniflac_subframe_verbatim_t;
+typedef enum MINIFLAC_SUBFRAME_VERBATIM_STATE MINIFLAC_SUBFRAME_VERBATIM_STATE;
 
 #ifdef __cplusplus
 extern "C" {

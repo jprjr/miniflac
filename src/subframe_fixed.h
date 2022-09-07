@@ -8,17 +8,17 @@
 #include "bitreader.h"
 #include "residual.h"
 
-typedef struct miniflac_subframe_fixed_s miniflac_subframe_fixed_t;
-typedef enum MINIFLAC_SUBFRAME_FIXED_STATE MINIFLAC_SUBFRAME_FIXED_STATE;
-
 enum MINIFLAC_SUBFRAME_FIXED_STATE {
     MINIFLAC_SUBFRAME_FIXED_DECODE,
 };
 
 struct miniflac_subframe_fixed_s {
-    MINIFLAC_SUBFRAME_FIXED_STATE state;
+    enum MINIFLAC_SUBFRAME_FIXED_STATE state;
     uint32_t pos;
 };
+
+typedef struct miniflac_subframe_fixed_s miniflac_subframe_fixed_t;
+typedef enum MINIFLAC_SUBFRAME_FIXED_STATE MINIFLAC_SUBFRAME_FIXED_STATE;
 
 
 #ifdef __cplusplus

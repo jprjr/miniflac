@@ -7,9 +7,6 @@
 #include "common.h"
 #include "bitreader.h"
 
-typedef struct miniflac_seektable_s miniflac_seektable_t;
-typedef enum MINIFLAC_SEEKTABLE_STATE MINIFLAC_SEEKTABLE_STATE;
-
 enum MINIFLAC_SEEKTABLE_STATE {
     MINIFLAC_SEEKTABLE_SAMPLE_NUMBER,
     MINIFLAC_SEEKTABLE_SAMPLE_OFFSET,
@@ -17,10 +14,13 @@ enum MINIFLAC_SEEKTABLE_STATE {
 };
 
 struct miniflac_seektable_s {
-    MINIFLAC_SEEKTABLE_STATE    state;
+    enum MINIFLAC_SEEKTABLE_STATE    state;
     uint32_t len; /* number of seekpoints */
     uint32_t pos; /* current seekpoint */
 };
+
+typedef struct miniflac_seektable_s miniflac_seektable_t;
+typedef enum MINIFLAC_SEEKTABLE_STATE MINIFLAC_SEEKTABLE_STATE;
 
 /* note: len is set outside of seektable functions */
 

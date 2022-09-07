@@ -7,17 +7,16 @@
 #include "common.h"
 #include "bitreader.h"
 
-typedef enum MINIFLAC_SUBFRAME_CONSTANT_STATE MINIFLAC_SUBFRAME_CONSTANT_STATE;
-typedef struct miniflac_subframe_constant_s miniflac_subframe_constant_t;
-
 enum MINIFLAC_SUBFRAME_CONSTANT_STATE {
     MINIFLAC_SUBFRAME_CONSTANT_DECODE,
 };
 
 struct miniflac_subframe_constant_s {
-    MINIFLAC_SUBFRAME_CONSTANT_STATE state;
+    enum MINIFLAC_SUBFRAME_CONSTANT_STATE state;
 };
 
+typedef enum MINIFLAC_SUBFRAME_CONSTANT_STATE MINIFLAC_SUBFRAME_CONSTANT_STATE;
+typedef struct miniflac_subframe_constant_s miniflac_subframe_constant_t;
 
 #ifdef __cplusplus
 extern "C" {

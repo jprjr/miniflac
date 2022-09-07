@@ -7,19 +7,19 @@
 #include "common.h"
 #include "bitreader.h"
 
-typedef struct miniflac_application_s miniflac_application_t;
-typedef enum MINIFLAC_APPLICATION_STATE MINIFLAC_APPLICATION_STATE;
-
 enum MINIFLAC_APPLICATION_STATE {
     MINIFLAC_APPLICATION_ID,
     MINIFLAC_APPLICATION_DATA,
 };
 
 struct miniflac_application_s {
-    MINIFLAC_APPLICATION_STATE    state;
+    enum MINIFLAC_APPLICATION_STATE state;
     uint32_t len; /* length of data */
     uint32_t pos; /* current byte */
 };
+
+typedef struct miniflac_application_s miniflac_application_t;
+typedef enum MINIFLAC_APPLICATION_STATE MINIFLAC_APPLICATION_STATE;
 
 /* note: len is set outside of application block functions */
 

@@ -8,9 +8,6 @@
 #include "bitreader.h"
 #include "residual.h"
 
-typedef struct miniflac_subframe_lpc_s miniflac_subframe_lpc_t;
-typedef enum MINIFLAC_SUBFRAME_LPC_STATE MINIFLAC_SUBFRAME_LPC_STATE;
-
 enum MINIFLAC_SUBFRAME_LPC_STATE {
     MINIFLAC_SUBFRAME_LPC_PRECISION,
     MINIFLAC_SUBFRAME_LPC_SHIFT,
@@ -18,7 +15,7 @@ enum MINIFLAC_SUBFRAME_LPC_STATE {
 };
 
 struct miniflac_subframe_lpc_s {
-    MINIFLAC_SUBFRAME_LPC_STATE state;
+    enum MINIFLAC_SUBFRAME_LPC_STATE state;
     uint32_t pos;
     uint8_t precision;
     uint8_t shift;
@@ -26,6 +23,8 @@ struct miniflac_subframe_lpc_s {
     int32_t coefficients[32];
 };
 
+typedef struct miniflac_subframe_lpc_s miniflac_subframe_lpc_t;
+typedef enum MINIFLAC_SUBFRAME_LPC_STATE MINIFLAC_SUBFRAME_LPC_STATE;
 
 #ifdef __cplusplus
 extern "C" {

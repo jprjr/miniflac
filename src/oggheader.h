@@ -7,9 +7,6 @@
 #include "common.h"
 #include "bitreader.h"
 
-typedef struct miniflac_oggheader_s miniflac_oggheader_t;
-typedef enum MINIFLAC_OGGHEADER_STATE MINIFLAC_OGGHEADER_STATE;
-
 enum MINIFLAC_OGGHEADER_STATE {
     MINIFLAC_OGGHEADER_PACKETTYPE,
     MINIFLAC_OGGHEADER_F,
@@ -22,8 +19,11 @@ enum MINIFLAC_OGGHEADER_STATE {
 };
 
 struct miniflac_oggheader_s {
-    MINIFLAC_OGGHEADER_STATE state;
+    enum MINIFLAC_OGGHEADER_STATE state;
 };
+
+typedef struct miniflac_oggheader_s miniflac_oggheader_t;
+typedef enum MINIFLAC_OGGHEADER_STATE MINIFLAC_OGGHEADER_STATE;
 
 #ifdef __cplusplus
 extern "C" {

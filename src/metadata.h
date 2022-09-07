@@ -15,26 +15,26 @@
 #include "application.h"
 #include "padding.h"
 
-typedef struct miniflac_metadata_s miniflac_metadata_t;
-typedef enum MINIFLAC_METADATA_STATE MINIFLAC_METADATA_STATE;
-
 enum MINIFLAC_METADATA_STATE {
     MINIFLAC_METADATA_HEADER,
     MINIFLAC_METADATA_DATA,
 };
 
 struct miniflac_metadata_s {
-    MINIFLAC_METADATA_STATE               state;
-    uint32_t                                pos;
-    miniflac_metadata_header_t           header;
-    miniflac_streaminfo_t            streaminfo;
-    miniflac_vorbis_comment_t    vorbis_comment;
-    miniflac_picture_t                  picture;
-    miniflac_cuesheet_t                cuesheet;
-    miniflac_seektable_t              seektable;
-    miniflac_application_t          application;
-    miniflac_padding_t                  padding;
+    enum MINIFLAC_METADATA_STATE               state;
+    uint32_t                                     pos;
+    struct miniflac_metadata_header_s         header;
+    struct miniflac_streaminfo_s          streaminfo;
+    struct miniflac_vorbis_comment_s  vorbis_comment;
+    struct miniflac_picture_s                picture;
+    struct miniflac_cuesheet_s              cuesheet;
+    struct miniflac_seektable_s            seektable;
+    struct miniflac_application_s        application;
+    struct miniflac_padding_s                padding;
 };
+
+typedef struct miniflac_metadata_s miniflac_metadata_t;
+typedef enum MINIFLAC_METADATA_STATE MINIFLAC_METADATA_STATE;
 
 #ifdef __cplusplus
 extern "C" {

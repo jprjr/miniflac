@@ -6,9 +6,6 @@
 #include "bitreader.h"
 #include "common.h"
 
-typedef struct miniflac_ogg_s miniflac_ogg_t;
-typedef enum MINIFLAC_OGG_STATE MINIFLAC_OGG_STATE;
-
 enum MINIFLAC_OGG_STATE {
     MINIFLAC_OGG_CAPTUREPATTERN_O,
     MINIFLAC_OGG_CAPTUREPATTERN_G1,
@@ -27,8 +24,8 @@ enum MINIFLAC_OGG_STATE {
 };
 
 struct miniflac_ogg_s {
-    MINIFLAC_OGG_STATE state;
-    miniflac_bitreader_t br; /* maintain our own bitreader */
+    enum MINIFLAC_OGG_STATE state;
+    struct miniflac_bitreader_s br; /* maintain our own bitreader */
     uint8_t version;
     uint8_t headertype;
     int64_t granulepos;
@@ -39,6 +36,9 @@ struct miniflac_ogg_s {
     uint16_t length; /* length of data within page */
     uint16_t pos; /* where we are within page */
 };
+
+typedef struct miniflac_ogg_s miniflac_ogg_t;
+typedef enum MINIFLAC_OGG_STATE MINIFLAC_OGG_STATE;
 
 #ifdef __cplusplus
 extern "C" {

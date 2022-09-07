@@ -7,9 +7,6 @@
 #include "common.h"
 #include "bitreader.h"
 
-typedef struct miniflac_vorbis_comment_s miniflac_vorbis_comment_t;
-typedef enum MINIFLAC_VORBISCOMMENT_STATE MINIFLAC_VORBISCOMMENT_STATE;
-
 enum MINIFLAC_VORBISCOMMENT_STATE {
     MINIFLAC_VORBISCOMMENT_VENDOR_LENGTH,
     MINIFLAC_VORBISCOMMENT_VENDOR_STRING,
@@ -19,12 +16,15 @@ enum MINIFLAC_VORBISCOMMENT_STATE {
 };
 
 struct miniflac_vorbis_comment_s {
-    MINIFLAC_VORBISCOMMENT_STATE    state;
+    enum MINIFLAC_VORBISCOMMENT_STATE    state;
     uint32_t len; /* length of the current string we're decoding */
     uint32_t pos; /* position within current string */
     uint32_t tot; /* total comments */
     uint32_t cur; /* current comment being decoded */
 };
+
+typedef struct miniflac_vorbis_comment_s miniflac_vorbis_comment_t;
+typedef enum MINIFLAC_VORBISCOMMENT_STATE MINIFLAC_VORBISCOMMENT_STATE;
 
 #ifdef __cplusplus
 extern "C" {

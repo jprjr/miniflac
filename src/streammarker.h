@@ -7,9 +7,6 @@
 #include "common.h"
 #include "bitreader.h"
 
-typedef struct miniflac_streammarker_s miniflac_streammarker_t;
-typedef enum MINIFLAC_STREAMMARKER_STATE MINIFLAC_STREAMMARKER_STATE;
-
 enum MINIFLAC_STREAMMARKER_STATE {
     MINIFLAC_STREAMMARKER_F,
     MINIFLAC_STREAMMARKER_L,
@@ -18,8 +15,11 @@ enum MINIFLAC_STREAMMARKER_STATE {
 };
 
 struct miniflac_streammarker_s {
-    MINIFLAC_STREAMMARKER_STATE state;
+    enum MINIFLAC_STREAMMARKER_STATE state;
 };
+
+typedef struct miniflac_streammarker_s miniflac_streammarker_t;
+typedef enum MINIFLAC_STREAMMARKER_STATE MINIFLAC_STREAMMARKER_STATE;
 
 #ifdef __cplusplus
 extern "C" {

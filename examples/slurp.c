@@ -41,7 +41,7 @@ uint8_t* slurp(const char *filename, uint32_t* length) {
         goto slurp_cleanup;
     }
 
-    buffer = malloc((size_t)pos);
+    buffer = (uint8_t*)malloc((size_t)pos);
     if(buffer == NULL) {
         fprintf(stderr,"out of memory\n");
         goto slurp_cleanup;

@@ -7,10 +7,6 @@
 #include "common.h"
 #include "bitreader.h"
 
-typedef struct miniflac_frame_header_s miniflac_frame_header_t;
-typedef enum MINIFLAC_CHASSGN MINIFLAC_CHASSGN;
-typedef enum MINIFLAC_FRAME_HEADER_STATE MINIFLAC_FRAME_HEADER_STATE;
-
 enum MINIFLAC_CHASSGN {
     MINIFLAC_CHASSGN_NONE,
     MINIFLAC_CHASSGN_LEFT_SIDE,
@@ -46,7 +42,7 @@ struct miniflac_frame_header_s {
     uint8_t  blocking_strategy;
     uint16_t block_size; /* calculated/parsed block size */
     uint32_t sample_rate; /* calculated/parsed sample rate */
-    MINIFLAC_CHASSGN channel_assignment;
+    enum MINIFLAC_CHASSGN channel_assignment;
     uint8_t  channels;
     uint8_t  bps;
     union {
@@ -54,9 +50,12 @@ struct miniflac_frame_header_s {
         uint32_t frame_number;
     };
     uint8_t crc8;
-    MINIFLAC_FRAME_HEADER_STATE state;
+    enum MINIFLAC_FRAME_HEADER_STATE state;
 };
 
+typedef struct miniflac_frame_header_s miniflac_frame_header_t;
+typedef enum MINIFLAC_CHASSGN MINIFLAC_CHASSGN;
+typedef enum MINIFLAC_FRAME_HEADER_STATE MINIFLAC_FRAME_HEADER_STATE;
 
 #ifdef __cplusplus
 extern "C" {

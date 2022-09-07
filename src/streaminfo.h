@@ -7,11 +7,6 @@
 #include "common.h"
 #include "bitreader.h"
 
-/* public-facing streaminfo struct */
-typedef struct miniflac_streaminfo_s miniflac_streaminfo_t;
-
-typedef enum MINIFLAC_STREAMINFO_STATE MINIFLAC_STREAMINFO_STATE;
-
 enum MINIFLAC_STREAMINFO_STATE {
     MINIFLAC_STREAMINFO_MINBLOCKSIZE,
     MINIFLAC_STREAMINFO_MAXBLOCKSIZE,
@@ -25,11 +20,15 @@ enum MINIFLAC_STREAMINFO_STATE {
 };
 
 struct miniflac_streaminfo_s {
-    MINIFLAC_STREAMINFO_STATE state;
+    enum MINIFLAC_STREAMINFO_STATE state;
     uint8_t                     pos;
     uint32_t            sample_rate;
     uint8_t                     bps;
 };
+
+typedef struct miniflac_streaminfo_s miniflac_streaminfo_t;
+typedef enum MINIFLAC_STREAMINFO_STATE MINIFLAC_STREAMINFO_STATE;
+
 
 #ifdef __cplusplus
 extern "C" {

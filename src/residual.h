@@ -7,9 +7,6 @@
 #include "common.h"
 #include "bitreader.h"
 
-typedef struct miniflac_residual_s miniflac_residual_t;
-typedef enum MINIFLAC_RESIDUAL_STATE MINIFLAC_RESIDUAL_STATE;
-
 enum MINIFLAC_RESIDUAL_STATE {
     MINIFLAC_RESIDUAL_CODING_METHOD,
     MINIFLAC_RESIDUAL_PARTITION_ORDER,
@@ -21,7 +18,7 @@ enum MINIFLAC_RESIDUAL_STATE {
 };
 
 struct miniflac_residual_s {
-    MINIFLAC_RESIDUAL_STATE state;
+    enum MINIFLAC_RESIDUAL_STATE state;
     uint8_t coding_method;
     uint8_t partition_order;
     uint8_t rice_parameter;
@@ -36,6 +33,9 @@ struct miniflac_residual_s {
     uint32_t residual; /* current residual within partition */
     uint32_t residual_total; /* total residuals in partition */
 };
+
+typedef struct miniflac_residual_s miniflac_residual_t;
+typedef enum MINIFLAC_RESIDUAL_STATE MINIFLAC_RESIDUAL_STATE;
 
 
 #ifdef __cplusplus

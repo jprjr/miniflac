@@ -35,7 +35,7 @@ int main(int argc, const char *argv[]) {
         goto cleanup;
     }
 
-    decoder = malloc(miniflac_size());
+    decoder = (miniflac_t*)malloc(miniflac_size());
     if(decoder == NULL) {
         fprintf(stderr,"Failed to allocate decoder\n");
         goto cleanup;
@@ -61,7 +61,7 @@ int main(int argc, const char *argv[]) {
 
     length = (size_t)temp;
 
-    buffer = malloc(length);
+    buffer = (unsigned char*)malloc(length);
     if(buffer == NULL) {
         fprintf(stderr,"Unable to allocate buffer\n");
         goto cleanup;

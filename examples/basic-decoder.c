@@ -107,7 +107,7 @@ dump_vorbis_comment(miniflac_t* decoder, membuffer_t* mem) {
     mem->pos += used;
 
     if(temp32 > string_buffer_len) {
-        string_buffer = realloc(string_buffer,temp32+1);
+        string_buffer = (char*)realloc(string_buffer,temp32+1);
         if(string_buffer == NULL) abort();
         string_buffer_len = temp32;
     }
@@ -125,7 +125,7 @@ dump_vorbis_comment(miniflac_t* decoder, membuffer_t* mem) {
         mem->pos += used;
         fprintf(stdout,"  comment[%u]=[%u]",i++,temp32);
         if(temp32 > string_buffer_len) {
-            string_buffer = realloc(string_buffer,temp32+1);
+            string_buffer = (char*)realloc(string_buffer,temp32+1);
             if(string_buffer == NULL) abort();
             string_buffer_len = temp32;
         }
@@ -162,7 +162,7 @@ dump_picture(miniflac_t* decoder, membuffer_t* mem) {
     mem->pos += used;
     fprintf(stdout,"  mime string=[%u]",temp32);
     if(temp32 > string_buffer_len) {
-        string_buffer = realloc(string_buffer,temp32 + 1);
+        string_buffer = (char*)realloc(string_buffer,temp32 + 1);
         if(string_buffer == NULL) abort();
         string_buffer_len = temp32;
     }
@@ -177,7 +177,7 @@ dump_picture(miniflac_t* decoder, membuffer_t* mem) {
     mem->pos += used;
     fprintf(stdout,"  description string=[%u]",temp32);
     if(temp32 > string_buffer_len) {
-        string_buffer = realloc(string_buffer,temp32 + 1);
+        string_buffer = (char*)realloc(string_buffer,temp32 + 1);
         if(string_buffer == NULL) abort();
         string_buffer_len = temp32;
     }
@@ -243,7 +243,7 @@ dump_cuesheet(miniflac_t* decoder, membuffer_t* mem) {
     mem->pos += used;
 
     if(temp32 > string_buffer_len) {
-        string_buffer = realloc(string_buffer,temp32 + 1);
+        string_buffer = (char*)realloc(string_buffer,temp32 + 1);
         if(string_buffer == NULL) abort();
         string_buffer_len = temp32;
     }
@@ -294,7 +294,7 @@ dump_cuesheet(miniflac_t* decoder, membuffer_t* mem) {
         mem->pos += used;
 
         if(temp32 > string_buffer_len) {
-            string_buffer = realloc(string_buffer,temp32 + 1);
+            string_buffer = (char*)realloc(string_buffer,temp32 + 1);
             if(string_buffer == NULL) abort();
             string_buffer_len = temp32;
         }
@@ -438,7 +438,7 @@ int main(int argc, const char *argv[]) {
         goto cleanup;
     }
 
-    decoder = malloc(miniflac_size());
+    decoder = (miniflac_t*)malloc(miniflac_size());
     if(decoder == NULL) {
         fprintf(stderr,"Failed to allocate decoder\n");
         goto cleanup;

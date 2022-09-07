@@ -7,9 +7,6 @@
 #include "common.h"
 #include "bitreader.h"
 
-typedef struct miniflac_picture_s miniflac_picture_t;
-typedef enum MINIFLAC_PICTURE_STATE MINIFLAC_PICTURE_STATE;
-
 enum MINIFLAC_PICTURE_STATE {
     MINIFLAC_PICTURE_TYPE,
     MINIFLAC_PICTURE_MIME_LENGTH,
@@ -25,10 +22,13 @@ enum MINIFLAC_PICTURE_STATE {
 };
 
 struct miniflac_picture_s {
-    MINIFLAC_PICTURE_STATE    state;
+    enum MINIFLAC_PICTURE_STATE    state;
     uint32_t len; /* length of the current string/data we're decoding */
     uint32_t pos; /* position within current string */
 };
+
+typedef struct miniflac_picture_s miniflac_picture_t;
+typedef enum MINIFLAC_PICTURE_STATE MINIFLAC_PICTURE_STATE;
 
 #ifdef __cplusplus
 extern "C" {
