@@ -368,35 +368,35 @@ int main(int argc, const char *argv[]) {
     if(mflac_sync(m) != MFLAC_OK) abort();
 
     /* work our way through the metadata frames */
-    while(m->decoder.state == MINIFLAC_METADATA) {
+    while(m->flac.state == MINIFLAC_METADATA) {
         printf("metadata block: type: %u, is_last: %u, length: %u\n",
-          m->decoder.metadata.header.type_raw,
-          m->decoder.metadata.header.is_last,
-          m->decoder.metadata.header.length);
+          m->flac.metadata.header.type_raw,
+          m->flac.metadata.header.is_last,
+          m->flac.metadata.header.length);
         fflush(stdout);
-        if(m->decoder.metadata.header.type == MINIFLAC_METADATA_STREAMINFO) {
+        if(m->flac.metadata.header.type == MINIFLAC_METADATA_STREAMINFO) {
             dump_streaminfo(m);
         }
-        else if(m->decoder.metadata.header.type == MINIFLAC_METADATA_VORBIS_COMMENT) {
+        else if(m->flac.metadata.header.type == MINIFLAC_METADATA_VORBIS_COMMENT) {
             dump_vorbis_comment(m);
         }
-        else if(m->decoder.metadata.header.type == MINIFLAC_METADATA_PICTURE) {
+        else if(m->flac.metadata.header.type == MINIFLAC_METADATA_PICTURE) {
             dump_picture(m);
         }
-        else if(m->decoder.metadata.header.type == MINIFLAC_METADATA_CUESHEET) {
+        else if(m->flac.metadata.header.type == MINIFLAC_METADATA_CUESHEET) {
             dump_cuesheet(m);
         }
-        else if(m->decoder.metadata.header.type == MINIFLAC_METADATA_SEEKTABLE) {
+        else if(m->flac.metadata.header.type == MINIFLAC_METADATA_SEEKTABLE) {
             dump_seektable(m);
         }
-        else if(m->decoder.metadata.header.type == MINIFLAC_METADATA_APPLICATION) {
+        else if(m->flac.metadata.header.type == MINIFLAC_METADATA_APPLICATION) {
             dump_application(m);
         }
 
         if(mflac_sync(m) != MFLAC_OK) abort();
     }
 
-    wav_header_create(output,m->decoder.frame.header.sample_rate,m->decoder.frame.header.channels,m->decoder.frame.header.bps);
+    wav_header_create(output,m->flac.frame.header.sample_rate,m->flac.frame.header.channels,m->flac.frame.header.bps);
 
     /* now we're at the beginning of a frame (just past the frame header) and can start decoding */
     while( (res = mflac_decode(m,samples)) == MFLAC_OK) {
@@ -406,22 +406,22 @@ int main(int argc, const char *argv[]) {
         packer pack = NULL;
         shift = 0;
 
-        if(m->decoder.frame.header.bps <= 8) {
-            sampSize = 1; pack = uint8_packer; shift = 8 - m->decoder.frame.header.bps;
-        } else if(m->decoder.frame.header.bps <= 16) {
-            sampSize = 2; pack = int16_packer; shift = 16 - m->decoder.frame.header.bps;
-        } else if(m->decoder.frame.header.bps <= 24) {
-            sampSize = 3; pack = int24_packer; shift = 24 - m->decoder.frame.header.bps;
-        } else if(m->decoder.frame.header.bps <= 32) {
-            sampSize = 4; pack = int32_packer; shift = 32 - m->decoder.frame.header.bps;
+        if(m->flac.frame.header.bps <= 8) {
+            sampSize = 1; pack = uint8_packer; shift = 8 - m->flac.frame.header.bps;
+        } else if(m->flac.frame.header.bps <= 16) {
+            sampSize = 2; pack = int16_packer; shift = 16 - m->flac.frame.header.bps;
+        } else if(m->flac.frame.header.bps <= 24) {
+            sampSize = 3; pack = int24_packer; shift = 24 - m->flac.frame.header.bps;
+        } else if(m->flac.frame.header.bps <= 32) {
+            sampSize = 4; pack = int32_packer; shift = 32 - m->flac.frame.header.bps;
         } else  {
             abort();
         }
 
-        len = sampSize * m->decoder.frame.header.channels * m->decoder.frame.header.block_size;
+        len = sampSize * m->flac.frame.header.channels * m->flac.frame.header.block_size;
 
         /* samples is planar, convert into an interleaved format, and pack into little-endian */
-        pack(outSamples,samples,m->decoder.frame.header.channels,m->decoder.frame.header.block_size,shift);
+        pack(outSamples,samples,m->flac.frame.header.channels,m->flac.frame.header.block_size,shift);
         fwrite(outSamples,1,len,output);
         frameTotal++;
         if(frameTotal % 10 == 0) {
@@ -436,11 +436,11 @@ int main(int argc, const char *argv[]) {
     fprintf(stderr,"decoded %u frames\n",frameTotal);
     fprintf(stderr,"result: %d\n",res);
     if(res != MFLAC_EOF) {
-        miniflac_dump_flac(&m->decoder,0);
+        miniflac_dump_flac(&m->flac,0);
     }
 
     assert(res == MFLAC_EOF);
-    wav_header_finish(output,m->decoder.frame.header.bps);
+    wav_header_finish(output,m->flac.frame.header.bps);
     r = 0;
 
     cleanup:

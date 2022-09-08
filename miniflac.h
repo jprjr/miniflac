@@ -588,7 +588,7 @@ struct miniflac_s {
 };
 
 struct mflac_s {
-    struct miniflac_s decoder;
+    struct miniflac_s flac;
     mflac_readcb read;
     void* userdata;
     size_t bufpos;
@@ -1803,9 +1803,9 @@ MINIFLAC_RESULT miniflac_frame_decode(miniflac_frame_t* frame, miniflac_bitreade
     m->buflen -= used;
 
 
-#define MFLAC_GET0_BODY(var) MFLAC_FUNC_BODY(miniflac_ ## var (&m->decoder, &m->buffer[m->bufpos], m->buflen, &used) )
-#define MFLAC_GET1_BODY(var, a) MFLAC_FUNC_BODY(miniflac_ ## var(&m->decoder, &m->buffer[m->bufpos], m->buflen, &used, a) )
-#define MFLAC_GET3_BODY(var, a, b, c) MFLAC_FUNC_BODY(miniflac_ ## var(&m->decoder, &m->buffer[m->bufpos], m->buflen, &used, a, b, c) )
+#define MFLAC_GET0_BODY(var) MFLAC_FUNC_BODY(miniflac_ ## var (&m->flac, &m->buffer[m->bufpos], m->buflen, &used) )
+#define MFLAC_GET1_BODY(var, a) MFLAC_FUNC_BODY(miniflac_ ## var(&m->flac, &m->buffer[m->bufpos], m->buflen, &used, a) )
+#define MFLAC_GET3_BODY(var, a, b, c) MFLAC_FUNC_BODY(miniflac_ ## var(&m->flac, &m->buffer[m->bufpos], m->buflen, &used, a, b, c) )
 
 #define MFLAC_FUNC(sig,body) \
 MINIFLAC_API \
@@ -1832,7 +1832,7 @@ mflac_size(void) {
 MINIFLAC_API
 void
 mflac_init(mflac_t* m, MINIFLAC_CONTAINER container, mflac_readcb read, void *userdata) {
-    miniflac_init(&m->decoder, container);
+    miniflac_init(&m->flac, container);
     m->read = read;
     m->userdata = userdata;
     m->bufpos = 0;
@@ -1902,115 +1902,115 @@ MFLAC_GET3_FUNC(picture_data, uint8_t*)
 MINIFLAC_API
 uint8_t
 mflac_is_frame(mflac_t* m) {
-    return m->decoder.state == MINIFLAC_FRAME;
+    return m->flac.state == MINIFLAC_FRAME;
 }
 
 MINIFLAC_API
 uint8_t
 mflac_is_metadata(mflac_t* m) {
-    return m->decoder.state == MINIFLAC_METADATA;
+    return m->flac.state == MINIFLAC_METADATA;
 }
 
 MINIFLAC_API
 uint8_t
 mflac_metadata_is_last(mflac_t* m) {
-    return m->decoder.metadata.header.is_last;
+    return m->flac.metadata.header.is_last;
 }
 
 MINIFLAC_API
 MINIFLAC_METADATA_TYPE
 mflac_metadata_type(mflac_t* m) {
-    return m->decoder.metadata.header.type;
+    return m->flac.metadata.header.type;
 }
 
 MINIFLAC_API
 uint32_t
 mflac_metadata_length(mflac_t* m) {
-    return m->decoder.metadata.header.length;
+    return m->flac.metadata.header.length;
 }
 
 MINIFLAC_API
 uint8_t
 mflac_metadata_is_streaminfo(mflac_t* m) {
-    return m->decoder.metadata.header.type == MINIFLAC_METADATA_STREAMINFO;
+    return m->flac.metadata.header.type == MINIFLAC_METADATA_STREAMINFO;
 }
 
 MINIFLAC_API
 uint8_t
 mflac_metadata_is_padding(mflac_t* m) {
-    return m->decoder.metadata.header.type == MINIFLAC_METADATA_PADDING;
+    return m->flac.metadata.header.type == MINIFLAC_METADATA_PADDING;
 }
 
 MINIFLAC_API
 uint8_t
 mflac_metadata_is_application(mflac_t* m) {
-    return m->decoder.metadata.header.type == MINIFLAC_METADATA_APPLICATION;
+    return m->flac.metadata.header.type == MINIFLAC_METADATA_APPLICATION;
 }
 
 MINIFLAC_API
 uint8_t
 mflac_metadata_is_seektable(mflac_t* m) {
-    return m->decoder.metadata.header.type == MINIFLAC_METADATA_SEEKTABLE;
+    return m->flac.metadata.header.type == MINIFLAC_METADATA_SEEKTABLE;
 }
 
 MINIFLAC_API
 uint8_t
 mflac_metadata_is_vorbis_comment(mflac_t* m) {
-    return m->decoder.metadata.header.type == MINIFLAC_METADATA_VORBIS_COMMENT;
+    return m->flac.metadata.header.type == MINIFLAC_METADATA_VORBIS_COMMENT;
 }
 
 MINIFLAC_API
 uint8_t
 mflac_metadata_is_cuesheet(mflac_t* m) {
-    return m->decoder.metadata.header.type == MINIFLAC_METADATA_CUESHEET;
+    return m->flac.metadata.header.type == MINIFLAC_METADATA_CUESHEET;
 }
 
 MINIFLAC_API
 uint8_t
 mflac_metadata_is_picture(mflac_t* m) {
-    return m->decoder.metadata.header.type == MINIFLAC_METADATA_PICTURE;
+    return m->flac.metadata.header.type == MINIFLAC_METADATA_PICTURE;
 }
 
 MINIFLAC_API
 uint8_t
 mflac_frame_blocking_strategy(mflac_t* m) {
-    return m->decoder.frame.header.blocking_strategy;
+    return m->flac.frame.header.blocking_strategy;
 }
 
 MINIFLAC_API
 uint16_t
 mflac_frame_block_size(mflac_t* m) {
-    return m->decoder.frame.header.block_size;
+    return m->flac.frame.header.block_size;
 }
 
 MINIFLAC_API
 uint32_t
 mflac_frame_sample_rate(mflac_t* m) {
-    return m->decoder.frame.header.sample_rate;
+    return m->flac.frame.header.sample_rate;
 }
 
 MINIFLAC_API
 uint8_t
 mflac_frame_channels(mflac_t* m) {
-    return m->decoder.frame.header.channels;
+    return m->flac.frame.header.channels;
 }
 
 MINIFLAC_API
 uint8_t
 mflac_frame_bps(mflac_t* m) {
-    return m->decoder.frame.header.bps;
+    return m->flac.frame.header.bps;
 }
 
 MINIFLAC_API
 uint64_t
 mflac_frame_sample_number(mflac_t* m) {
-    return m->decoder.frame.header.sample_number;
+    return m->flac.frame.header.sample_number;
 }
 
 MINIFLAC_API
 uint32_t
 mflac_frame_frame_number(mflac_t* m) {
-    return m->decoder.frame.header.frame_number;
+    return m->flac.frame.header.frame_number;
 }
 
 MINIFLAC_API

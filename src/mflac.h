@@ -17,7 +17,7 @@ enum MFLAC_RESULT {
 };
 
 struct mflac_s {
-    struct miniflac_s decoder;
+    struct miniflac_s flac;
     mflac_readcb read;
     void* userdata;
     size_t bufpos;
