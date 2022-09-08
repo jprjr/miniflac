@@ -2048,7 +2048,7 @@ mflac_version_string(void) {
 #undef MFLAC_GET3_FUNC
 
 #define MINIFLAC_VERSION_MAJOR 1
-#define MINIFLAC_VERSION_MINOR 0
+#define MINIFLAC_VERSION_MINOR 1
 #define MINIFLAC_VERSION_PATCH 0
 
 #define MINIFLAC_STR(x) #x
