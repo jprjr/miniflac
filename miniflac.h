@@ -3594,11 +3594,12 @@ miniflac_frame_header_decode(miniflac_frame_header_t* header, miniflac_bitreader
                 header->sample_number = (t & 0x03) << 24;
                 header->state = MINIFLAC_FRAME_HEADER_SAMPLENUMBER_4;
                 goto flac_frame_samplenumber_4;
-            } else if((t & 0xFF) == 0xFE) {
+            } else if((t & 0xFE) == 0xFC) {
                 header->sample_number = (t & 0x01) << 30;
                 header->state = MINIFLAC_FRAME_HEADER_SAMPLENUMBER_3;
                 goto flac_frame_samplenumber_3;
-            } else if((t & 0xFF) == 0xFF) {
+            } else if((t & 0xFF) == 0xFE) {
+                /* untested, requires a variable blocksize stream with a lot of samples, YMMV */
                 header->sample_number = 0;
                 header->state = MINIFLAC_FRAME_HEADER_SAMPLENUMBER_2;
                 goto flac_frame_samplenumber_2;
