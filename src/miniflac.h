@@ -100,8 +100,8 @@ frame, or call miniflac_decode to continue on.
     #endif
 #endif
 
-#if defined(__GNUC__) && __GNUC__ >= 2 && __GNUC_MINOR__ >= 5
-#define MINIFLAC_PURE __attribute__((const))
+#if defined(__GNUC__) && __GNUC__ > 3 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5)
+#define MINIFLAC_CONST __attribute__((__const__))
 #endif
 
 #define MINIFLAC_APPLICATION_H
@@ -130,8 +130,8 @@ frame, or call miniflac_decode to continue on.
 #define MINIFLAC_VORBIS_COMMENT_H
 #define MFLAC_H
 
-#ifndef MINIFLAC_PURE
-#define MINIFLAC_PURE
+#ifndef MINIFLAC_CONST
+#define MINIFLAC_CONST
 #endif
 
 #inject enums

@@ -29,12 +29,12 @@ enum MINIFLAC_RESULT {
 typedef enum MINIFLAC_RESULT MINIFLAC_RESULT;
 
 
-#if defined(__GNUC__) && __GNUC__ >= 2 && __GNUC_MINOR__ >= 5
-#define MINIFLAC_PURE __attribute__((const))
+#if defined(__GNUC__) && (__GNUC__ > 3 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5))
+#define MINIFLAC_CONST __attribute__((__const__))
 #endif
 
-#ifndef MINIFLAC_PURE
-#define MINIFLAC_PURE
+#ifndef MINIFLAC_CONST
+#define MINIFLAC_CONST
 #endif
 
 #ifdef MINIFLAC_ABORT_ON_ERROR

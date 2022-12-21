@@ -36,7 +36,7 @@ extern "C" {
 #endif
 
 MINIFLAC_API
-MINIFLAC_PURE
+MINIFLAC_CONST
 size_t
 mflac_size(void);
 

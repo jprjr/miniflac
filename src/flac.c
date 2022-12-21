@@ -92,7 +92,7 @@ miniflac_oggfunction_end(miniflac_t* pFlac, uint32_t packet_used) {
 }
 
 MINIFLAC_API
-MINIFLAC_PURE
+MINIFLAC_CONST
 size_t
 miniflac_size(void) {
     return sizeof(miniflac_t);

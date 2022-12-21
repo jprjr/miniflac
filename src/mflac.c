@@ -24,9 +24,9 @@
 MINIFLAC_API \
 MFLAC_RESULT \
 sig { \
-    MINIFLAC_RESULT res; \
-    uint32_t used; \
-    size_t received; \
+    MINIFLAC_RESULT res = MINIFLAC_OK; \
+    uint32_t used = 0; \
+    size_t received = 0; \
     body \
     return (MFLAC_RESULT)res; \
 }
@@ -36,7 +36,7 @@ sig { \
 #define MFLAC_GET3_FUNC(var, typ) MFLAC_FUNC(MFLAC_PASTE(mflac_,var)(mflac_t* m, typ p1, uint32_t p2, uint32_t* p3),MFLAC_GET3_BODY(var, p1, p2, p3))
 
 MINIFLAC_API
-MINIFLAC_PURE
+MINIFLAC_CONST
 size_t
 mflac_size(void) {
     return sizeof(mflac_t);

@@ -52,7 +52,7 @@ extern "C" {
 
 /* returns the number of bytes needed for the miniflac struct (for malloc, etc) */
 MINIFLAC_API
-MINIFLAC_PURE
+MINIFLAC_CONST
 size_t
 miniflac_size(void);
 
