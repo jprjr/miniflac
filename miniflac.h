@@ -397,6 +397,7 @@ struct miniflac_bitreader_s {
     uint32_t pos;
     uint32_t len;
     const uint8_t* buffer;
+    uint32_t tot; /* total bytes read since last reset */
 };
 
 struct miniflac_oggheader_s {
@@ -570,6 +571,7 @@ struct miniflac_frame_s {
     enum MINIFLAC_FRAME_STATE state;
     uint8_t cur_subframe;
     uint16_t crc16;
+    size_t size; /* size of the frame, in bytes, only valid after decode */
     struct miniflac_frame_header_s header;
     struct miniflac_subframe_s subframe;
 };
@@ -2049,7 +2051,7 @@ mflac_version_string(void) {
 
 #define MINIFLAC_VERSION_MAJOR 1
 #define MINIFLAC_VERSION_MINOR 1
-#define MINIFLAC_VERSION_PATCH 0
+#define MINIFLAC_VERSION_PATCH 1
 
 #define MINIFLAC_STR(x) #x
 #define MINIFLAC_XSTR(x) MINIFLAC_STR(x)
@@ -2819,6 +2821,7 @@ miniflac_bitreader_init(miniflac_bitreader_t* br) {
     br->pos = 0;
     br->len = 0;
     br->buffer = NULL;
+    br->tot = 0;
 }
 
 MINIFLAC_PRIVATE
@@ -2833,6 +2836,7 @@ miniflac_bitreader_fill(miniflac_bitreader_t* br, uint8_t bits) {
         br->bits += 8;
         br->crc8 = miniflac_crc8_table[br->crc8 ^ byte];
         br->crc16 = miniflac_crc16_table[ (br->crc16 >> 8) ^ byte ] ^ (( br->crc16 & 0x00FF ) << 8);
+        br->tot++;
     }
     return br->bits < bits;
 }
@@ -2847,6 +2851,7 @@ miniflac_bitreader_fill_nocrc(miniflac_bitreader_t* br, uint8_t bits) {
         byte = br->buffer[br->pos++];
         br->val = (br->val << 8) | byte;
         br->bits += 8;
+        br->tot++;
     }
     return br->bits < bits;
 }
@@ -2943,6 +2948,7 @@ miniflac_bitreader_reset_crc(miniflac_bitreader_t* br) {
 
     br->crc8 = 0;
     br->crc16 = 0;
+    br->tot = 0;
 
     while(bits > 0) {
         mask = -1LL;
@@ -2959,6 +2965,7 @@ miniflac_bitreader_reset_crc(miniflac_bitreader_t* br) {
         val &=  imask;
         br->crc8 = miniflac_crc8_table[br->crc8 ^ byte];
         br->crc16 = miniflac_crc16_table[ (br->crc16 >> 8) ^ byte ] ^ (( br->crc16 & 0x00FF ) << 8);
+        br->tot++;
     }
 }
 
@@ -3271,6 +3278,7 @@ miniflac_frame_decode(miniflac_frame_t* frame, miniflac_bitreader_t* br, minifla
                 miniflac_abort();
                 return MINIFLAC_FRAME_CRC16_INVALID;
             }
+            frame->size = br->tot;
             if(output != NULL) {
                 switch(frame->header.channel_assignment) {
                     case MINIFLAC_CHASSGN_LEFT_SIDE: {

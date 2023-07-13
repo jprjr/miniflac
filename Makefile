@@ -93,6 +93,7 @@ HEADERS = \
 
 all: libminiflac.a libminiflac.so miniflac.h \
      examples/basic-decoder-mflac \
+     examples/basic-remuxer \
      examples/basic-decoder examples/single-byte-decoder \
 	 utils/strip-headers examples/get-sizes examples/null-decoder \
 	 examples/benchmark examples/just-decode \
@@ -117,6 +118,9 @@ examples/benchmark.o: examples/benchmark.c miniflac.h
 	$(CC) $(CFLAGS) $(shell pkg-config --cflags flac) -c -o $@ $<
 
 examples/basic-decoder.o: examples/basic-decoder.c miniflac.h
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+examples/basic-remuxer.o: examples/basic-remuxer.c miniflac.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 examples/basic-decoder-mflac.o: examples/basic-decoder-mflac.c miniflac.h mflac.h
@@ -147,6 +151,9 @@ examples/single-byte-decoder.o: examples/single-byte-decoder.c miniflac.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 examples/basic-decoder: examples/basic-decoder.o examples/wav.o examples/pack.o examples/slurp.o src/debug.o
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+examples/basic-remuxer: examples/basic-remuxer.o examples/slurp.o src/debug.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 examples/basic-decoder-mflac: examples/basic-decoder-mflac.o examples/wav.o examples/pack.o src/debug.o

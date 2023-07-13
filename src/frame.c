@@ -78,6 +78,7 @@ miniflac_frame_decode(miniflac_frame_t* frame, miniflac_bitreader_t* br, minifla
                 miniflac_abort();
                 return MINIFLAC_FRAME_CRC16_INVALID;
             }
+            frame->size = br->tot;
             if(output != NULL) {
                 switch(frame->header.channel_assignment) {
                     case MINIFLAC_CHASSGN_LEFT_SIDE: {

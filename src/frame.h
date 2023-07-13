@@ -22,6 +22,7 @@ struct miniflac_frame_s {
     enum MINIFLAC_FRAME_STATE state;
     uint8_t cur_subframe;
     uint16_t crc16;
+    size_t size; /* size of the frame, in bytes, only valid after decode */
     struct miniflac_frame_header_s header;
     struct miniflac_subframe_s subframe;
 };

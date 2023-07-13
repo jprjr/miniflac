@@ -15,6 +15,7 @@ struct miniflac_bitreader_s {
     uint32_t pos;
     uint32_t len;
     const uint8_t* buffer;
+    uint32_t tot; /* total bytes read since last reset */
 };
 
 
