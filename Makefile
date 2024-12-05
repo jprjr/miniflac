@@ -123,7 +123,7 @@ examples/basic-decoder.o: examples/basic-decoder.c miniflac.h
 examples/basic-remuxer.o: examples/basic-remuxer.c miniflac.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-examples/basic-decoder-mflac.o: examples/basic-decoder-mflac.c miniflac.h mflac.h
+examples/basic-decoder-mflac.o: examples/basic-decoder-mflac.c miniflac.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 examples/null-decoder.o: examples/null-decoder.c miniflac.h
