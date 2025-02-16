@@ -61,6 +61,14 @@ mflac_decode(mflac_t* m, int32_t** samples);
 
 MINIFLAC_API
 uint8_t
+mflac_is_native(mflac_t* m);
+
+MINIFLAC_API
+uint8_t
+mflac_is_ogg(mflac_t* m);
+
+MINIFLAC_API
+uint8_t
 mflac_is_frame(mflac_t* m);
 
 MINIFLAC_API
@@ -102,6 +110,22 @@ mflac_metadata_is_cuesheet(mflac_t* m);
 MINIFLAC_API
 uint8_t
 mflac_metadata_is_picture(mflac_t* m);
+
+MINIFLAC_API
+int32_t
+mflac_ogg_serial(mflac_t* m);
+
+MINIFLAC_API
+uint32_t
+mflac_frame_header_size(mflac_t* m);
+
+MINIFLAC_API
+uint64_t
+mflac_bytes_read_flac(mflac_t* m);
+
+MINIFLAC_API
+uint64_t
+mflac_bytes_read_ogg(mflac_t* m);
 
 /*
  * METADATA FUNCTIONS

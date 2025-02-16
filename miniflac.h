@@ -697,6 +697,14 @@ miniflac_decode(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_
  * only valid to call after miniflac_sync returns MINIFLAC_OK */
 MINIFLAC_API
 uint8_t
+miniflac_is_native(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint8_t
+miniflac_is_ogg(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint8_t
 miniflac_is_metadata(miniflac_t* pFlac);
 
 MINIFLAC_API
@@ -770,6 +778,22 @@ miniflac_frame_sample_number(miniflac_t* pFlac);
 MINIFLAC_API
 uint32_t
 miniflac_frame_frame_number(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint32_t
+miniflac_frame_header_size(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint64_t
+miniflac_bytes_read_flac(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint64_t
+miniflac_bytes_read_ogg(miniflac_t* pFlac);
+
+MINIFLAC_API
+int32_t
+miniflac_ogg_serial(miniflac_t* pFlac);
 
 /* get the minimum block size from a streaminfo block */
 MINIFLAC_API
@@ -1061,6 +1085,14 @@ mflac_decode(mflac_t* m, int32_t** samples);
  * only valid to call after mflac_sync returns MFLAC_OK */
 MINIFLAC_API
 uint8_t
+mflac_is_native(mflac_t* m);
+
+MINIFLAC_API
+uint8_t
+mflac_is_ogg(mflac_t* m);
+
+MINIFLAC_API
+uint8_t
 mflac_is_frame(mflac_t* m);
 
 MINIFLAC_API
@@ -1102,6 +1134,22 @@ mflac_metadata_is_cuesheet(mflac_t* m);
 MINIFLAC_API
 uint8_t
 mflac_metadata_is_picture(mflac_t* m);
+
+MINIFLAC_API
+int32_t
+mflac_ogg_serial(mflac_t* m);
+
+MINIFLAC_API
+uint32_t
+mflac_frame_header_size(mflac_t* m);
+
+MINIFLAC_API
+uint64_t
+mflac_bytes_read_flac(mflac_t* m);
+
+MINIFLAC_API
+uint64_t
+mflac_bytes_read_ogg(mflac_t* m);
 
 /*
  * METADATA FUNCTIONS
@@ -1927,6 +1975,18 @@ MFLAC_GET3_FUNC(picture_data, uint8_t*)
 
 MINIFLAC_API
 uint8_t
+mflac_is_native(mflac_t* m) {
+    return m->flac.container == MINIFLAC_CONTAINER_NATIVE;
+}
+
+MINIFLAC_API
+uint8_t
+mflac_is_ogg(mflac_t* m) {
+    return m->flac.container == MINIFLAC_CONTAINER_OGG;
+}
+
+MINIFLAC_API
+uint8_t
 mflac_is_frame(mflac_t* m) {
     return m->flac.state == MINIFLAC_FRAME;
 }
@@ -2037,6 +2097,30 @@ MINIFLAC_API
 uint32_t
 mflac_frame_frame_number(mflac_t* m) {
     return m->flac.frame.header.frame_number;
+}
+
+MINIFLAC_API
+uint32_t
+mflac_frame_header_size(mflac_t* m) {
+    return m->flac.frame.header.size;
+}
+
+MINIFLAC_API
+int32_t
+mflac_ogg_serial(mflac_t* m) {
+    return m->flac.oggserial;
+}
+
+MINIFLAC_API
+uint64_t
+mflac_bytes_read_flac(mflac_t* m) {
+    return m->flac.bytes_read_flac;
+}
+
+MINIFLAC_API
+uint64_t
+mflac_bytes_read_ogg(mflac_t* m) {
+    return m->flac.bytes_read_ogg;
 }
 
 MINIFLAC_API
@@ -2461,6 +2545,22 @@ miniflac_sync(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t*
 
 MINIFLAC_API
 uint8_t
+miniflac_is_native(miniflac_t* pFlac) {
+    return pFlac->container == MINIFLAC_CONTAINER_NATIVE;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_is_ogg(miniflac_t* pFlac) {
+    return pFlac->container == MINIFLAC_CONTAINER_OGG;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_is_ogg(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint8_t
 miniflac_is_metadata(miniflac_t* pFlac) {
     return pFlac->state == MINIFLAC_METADATA;
 }
@@ -2571,6 +2671,30 @@ MINIFLAC_API
 uint32_t
 miniflac_frame_frame_number(miniflac_t* pFlac) {
     return pFlac->frame.header.frame_number;
+}
+
+MINIFLAC_API
+uint32_t
+miniflac_frame_header_size(miniflac_t* pFlac) {
+    return pFlac->frame.header.size;
+}
+
+MINIFLAC_API
+int32_t
+miniflac_ogg_serial(miniflac_t* pFlac) {
+    return pFlac->oggserial;
+}
+
+MINIFLAC_API
+uint64_t
+miniflac_bytes_read_flac(miniflac_t* pFlac) {
+    return pFlac->bytes_read_flac;
+}
+
+MINIFLAC_API
+uint64_t
+miniflac_bytes_read_ogg(miniflac_t* pFlac) {
+    return pFlac->bytes_read_ogg;
 }
 
 #define MINIFLAC_SUBSYS(subsys) &pFlac->metadata.subsys

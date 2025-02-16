@@ -86,6 +86,13 @@ miniflac_decode(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_
 
 /* functions to query the state without inspecting structs,
  * only valid to call after miniflac_sync returns MINIFLAC_OK */
+MINIFLAC_API
+uint8_t
+miniflac_is_native(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint8_t
+miniflac_is_ogg(miniflac_t* pFlac);
 
 MINIFLAC_API
 uint8_t
@@ -162,6 +169,22 @@ miniflac_frame_sample_number(miniflac_t* pFlac);
 MINIFLAC_API
 uint32_t
 miniflac_frame_frame_number(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint32_t
+miniflac_frame_header_size(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint64_t
+miniflac_bytes_read_flac(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint64_t
+miniflac_bytes_read_ogg(miniflac_t* pFlac);
+
+MINIFLAC_API
+int32_t
+miniflac_ogg_serial(miniflac_t* pFlac);
 
 /* get the minimum block size from a streaminfo block */
 MINIFLAC_API

@@ -3,8 +3,8 @@
 #include <stddef.h>
 
 #define MINIFLAC_VERSION_MAJOR 1
-#define MINIFLAC_VERSION_MINOR 1
-#define MINIFLAC_VERSION_PATCH 1
+#define MINIFLAC_VERSION_MINOR 2
+#define MINIFLAC_VERSION_PATCH 0
 
 #define MINIFLAC_STR(x) #x
 #define MINIFLAC_XSTR(x) MINIFLAC_STR(x)
@@ -390,6 +390,22 @@ miniflac_sync(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t*
 
 MINIFLAC_API
 uint8_t
+miniflac_is_native(miniflac_t* pFlac) {
+    return pFlac->container == MINIFLAC_CONTAINER_NATIVE;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_is_ogg(miniflac_t* pFlac) {
+    return pFlac->container == MINIFLAC_CONTAINER_OGG;
+}
+
+MINIFLAC_API
+uint8_t
+miniflac_is_ogg(miniflac_t* pFlac);
+
+MINIFLAC_API
+uint8_t
 miniflac_is_metadata(miniflac_t* pFlac) {
     return pFlac->state == MINIFLAC_METADATA;
 }
@@ -500,6 +516,30 @@ MINIFLAC_API
 uint32_t
 miniflac_frame_frame_number(miniflac_t* pFlac) {
     return pFlac->frame.header.frame_number;
+}
+
+MINIFLAC_API
+uint32_t
+miniflac_frame_header_size(miniflac_t* pFlac) {
+    return pFlac->frame.header.size;
+}
+
+MINIFLAC_API
+int32_t
+miniflac_ogg_serial(miniflac_t* pFlac) {
+    return pFlac->oggserial;
+}
+
+MINIFLAC_API
+uint64_t
+miniflac_bytes_read_flac(miniflac_t* pFlac) {
+    return pFlac->bytes_read_flac;
+}
+
+MINIFLAC_API
+uint64_t
+miniflac_bytes_read_ogg(miniflac_t* pFlac) {
+    return pFlac->bytes_read_ogg;
 }
 
 #define MINIFLAC_SUBSYS(subsys) &pFlac->metadata.subsys
