@@ -4,6 +4,7 @@
 MINIFLAC_PRIVATE
 void
 miniflac_frame_header_init(miniflac_frame_header_t* header) {
+    header->state = MINIFLAC_FRAME_HEADER_SYNC;
     header->block_size_raw = 0;
     header->sample_rate_raw = 0;
     header->channel_assignment_raw = 0;
@@ -16,7 +17,7 @@ miniflac_frame_header_init(miniflac_frame_header_t* header) {
     header->bps = 0;
     header->sample_number = 0;
     header->crc8 = 0;
-    header->state = MINIFLAC_FRAME_HEADER_SYNC;
+    header->size = 0;
 }
 
 
@@ -53,6 +54,7 @@ miniflac_frame_header_decode(miniflac_frame_header_t* header, miniflac_bitreader
             t = miniflac_bitreader_read(br,1);
             header->blocking_strategy = t;
             header->state = MINIFLAC_FRAME_HEADER_BLOCKSIZE;
+            header->size += 2;
         }
         /* fall-through */
         case MINIFLAC_FRAME_HEADER_BLOCKSIZE: {
@@ -189,6 +191,7 @@ miniflac_frame_header_decode(miniflac_frame_header_t* header, miniflac_bitreader
             }
 
             header->state = MINIFLAC_FRAME_HEADER_CHANNELASSIGNMENT;
+            header->size += 1;
         }
         /* fall-through */
         case MINIFLAC_FRAME_HEADER_CHANNELASSIGNMENT: {
@@ -252,6 +255,7 @@ miniflac_frame_header_decode(miniflac_frame_header_t* header, miniflac_bitreader
                 return MINIFLAC_FRAME_RESERVED_BIT2;
             }
             header->state = MINIFLAC_FRAME_HEADER_SAMPLENUMBER_1;
+            header->size += 1;
         }
         /* fall-through */
         case MINIFLAC_FRAME_HEADER_SAMPLENUMBER_1: {
@@ -261,32 +265,39 @@ miniflac_frame_header_decode(miniflac_frame_header_t* header, miniflac_bitreader
             if((t & 0x80) == 0x00) {
                 header->sample_number = t;
                 header->state = MINIFLAC_FRAME_HEADER_BLOCKSIZE_MAYBE;
+                header->size += 1;
                 goto flac_frame_blocksize_maybe;
             }
             else if((t & 0xE0) == 0xC0) {
                 header->sample_number = (t & 0x1F) << 6;
                 header->state = MINIFLAC_FRAME_HEADER_SAMPLENUMBER_7;
+                header->size += 2;
                 goto flac_frame_samplenumber_7;
             } else if((t & 0xF0) == 0xE0) {
                 header->sample_number = (t & 0x0F) << 12;
                 header->state = MINIFLAC_FRAME_HEADER_SAMPLENUMBER_6;
+                header->size += 3;
                 goto flac_frame_samplenumber_6;
             } else if((t & 0xF8) == 0xF0) {
                 header->sample_number = (t & 0x07) << 18;
                 header->state = MINIFLAC_FRAME_HEADER_SAMPLENUMBER_5;
+                header->size += 4;
                 goto flac_frame_samplenumber_5;
             } else if((t & 0xFC) == 0xF8) {
                 header->sample_number = (t & 0x03) << 24;
                 header->state = MINIFLAC_FRAME_HEADER_SAMPLENUMBER_4;
+                header->size += 5;
                 goto flac_frame_samplenumber_4;
             } else if((t & 0xFE) == 0xFC) {
                 header->sample_number = (t & 0x01) << 30;
                 header->state = MINIFLAC_FRAME_HEADER_SAMPLENUMBER_3;
+                header->size += 6;
                 goto flac_frame_samplenumber_3;
             } else if((t & 0xFF) == 0xFE) {
                 /* untested, requires a variable blocksize stream with a lot of samples, YMMV */
                 header->sample_number = 0;
                 header->state = MINIFLAC_FRAME_HEADER_SAMPLENUMBER_2;
+                header->size += 7;
                 goto flac_frame_samplenumber_2;
             }
         }
@@ -346,12 +357,14 @@ miniflac_frame_header_decode(miniflac_frame_header_t* header, miniflac_bitreader
                     if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
                     t = miniflac_bitreader_read(br,8) + 1;
                     header->block_size = t;
+                    header->size += 1;
                     break;
                 }
                 case 7: {
                     if(miniflac_bitreader_fill(br,16)) return MINIFLAC_CONTINUE;
                     t = miniflac_bitreader_read(br,16) + 1;
                     header->block_size = t;
+                    header->size += 2;
                     break;
                 }
                 default: break;
@@ -365,18 +378,21 @@ miniflac_frame_header_decode(miniflac_frame_header_t* header, miniflac_bitreader
                     if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
                     t = miniflac_bitreader_read(br,8);
                     header->sample_rate = t * 1000;
+                    header->size += 1;
                     break;
                 }
                 case 13: {
                     if(miniflac_bitreader_fill(br,16)) return MINIFLAC_CONTINUE;
                     t = miniflac_bitreader_read(br,16);
                     header->sample_rate = t;
+                    header->size += 2;
                     break;
                 }
                 case 14: {
                     if(miniflac_bitreader_fill(br,16)) return MINIFLAC_CONTINUE;
                     t = miniflac_bitreader_read(br,16);
                     header->sample_rate = t * 10;
+                    header->size += 2;
                     break;
                 }
                 default: break;
@@ -394,6 +410,7 @@ miniflac_frame_header_decode(miniflac_frame_header_t* header, miniflac_bitreader
                 miniflac_abort();
                 return MINIFLAC_FRAME_CRC8_INVALID;
             }
+            header->size += 1;
         }
         /* fall-through */
         default: break;

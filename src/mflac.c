@@ -52,6 +52,14 @@ mflac_init(mflac_t* m, MINIFLAC_CONTAINER container, mflac_readcb read, void *us
     m->buflen = 0;
 }
 
+MINIFLAC_API
+void
+mflac_reset(mflac_t* m, MINIFLAC_STATE state) {
+    miniflac_reset(&m->flac, state);
+    m->bufpos = 0;
+    m->buflen = 0;
+}
+
 MFLAC_GET0_FUNC(sync)
 
 MFLAC_GET1_FUNC(decode,int32_t**)

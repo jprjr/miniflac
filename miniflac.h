@@ -550,6 +550,7 @@ struct miniflac_subframe_s {
 };
 
 struct miniflac_frame_header_s {
+    enum MINIFLAC_FRAME_HEADER_STATE state;
     uint8_t block_size_raw; /* block size value direct from header */
     uint8_t sample_rate_raw; /* sample rate value direct from header */
     uint8_t channel_assignment_raw; /* channel assignment value direct from header */
@@ -564,7 +565,7 @@ struct miniflac_frame_header_s {
         uint32_t frame_number;
     };
     uint8_t crc8;
-    enum MINIFLAC_FRAME_HEADER_STATE state;
+    size_t size; /* size of the frame header, in bytes, only valid after sync */
 };
 
 struct miniflac_frame_s {
@@ -587,6 +588,8 @@ struct miniflac_s {
     struct miniflac_frame_s frame;
     int32_t oggserial;
     uint8_t oggserial_set;
+    uint64_t bytes_read_flac; /* total bytes of flac data read */
+    uint64_t bytes_read_ogg; /* total bytes of ogg data read */
 };
 
 struct mflac_s {
@@ -670,6 +673,15 @@ miniflac_size(void);
 MINIFLAC_API
 void
 miniflac_init(miniflac_t* pFlac, MINIFLAC_CONTAINER container);
+
+/* performs a reset to a particular state. Resetting to anything
+ * besides MINIFLAC_FRAME is equivalent to performing miniflac_init (except
+ * the container and ogg-related settings are kept).
+ * Resetting to MINIFLAC_FRAME will keep decoded streaminfo data, this function
+ * is meant to prepare for decoding frames after doing a seek */
+MINIFLAC_API
+void
+miniflac_reset(miniflac_t* pFlac, MINIFLAC_STATE state);
 
 /* sync to the next metadata block or frame, parses the metadata header or frame header */
 MINIFLAC_API
@@ -1032,6 +1044,10 @@ mflac_size(void);
 MINIFLAC_API
 void
 mflac_init(mflac_t* m, MINIFLAC_CONTAINER container, mflac_readcb read, void* userdata);
+
+MINIFLAC_API
+void
+mflac_reset(mflac_t* m, MINIFLAC_STATE state);
 
 MINIFLAC_API
 MFLAC_RESULT
@@ -1841,6 +1857,14 @@ mflac_init(mflac_t* m, MINIFLAC_CONTAINER container, mflac_readcb read, void *us
     m->buflen = 0;
 }
 
+MINIFLAC_API
+void
+mflac_reset(mflac_t* m, MINIFLAC_STATE state) {
+    miniflac_reset(&m->flac, state);
+    m->bufpos = 0;
+    m->buflen = 0;
+}
+
 MFLAC_GET0_FUNC(sync)
 
 MFLAC_GET1_FUNC(decode,int32_t**)
@@ -2147,30 +2171,59 @@ miniflac_size(void) {
 
 MINIFLAC_API
 void
-miniflac_init(miniflac_t* pFlac, MINIFLAC_CONTAINER container) {
+miniflac_reset(miniflac_t* pFlac, MINIFLAC_STATE state) {
+    uint32_t sample_rate = 0;
+    uint8_t bps = 0;
+
+    if(state == MINIFLAC_FRAME) {
+        sample_rate = pFlac->metadata.streaminfo.sample_rate;
+        bps = pFlac->metadata.streaminfo.bps;
+    }
+
     miniflac_bitreader_init(&pFlac->br);
     miniflac_ogg_init(&pFlac->ogg);
     miniflac_oggheader_init(&pFlac->oggheader);
     miniflac_streammarker_init(&pFlac->streammarker);
     miniflac_metadata_init(&pFlac->metadata);
     miniflac_frame_init(&pFlac->frame);
+    pFlac->bytes_read_flac = 0;
+    pFlac->bytes_read_ogg = 0;
+    pFlac->state = state;
+
+    if(state == MINIFLAC_FRAME) {
+        pFlac->metadata.streaminfo.sample_rate = sample_rate;
+        pFlac->metadata.streaminfo.bps = bps;
+    }
+
+    /* if we're using an ogg container we need to look for an ogg header
+     * no matter what */
+    if(pFlac->container == MINIFLAC_CONTAINER_OGG) {
+        pFlac->state = MINIFLAC_OGGHEADER;
+    }
+
+}
+
+MINIFLAC_API
+void
+miniflac_init(miniflac_t* pFlac, MINIFLAC_CONTAINER container) {
     pFlac->container = container;
     pFlac->oggserial = -1;
     pFlac->oggserial_set = 0;
 
     switch(pFlac->container) {
+        case MINIFLAC_CONTAINER_UNKNOWN: {
+            miniflac_reset(pFlac, MINIFLAC_STREAMMARKER);
+            break;
+        }
         case MINIFLAC_CONTAINER_NATIVE: {
-            pFlac->state = MINIFLAC_STREAMMARKER_OR_FRAME;
+            miniflac_reset(pFlac, MINIFLAC_STREAMMARKER_OR_FRAME);
             break;
         }
         case MINIFLAC_CONTAINER_OGG: {
-            pFlac->state = MINIFLAC_OGGHEADER;
+            miniflac_reset(pFlac, MINIFLAC_OGGHEADER);
             break;
         }
-        default: break;
     }
-
-    pFlac->state = MINIFLAC_STREAMMARKER;
 }
 
 static
@@ -2264,6 +2317,7 @@ miniflac_sync_native(miniflac_t* pFlac, const uint8_t* data, uint32_t length, ui
     r = miniflac_sync_internal(pFlac,&pFlac->br);
 
     *out_length = pFlac->br.pos;
+    pFlac->bytes_read_flac += pFlac->br.pos;
     return r;
 }
 
@@ -2284,6 +2338,7 @@ miniflac_decode_native(miniflac_t* pFlac, const uint8_t* data, uint32_t length, 
 
     miniflac_decode_exit:
     *out_length = pFlac->br.pos;
+    pFlac->bytes_read_flac += pFlac->br.pos;
     return r;
 }
 
@@ -2315,6 +2370,7 @@ miniflac_sync_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint3
     } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
 
     *out_length = pFlac->ogg.br.pos;
+    pFlac->bytes_read_ogg += pFlac->ogg.br.pos;
     return r;
 }
 
@@ -2340,6 +2396,7 @@ miniflac_decode_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uin
     } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
 
     *out_length = pFlac->ogg.br.pos;
+    pFlac->bytes_read_ogg += pFlac->ogg.br.pos;
     return r;
 }
 
@@ -2541,6 +2598,7 @@ miniflac_ ## subsys ## _ ## val ## _native(miniflac_t *pFlac, const uint8_t* dat
     r = miniflac_ ## subsys ## _read_ ## val(MINIFLAC_SUBSYS(subsys),&pFlac->br, outvar); \
     miniflac_ ## subsys ## _ ## val ## _exit: \
     *out_length = pFlac->br.pos; \
+    pFlac->bytes_read_flac += pFlac->br.pos; \
     return r; \
 }
 
@@ -2562,6 +2620,7 @@ miniflac_ ## subsys ## _ ## val ## _ogg(miniflac_t *pFlac, const uint8_t* data, 
         miniflac_oggfunction_end(pFlac,packet_used); \
     } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length); \
     *out_length = pFlac->ogg.br.pos; \
+    pFlac->bytes_read_ogg += pFlac->ogg.br.pos; \
     return r; \
 } \
 
@@ -2607,6 +2666,7 @@ miniflac_ ## subsys ## _ ## val ## _native(miniflac_t *pFlac, const uint8_t* dat
     r = miniflac_ ## subsys ## _read_ ## val(MINIFLAC_SUBSYS(subsys),&pFlac->br, buffer, bufferlen, outlen); \
     miniflac_ ## subsys ## _ ## val ## _exit: \
     *out_length = pFlac->br.pos; \
+    pFlac->bytes_read_flac += pFlac->br.pos; \
     return r; \
 }
 
@@ -2628,6 +2688,7 @@ miniflac_ ## subsys ## _ ## val ## _ogg(miniflac_t *pFlac, const uint8_t* data, 
         miniflac_oggfunction_end(pFlac,packet_used); \
     } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length); \
     *out_length = pFlac->ogg.br.pos; \
+    pFlac->bytes_read_ogg += pFlac->ogg.br.pos; \
     return r; \
 } \
 
@@ -3327,6 +3388,7 @@ miniflac_frame_decode(miniflac_frame_t* frame, miniflac_bitreader_t* br, minifla
 MINIFLAC_PRIVATE
 void
 miniflac_frame_header_init(miniflac_frame_header_t* header) {
+    header->state = MINIFLAC_FRAME_HEADER_SYNC;
     header->block_size_raw = 0;
     header->sample_rate_raw = 0;
     header->channel_assignment_raw = 0;
@@ -3339,7 +3401,7 @@ miniflac_frame_header_init(miniflac_frame_header_t* header) {
     header->bps = 0;
     header->sample_number = 0;
     header->crc8 = 0;
-    header->state = MINIFLAC_FRAME_HEADER_SYNC;
+    header->size = 0;
 }
 
 
@@ -3376,6 +3438,7 @@ miniflac_frame_header_decode(miniflac_frame_header_t* header, miniflac_bitreader
             t = miniflac_bitreader_read(br,1);
             header->blocking_strategy = t;
             header->state = MINIFLAC_FRAME_HEADER_BLOCKSIZE;
+            header->size += 2;
         }
         /* fall-through */
         case MINIFLAC_FRAME_HEADER_BLOCKSIZE: {
@@ -3512,6 +3575,7 @@ miniflac_frame_header_decode(miniflac_frame_header_t* header, miniflac_bitreader
             }
 
             header->state = MINIFLAC_FRAME_HEADER_CHANNELASSIGNMENT;
+            header->size += 1;
         }
         /* fall-through */
         case MINIFLAC_FRAME_HEADER_CHANNELASSIGNMENT: {
@@ -3575,6 +3639,7 @@ miniflac_frame_header_decode(miniflac_frame_header_t* header, miniflac_bitreader
                 return MINIFLAC_FRAME_RESERVED_BIT2;
             }
             header->state = MINIFLAC_FRAME_HEADER_SAMPLENUMBER_1;
+            header->size += 1;
         }
         /* fall-through */
         case MINIFLAC_FRAME_HEADER_SAMPLENUMBER_1: {
@@ -3584,32 +3649,39 @@ miniflac_frame_header_decode(miniflac_frame_header_t* header, miniflac_bitreader
             if((t & 0x80) == 0x00) {
                 header->sample_number = t;
                 header->state = MINIFLAC_FRAME_HEADER_BLOCKSIZE_MAYBE;
+                header->size += 1;
                 goto flac_frame_blocksize_maybe;
             }
             else if((t & 0xE0) == 0xC0) {
                 header->sample_number = (t & 0x1F) << 6;
                 header->state = MINIFLAC_FRAME_HEADER_SAMPLENUMBER_7;
+                header->size += 2;
                 goto flac_frame_samplenumber_7;
             } else if((t & 0xF0) == 0xE0) {
                 header->sample_number = (t & 0x0F) << 12;
                 header->state = MINIFLAC_FRAME_HEADER_SAMPLENUMBER_6;
+                header->size += 3;
                 goto flac_frame_samplenumber_6;
             } else if((t & 0xF8) == 0xF0) {
                 header->sample_number = (t & 0x07) << 18;
                 header->state = MINIFLAC_FRAME_HEADER_SAMPLENUMBER_5;
+                header->size += 4;
                 goto flac_frame_samplenumber_5;
             } else if((t & 0xFC) == 0xF8) {
                 header->sample_number = (t & 0x03) << 24;
                 header->state = MINIFLAC_FRAME_HEADER_SAMPLENUMBER_4;
+                header->size += 5;
                 goto flac_frame_samplenumber_4;
             } else if((t & 0xFE) == 0xFC) {
                 header->sample_number = (t & 0x01) << 30;
                 header->state = MINIFLAC_FRAME_HEADER_SAMPLENUMBER_3;
+                header->size += 6;
                 goto flac_frame_samplenumber_3;
             } else if((t & 0xFF) == 0xFE) {
                 /* untested, requires a variable blocksize stream with a lot of samples, YMMV */
                 header->sample_number = 0;
                 header->state = MINIFLAC_FRAME_HEADER_SAMPLENUMBER_2;
+                header->size += 7;
                 goto flac_frame_samplenumber_2;
             }
         }
@@ -3669,12 +3741,14 @@ miniflac_frame_header_decode(miniflac_frame_header_t* header, miniflac_bitreader
                     if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
                     t = miniflac_bitreader_read(br,8) + 1;
                     header->block_size = t;
+                    header->size += 1;
                     break;
                 }
                 case 7: {
                     if(miniflac_bitreader_fill(br,16)) return MINIFLAC_CONTINUE;
                     t = miniflac_bitreader_read(br,16) + 1;
                     header->block_size = t;
+                    header->size += 2;
                     break;
                 }
                 default: break;
@@ -3688,18 +3762,21 @@ miniflac_frame_header_decode(miniflac_frame_header_t* header, miniflac_bitreader
                     if(miniflac_bitreader_fill(br,8)) return MINIFLAC_CONTINUE;
                     t = miniflac_bitreader_read(br,8);
                     header->sample_rate = t * 1000;
+                    header->size += 1;
                     break;
                 }
                 case 13: {
                     if(miniflac_bitreader_fill(br,16)) return MINIFLAC_CONTINUE;
                     t = miniflac_bitreader_read(br,16);
                     header->sample_rate = t;
+                    header->size += 2;
                     break;
                 }
                 case 14: {
                     if(miniflac_bitreader_fill(br,16)) return MINIFLAC_CONTINUE;
                     t = miniflac_bitreader_read(br,16);
                     header->sample_rate = t * 10;
+                    header->size += 2;
                     break;
                 }
                 default: break;
@@ -3717,6 +3794,7 @@ miniflac_frame_header_decode(miniflac_frame_header_t* header, miniflac_bitreader
                 miniflac_abort();
                 return MINIFLAC_FRAME_CRC8_INVALID;
             }
+            header->size += 1;
         }
         /* fall-through */
         default: break;

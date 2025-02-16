@@ -36,6 +36,7 @@ enum MINIFLAC_FRAME_HEADER_STATE {
 };
 
 struct miniflac_frame_header_s {
+    enum MINIFLAC_FRAME_HEADER_STATE state;
     uint8_t block_size_raw; /* block size value direct from header */
     uint8_t sample_rate_raw; /* sample rate value direct from header */
     uint8_t channel_assignment_raw; /* channel assignment value direct from header */
@@ -50,7 +51,7 @@ struct miniflac_frame_header_s {
         uint32_t frame_number;
     };
     uint8_t crc8;
-    enum MINIFLAC_FRAME_HEADER_STATE state;
+    size_t size; /* size of the frame header, in bytes, only valid after sync */
 };
 
 typedef struct miniflac_frame_header_s miniflac_frame_header_t;

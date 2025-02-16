@@ -396,6 +396,32 @@ int main(int argc, const char *argv[]) {
         if(mflac_sync(m) != MFLAC_OK) abort();
     }
 
+#if 0
+    /* example of doing a seek with a known sample_offset value. We'll
+     * want to:
+     *   * seek to the correct position in the input file
+     *   * reset the decoder to look for a frame
+     *   * re-sync
+     */
+
+    /* after we call mflac_reset(), values like bytes_read_flac will be set
+     * to 0, so we'll save bytes_read_flac - frame.header.size. That way
+     * if we want to do another sync, we have our headers_len value */
+
+    size_t headers_len = m->flac.bytes_read_flac - m->flac.frame.header.size;
+
+    /* using example sample offset value from issue #2 */
+    fseek(input, headers_len + 14954847, SEEK_SET);
+
+    /* reset into the frame decoding state */
+    mflac_reset(m, MINIFLAC_FRAME);
+
+    /* re-sync */
+    if(mflac_sync(m) != MFLAC_OK) abort();
+
+    /* TODO: seeking in Ogg FLAC files? */
+#endif
+
     wav_header_create(output,m->flac.frame.header.sample_rate,m->flac.frame.header.channels,m->flac.frame.header.bps);
 
     /* now we're at the beginning of a frame (just past the frame header) and can start decoding */

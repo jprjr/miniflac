@@ -100,30 +100,59 @@ miniflac_size(void) {
 
 MINIFLAC_API
 void
-miniflac_init(miniflac_t* pFlac, MINIFLAC_CONTAINER container) {
+miniflac_reset(miniflac_t* pFlac, MINIFLAC_STATE state) {
+    uint32_t sample_rate = 0;
+    uint8_t bps = 0;
+
+    if(state == MINIFLAC_FRAME) {
+        sample_rate = pFlac->metadata.streaminfo.sample_rate;
+        bps = pFlac->metadata.streaminfo.bps;
+    }
+
     miniflac_bitreader_init(&pFlac->br);
     miniflac_ogg_init(&pFlac->ogg);
     miniflac_oggheader_init(&pFlac->oggheader);
     miniflac_streammarker_init(&pFlac->streammarker);
     miniflac_metadata_init(&pFlac->metadata);
     miniflac_frame_init(&pFlac->frame);
+    pFlac->bytes_read_flac = 0;
+    pFlac->bytes_read_ogg = 0;
+    pFlac->state = state;
+
+    if(state == MINIFLAC_FRAME) {
+        pFlac->metadata.streaminfo.sample_rate = sample_rate;
+        pFlac->metadata.streaminfo.bps = bps;
+    }
+
+    /* if we're using an ogg container we need to look for an ogg header
+     * no matter what */
+    if(pFlac->container == MINIFLAC_CONTAINER_OGG) {
+        pFlac->state = MINIFLAC_OGGHEADER;
+    }
+
+}
+
+MINIFLAC_API
+void
+miniflac_init(miniflac_t* pFlac, MINIFLAC_CONTAINER container) {
     pFlac->container = container;
     pFlac->oggserial = -1;
     pFlac->oggserial_set = 0;
 
     switch(pFlac->container) {
+        case MINIFLAC_CONTAINER_UNKNOWN: {
+            miniflac_reset(pFlac, MINIFLAC_STREAMMARKER);
+            break;
+        }
         case MINIFLAC_CONTAINER_NATIVE: {
-            pFlac->state = MINIFLAC_STREAMMARKER_OR_FRAME;
+            miniflac_reset(pFlac, MINIFLAC_STREAMMARKER_OR_FRAME);
             break;
         }
         case MINIFLAC_CONTAINER_OGG: {
-            pFlac->state = MINIFLAC_OGGHEADER;
+            miniflac_reset(pFlac, MINIFLAC_OGGHEADER);
             break;
         }
-        default: break;
     }
-
-    pFlac->state = MINIFLAC_STREAMMARKER;
 }
 
 static
@@ -217,6 +246,7 @@ miniflac_sync_native(miniflac_t* pFlac, const uint8_t* data, uint32_t length, ui
     r = miniflac_sync_internal(pFlac,&pFlac->br);
 
     *out_length = pFlac->br.pos;
+    pFlac->bytes_read_flac += pFlac->br.pos;
     return r;
 }
 
@@ -237,6 +267,7 @@ miniflac_decode_native(miniflac_t* pFlac, const uint8_t* data, uint32_t length, 
 
     miniflac_decode_exit:
     *out_length = pFlac->br.pos;
+    pFlac->bytes_read_flac += pFlac->br.pos;
     return r;
 }
 
@@ -268,6 +299,7 @@ miniflac_sync_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint3
     } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
 
     *out_length = pFlac->ogg.br.pos;
+    pFlac->bytes_read_ogg += pFlac->ogg.br.pos;
     return r;
 }
 
@@ -293,6 +325,7 @@ miniflac_decode_ogg(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uin
     } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length);
 
     *out_length = pFlac->ogg.br.pos;
+    pFlac->bytes_read_ogg += pFlac->ogg.br.pos;
     return r;
 }
 
@@ -494,6 +527,7 @@ miniflac_ ## subsys ## _ ## val ## _native(miniflac_t *pFlac, const uint8_t* dat
     r = miniflac_ ## subsys ## _read_ ## val(MINIFLAC_SUBSYS(subsys),&pFlac->br, outvar); \
     miniflac_ ## subsys ## _ ## val ## _exit: \
     *out_length = pFlac->br.pos; \
+    pFlac->bytes_read_flac += pFlac->br.pos; \
     return r; \
 }
 
@@ -515,6 +549,7 @@ miniflac_ ## subsys ## _ ## val ## _ogg(miniflac_t *pFlac, const uint8_t* data, 
         miniflac_oggfunction_end(pFlac,packet_used); \
     } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length); \
     *out_length = pFlac->ogg.br.pos; \
+    pFlac->bytes_read_ogg += pFlac->ogg.br.pos; \
     return r; \
 } \
 
@@ -560,6 +595,7 @@ miniflac_ ## subsys ## _ ## val ## _native(miniflac_t *pFlac, const uint8_t* dat
     r = miniflac_ ## subsys ## _read_ ## val(MINIFLAC_SUBSYS(subsys),&pFlac->br, buffer, bufferlen, outlen); \
     miniflac_ ## subsys ## _ ## val ## _exit: \
     *out_length = pFlac->br.pos; \
+    pFlac->bytes_read_flac += pFlac->br.pos; \
     return r; \
 }
 
@@ -581,6 +617,7 @@ miniflac_ ## subsys ## _ ## val ## _ogg(miniflac_t *pFlac, const uint8_t* data, 
         miniflac_oggfunction_end(pFlac,packet_used); \
     } while(r == MINIFLAC_CONTINUE && pFlac->ogg.br.pos < length); \
     *out_length = pFlac->ogg.br.pos; \
+    pFlac->bytes_read_ogg += pFlac->ogg.br.pos; \
     return r; \
 } \
 

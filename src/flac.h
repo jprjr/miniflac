@@ -40,6 +40,8 @@ struct miniflac_s {
     struct miniflac_frame_s frame;
     int32_t oggserial;
     uint8_t oggserial_set;
+    uint64_t bytes_read_flac; /* total bytes of flac data read */
+    uint64_t bytes_read_ogg; /* total bytes of ogg data read */
 };
 
 typedef struct miniflac_s miniflac_t;
@@ -61,6 +63,15 @@ miniflac_size(void);
 MINIFLAC_API
 void
 miniflac_init(miniflac_t* pFlac, MINIFLAC_CONTAINER container);
+
+/* performs a reset to a particular state. Resetting to anything
+ * besides MINIFLAC_FRAME is equivalent to performing miniflac_init (except
+ * the container and ogg-related settings are kept).
+ * Resetting to MINIFLAC_FRAME will keep decoded streaminfo data, this function
+ * is meant to prepare for decoding frames after doing a seek */
+MINIFLAC_API
+void
+miniflac_reset(miniflac_t* pFlac, MINIFLAC_STATE state);
 
 /* sync to the next metadata block or frame, parses the metadata header or frame header */
 MINIFLAC_API

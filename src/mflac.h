@@ -45,6 +45,10 @@ void
 mflac_init(mflac_t* m, MINIFLAC_CONTAINER container, mflac_readcb read, void* userdata);
 
 MINIFLAC_API
+void
+mflac_reset(mflac_t* m, MINIFLAC_STATE state);
+
+MINIFLAC_API
 MFLAC_RESULT
 mflac_sync(mflac_t* m);
 
