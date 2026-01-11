@@ -216,7 +216,7 @@ MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_streaminfo_channels(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* channels);
 
-/* get the bits per second */
+/* get the bits per sample */
 MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_streaminfo_bps(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* bps);
