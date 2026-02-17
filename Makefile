@@ -1,12 +1,15 @@
-.PHONY: all clean
+.PHONY: all clean freestandng
 
-MISC_CFLAGS = -DMINIFLAC_ABORT_ON_ERROR
-
+MISC_CFLAGS = -pg -DMINIFLAC_ABORT_ON_ERROR
+DEBUG = -g
 OPTIMIZE = -O3
 LTO = -flto
 
-CFLAGS = $(LTO) -Wall -Wextra -fPIC -pg -g $(OPTIMIZE) $(MISC_CFLAGS)
-LDFLAGS = $(LTO) -pg
+SHARED_LIB_LDFLAGS = -shared
+SHARED_LIB_CFLAGS =
+
+CFLAGS = $(LTO) -Wall -Wextra -fPIC $(DEBUG) $(OPTIMIZE) $(MISC_CFLAGS)
+LDFLAGS = $(LTO) $(DEBUG)
 
 OBJS = \
   src/application.o \
@@ -105,11 +108,23 @@ all: libminiflac.a libminiflac.so miniflac.h \
 miniflac.h: $(SOURCES) $(HEADERS) utils/build.pl
 	./utils/build.pl > miniflac.h
 
+freestanding: miniflac.h
+	rm -f libminiflac.a libminiflac.so
+	echo '#define MINIFLAC_IMPLEMENTATION' > miniflac.c
+	echo '#include "miniflac.h"' >> miniflac.c
+	$(CC) -Os -fPIC -ffreestanding -nostdlib -o libminiflac.o -c miniflac.c
+	$(CC) -s -shared -nostdlib -o libminiflac.so libminiflac.o
+	strip libminiflac.o
+	$(AR) rcs libminiflac.a libminiflac.o
+
 libminiflac.a: $(OBJS)
 	$(AR) rcs $@ $^
 
 libminiflac.so: $(OBJS)
-	$(CC) -shared -o $@ $^ $(LDFLAGS)
+	$(CC) $(SHARED_LIB_LDFLAGS) -o $@ $^ $(LDFLAGS)
+
+src/%.o: src/%.c
+	$(CC) $(CFLAGS) $(SHARED_LIB_CFLAGS) -c -o $@ $<
 
 examples/get-sizes: examples/get-sizes.o src/debug.o $(OBJS)
 	$(CC) -o $@ $^ $(LDFLAGS)

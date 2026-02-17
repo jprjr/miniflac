@@ -3,6 +3,7 @@
 #define MINIFLAC_FRAMEHEADER_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 #include "common.h"
 #include "bitreader.h"
