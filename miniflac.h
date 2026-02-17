@@ -825,7 +825,7 @@ MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_streaminfo_channels(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* channels);
 
-/* get the bits per second */
+/* get the bits per sample */
 MINIFLAC_API
 MINIFLAC_RESULT
 miniflac_streaminfo_bps(miniflac_t* pFlac, const uint8_t* data, uint32_t length, uint32_t* out_length, uint8_t* bps);
@@ -2158,8 +2158,8 @@ mflac_version_string(void) {
 #undef MFLAC_GET3_FUNC
 
 #define MINIFLAC_VERSION_MAJOR 1
-#define MINIFLAC_VERSION_MINOR 1
-#define MINIFLAC_VERSION_PATCH 1
+#define MINIFLAC_VERSION_MINOR 2
+#define MINIFLAC_VERSION_PATCH 0
 
 #define MINIFLAC_STR(x) #x
 #define MINIFLAC_XSTR(x) MINIFLAC_STR(x)
@@ -5439,6 +5439,10 @@ miniflac_residual_decode(miniflac_residual_t* residual, miniflac_bitreader_t* br
             residual->residual = 0;
             residual->residual_total = block_size >> residual->partition_order;
             if(residual->partition == 0) {
+                if(residual->residual_total < predictor_order) {
+                    miniflac_abort();
+                    return MINIFLAC_ERROR;
+                }
                 residual->residual_total -= predictor_order;
             }
 
@@ -5911,6 +5915,10 @@ miniflac_subframe_decode(miniflac_subframe_t* subframe, miniflac_bitreader_t* br
             r = miniflac_subframe_header_decode(&subframe->header,br);
             if(r != MINIFLAC_OK) return r;
 
+            if(subframe->header.wasted_bits >= bps) {
+                miniflac_abort();
+                return MINIFLAC_ERROR;
+            }
             subframe->bps = bps - subframe->header.wasted_bits;
 
             switch(subframe->header.type) {

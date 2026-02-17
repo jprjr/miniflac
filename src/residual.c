@@ -68,6 +68,10 @@ miniflac_residual_decode(miniflac_residual_t* residual, miniflac_bitreader_t* br
             residual->residual = 0;
             residual->residual_total = block_size >> residual->partition_order;
             if(residual->partition == 0) {
+                if(residual->residual_total < predictor_order) {
+                    miniflac_abort();
+                    return MINIFLAC_ERROR;
+                }
                 residual->residual_total -= predictor_order;
             }
 
